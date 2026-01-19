@@ -15,8 +15,14 @@ Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Ard
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.4.4\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad320.ino.elf"
-Sketch uses 240988 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 241012 bytes (11%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 47240 bytes (9%) of dynamic memory, leaving 477048 bytes for local variables. Maximum is 524288 bytes.
+C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.4.4/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad320.ino.uf2 
+Resetting COM3
+Converting to uf2, output size: 548352, start address: 0x2000
+Scanning for RP2040 devices
+Flashing D: (RP2350)
+Wrote 548352 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -38,7 +44,8 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
                 #define SPI_TOUCH_FREQUENCY  500000    // 500kHz used - 250kHz or 500kHz needed for Pico 2
 
 New changes:
-1. (R) *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.
+0. Fixed Vol1,Vol3,Vol4,VolOn label logic
+1. *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.
 2. Fixed Starcodes not-found check=100
 3. Used SD.h Arduino-Pico wrapper for old arduino SDlib instead of SDFS.h - could be side-effects but SD has easier setup than SDFS.
    Previous SDFS versions are still available.
