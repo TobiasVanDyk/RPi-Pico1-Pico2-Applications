@@ -618,10 +618,10 @@ the macro keyboard then press [NXT]2x[Fnn]3x[ADD][EXE]. Press [Up] to assign it 
 Controlling both SDCard and Flash file system operations such as folder or file copy, rename, or delete, and user 
 interface appearance and functions, are executed using an extensive set of starcodes which can be run from files 
 stored on Flash or the SDCard, or entered on the TouchLCD's macroeditor, or sent via a PC serial port, or sent 
-from a Powershell command to the MacroTouchpad. For example sending <\*x9\*0102030405060719> will set all 8 special 
+from a Powershell command to the MacroTouchpad. For example sending <*x9*0102030405060719> will set all 8 special 
 keys - normally the Cut-Copy-Paste-Delete-Return keys, to new actions and labels - the 8 keys will then be Del Bks 
 Tab aTb Ins Esc and [Del] = PrS and [Ret] = Run. Using a Powershell get-process, one can then set these keys 
-according to which PC application is open. These \* commands can also be part of the list of instructions in a 
+according to which PC application is open. These * commands can also be part of the list of instructions in a 
 macrolink file. 
 
 The Macroeditor or Keyboard editor (Pad [k]) can be used to change various options by sending *option*value commands.
@@ -731,7 +731,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     change the cursor jump movement to 20 from the 5 default. Mouse Position works by moving the cursor 2160 pixels 
     down or up and 3840 pixels left or right, and then moving it to the XY n,n position up or down and right or left. 
     Monitor Corner for mouse zero: *mZ*n n=0,1,2,3 0=LB 1=LT 2=RT 3=RB Saved in Config1 as MouseZ. Default is LB = 
-    Left Bottom.       
+    Left Bottom.        
 (n) Media Key Options: Normally pressing the media key [Cfg] then [Med], only displays the four Media controls 
     Play-Pause, Next, Previous and Stop. To add the Volume Up and Down and the Mute keys press [Cfg][Vol] or 
     [Cfg][Vm]. By using *e1* to *e6* codes the action of the media key [Med] can be changed to display standard 
@@ -882,6 +882,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (Q) Backup and Restore files on Flash memory to SDCard. 
     *c1* = copy all Flash Files to folder Flash on SDCard.
     *c2* = copy files in SDcard folder Flash to root of Flash memory i.e. restore previously copied Flash files.
+(R) *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.
 
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
@@ -1044,4 +1045,3 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
-
