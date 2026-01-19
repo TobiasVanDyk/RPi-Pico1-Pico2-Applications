@@ -2541,7 +2541,11 @@ void ConfigButtons(uint8_t rowcount) {  // rowcount=0 all 4 rows rowcount=2 last
   if (Layout!=2 && MLabel+SLabel+TLabel>0) DoMSTLabel(1, Layout);
   
   if (!VolOn) for (m=0; m<3; m++) { keyLabel[3][m]  = BsDLabel[BsDNum][m]; 
-                                    keyLabel[11][m] = BsDLabel[RetNum][m];  }                      // Delete -> ScrollL  
+                                    keyLabel[11][m] = BsDLabel[RetNum][m];  }                     
+  else                                  
+  if ((Layout==1 && Vol1==0) || (Layout==3 && Vol3==0) || (Layout==4 && Vol4==0))
+       for (m=0; m<3; m++) { keyLabel[3][m]  = BsDLabel[BsDNum][m]; 
+                             keyLabel[11][m] = BsDLabel[RetNum][m];  }    
 
   if (KeyHeldEnable) keyLabel[7][0] = 'V';     // V1-V4 istead of L1-L4 if longpress for Volume Mute is active toggle with *ke*
      

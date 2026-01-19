@@ -8,7 +8,7 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.4.4\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.4.4\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad405.ino.elf"
-Sketch uses 250588 bytes (23%) of program storage space. Maximum is 1044480 bytes.
+Sketch uses 250612 bytes (23%) of program storage space. Maximum is 1044480 bytes.
 Global variables use 46500 bytes (17%) of dynamic memory, leaving 215644 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
 Converting to uf2, output size: 561152, start address: 0x2000
@@ -27,6 +27,7 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
                                                           #define SPI_READ_FREQUENCY 15000000  // 20 MHz also ok
 
 New changes:
+0. Fixed Vol1,Vol3,Vol4,VolOn label logic
 1. *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.
 2. Fixed Starcodes not-found check=100
 3. Used SD.h Arduino-Pico wrapper for old arduino SDlib instead of SDFS.h - could be side-effects but SD has easier setup than SDFS.
