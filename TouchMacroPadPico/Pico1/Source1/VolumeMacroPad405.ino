@@ -3628,13 +3628,13 @@ bool SendBytesStarCodes()
         case 10: //////////////////// KeyBrdByte[1]==0x65  *e0* to *e6*  Media keys Activated   
       { MediaCfg = true;             // Assume media modes now on except for *e0*     
         if ((k2==0x30) || (k2>0x36)) // *e0* or invalid choice restore to no Mediakeys
-           {VolOn = MuteOn = ToneOn = Media = false; MediaCfg = MediaConfig[0] = 0; WriteConfig1(0); status("Media Mode 0 Saved");   }    // all false saved
-        if (k2==0x31) { VolOn = true;                  status("Media 1 Volume");     }                                        // *e1* = V+ V- keys                            
-        if (k2==0x32) { VolOn = MuteOn = true;         status("Media 2 Volume + Mute");    }                                  // *e2* = V+ V- and Mute keys                     
-        if (k2==0x33) { VolOn = Media = true;          status("Media 3 Vol + Media Controls");   }                            // *e3* = Volume and Media keys             
-        if (k2==0x34) { VolOn = MuteOn = Media = true; status("Media 4 Volume + Mute + Media Controls");  }                   // *e4* = Volume + Mute + Media keys
-        if (k2==0x35) { VolOn = ToneOn = Media = true; status("Media 5 Volume + Media + Tone Controls");  }                   // *e5* = Volume + Media + Tone keys
-        if (k2==0x36) { VolOn = MuteOn = ToneOn = Media = true;  status("Media 6 Volume + Mute + Media + Tone Controls");  }  // *e6* = Volume + Mute + Media + Tone keys    
+           {VolOn = MuteOn = ToneOn = Media = false; MediaCfg = MediaConfig[0] = 0; WriteConfig1(0); status("Media Mode 0 Saved");   } // all false saved
+        if (k2==0x31) { VolOn = true; MuteOn = false;                  status("Media 1 Volume");     }                                 // *e1* = V+ V- keys                            
+        if (k2==0x32) { VolOn = MuteOn = true;                         status("Media 2 Volume + Mute");    }                           // *e2* = V+ V- and Mute keys                     
+        if (k2==0x33) { VolOn = Media = true; MuteOn = false;          status("Media 3 Vol + Media Controls");   }                     // *e3* = Volume and Media keys             
+        if (k2==0x34) { VolOn = MuteOn = Media = true;                 status("Media 4 Volume + Mute + Media Controls");  }            // *e4* = Volume + Mute + Media keys
+        if (k2==0x35) { VolOn = ToneOn = Media = true; MuteOn = false; status("Media 5 Volume + Media + Tone Controls");  }            // *e5* = Volume + Media + Tone keys
+        if (k2==0x36) { VolOn = MuteOn = ToneOn = Media = true;        status("Media 6 Volume + Mute + Media + Tone Controls");  }     // *e6* = Volume + Mute + Media + Tone keys    
         ConfigButtons(1); StarOk = true; break; } 
         case 11: //////////////////// KeyBrdByte[1]==0x66 *f  a,m,s,t Fill keys
       { if (k2==0x73)              // *fs* = Fill S keys with predefined coded strings
