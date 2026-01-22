@@ -2495,7 +2495,7 @@ void ConfigButtons(uint8_t rowcount) {  // rowcount=0 all 4 rows rowcount=2 last
   if (!VolOn) for (m=0; m<3; m++) { keyLabel[3][m]  = BsDLabel[BsDNum][m]; 
                                     keyLabel[11][m] = BsDLabel[RetNum][m];  }                     
   else                                  
-  if ((VolOn && Layout==1 && Vol1==0) || (VolOn && Layout==3 && Vol3==0) || (VolOn && Layout==4 && Vol4==0))
+  if ((Layout==1 && Vol1==0) || (Layout==3 && Vol3==0) || (VolOn && Layout==4 && Vol4==0))
        for (m=0; m<3; m++) { keyLabel[3][m]  = BsDLabel[BsDNum][m]; 
                                                keyLabel[11][m] = BsDLabel[RetNum][m];  }                                                            
   
@@ -3589,12 +3589,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { MediaCfg = true;             // Assume media modes now on except for *e0*     
         if ((k2==0x30) || (k2>0x36)) // *e0* or invalid choice restore to no Mediakeys
            {VolOn = MuteOn = ToneOn = Media = false; MediaCfg = MediaConfig[0] = 0; WriteConfig1(0); status("Media Mode 0 Saved");   }    // all false saved
-        if (k2==0x31) { VolOn = true;                  status("Media 1 Volume");     }                                        // *e1* = V+ V- keys                            
-        if (k2==0x32) { VolOn = MuteOn = true;         status("Media 2 Volume + Mute");    }                                  // *e2* = V+ V- and Mute keys                     
-        if (k2==0x33) { VolOn = Media = true;          status("Media 3 Vol + Media Controls");   }                            // *e3* = Volume and Media keys             
-        if (k2==0x34) { VolOn = MuteOn = Media = true; status("Media 4 Volume + Mute + Media Controls");  }                   // *e4* = Volume + Mute + Media keys
-        if (k2==0x35) { VolOn = ToneOn = Media = true; status("Media 5 Volume + Media + Tone Controls");  }                   // *e5* = Volume + Media + Tone keys
-        if (k2==0x36) { VolOn = MuteOn = ToneOn = Media = true;  status("Media 6 Volume + Mute + Media + Tone Controls");  }  // *e6* = Volume + Mute + Media + Tone keys    
+        if (k2==0x31) { VolOn = true; MuteOn = false;                  status("Media 1 Volume");     }                                        // *e1* = V+ V- keys                            
+        if (k2==0x32) { VolOn = MuteOn = true;                         status("Media 2 Volume + Mute");    }                                  // *e2* = V+ V- and Mute keys                     
+        if (k2==0x33) { VolOn = Media = true; MuteOn = false;          status("Media 3 Vol + Media Controls");   }                            // *e3* = Volume and Media keys             
+        if (k2==0x34) { VolOn = MuteOn = Media = true;                 status("Media 4 Volume + Mute + Media Controls");  }                   // *e4* = Volume + Mute + Media keys
+        if (k2==0x35) { VolOn = ToneOn = Media = true; MuteOn = false; status("Media 5 Volume + Media + Tone Controls");  }                   // *e5* = Volume + Media + Tone keys
+        if (k2==0x36) { VolOn = MuteOn = ToneOn = Media = true;        status("Media 6 Volume + Mute + Media + Tone Controls");  }  // *e6* = Volume + Mute + Media + Tone keys    
         ConfigButtons(1); StarOk = true; break; } 
         case 11: //////////////////// KeyBrdByte[1]==0x66 *f  a,m,s,t Fill keys
       { if (k2==0x73)              // *fs* = Fill S keys with predefined coded strings
@@ -3670,7 +3670,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         if (k2==0x54) { TimeRepeat = T; WriteMacroTimers(T, 8, b); } // *nT*num TimeRepeat
         StarOk = true; break;  }        
         case 22: //////////////////// KeyBrdByte[1]==0x6F&&KeyBrdByte[2]==0x73 *os* operating system toggle Windows/Linux/PiOS on/off
-      { OptionOS++; if (OptionOS>2) OptionOS=0; status(OSName[OptionOS]); SaveOptionOS = true; StarOk = true; break; }
+      { OptionOS++; if (OptionOS>2) OptionOS=0; status(OSName[OptionOS]); optionsindicators(0); SaveOptionOS = true; StarOk = true; break; }
         case 23: ////////////////////// Power Keys: KeyBrdByte[1]==0x6F  *o For example: 30 sec = *ot*030s  10 min = *oT*010m
       { T = GetT(knum);                                                // "tPowerOff", "TPowerOff" 
         if (k2==0x74) { if (knum==4) { timePowerOff =   36000; status("PowerKeys *ot* Defaults"); }
@@ -3708,10 +3708,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (knum==4) { sdShow = !sdShow; 
                                  if (sdShow) status("SDFileNames Listed ON"); else status("SDFileNames Listed OFF"); StarOk = true; break; }        
          SDNum = KeyBrdByte[4];                       // Use the [ADD]ed number to assign 1 - 9 or calc 10 - 21 next       
-         SDCardSelectFiles(1); SDNumChange = true; StarOk = true; break; }
+         SDCardSelectFiles(1); SDNumChange = true; optionsindicators(0); StarOk = true; break; }
          case 30: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]==0x65 *se* Switch off serial monitor - default is off - state is saved  
        { CheckSerial = !CheckSerial; Config1[1] = CheckSerial; WriteConfig1(0); 
-         if (CheckSerial) status("Serial COM port monitor enabled"); else status("Serial COM port monitor disabled"); StarOk = true; break; }
+         if (CheckSerial) status("Serial COM port monitor enabled"); else status("Serial COM port monitor disabled"); 
+         optionsindicators(0); StarOk = true; break; }
          //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
          //               0 12 34 56 7 89 01 -> copy to RecBytes [1] to [11]
          // Use serial *tx* yy mm dd w hh mm> 22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w
@@ -3845,7 +3846,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          CopyMacro(cfoption); SendBytesEnd(0); StarOk = true; break; }  
         case 57: ///////////////////// KeyBrdByte[1]==0x61&&KeyBrdByte[2]==0x64 *ad*xs x=a,b,c,d s=s,f (SDCard or Flash) switch layouts A-D brown and white
       { if (knum==4) { LayerAxD = !LayerAxD; }             // LayerAD = 0,1,2,3 = a,b,c,d toggle brown/white keep same A-D A=65 a=97
-        if (knum>4)  { n = LayerAD; LayerAD = KeyBrdByte[4] - 97; if (LayerAD<4) LayerADLetter[0] = 65 + LayerAD; else { LayerAD = n; break; } }
+        if (knum>4)  { n = LayerAD; LayerAD = KeyBrdByte[4] - 97; if (LayerAD<4) LayerADLetter[0] = 65 + LayerAD; else { LayerAD = n; break; } } // LayerAD nochange break
         if (knum==6) { if (k5=='s') LayerAxD = true; else if (k5=='f') LayerAxD = false; else break;  }
         optionsindicators(0); ConfigButtons(1); LayerADChange = true; StarOk = true; break; } 
         case 58: ///////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x79 *lx*lxs l=1-4 x=a,b,c,d s=s,f (SDCard or Flash) switch layouts A-D brown and white
@@ -3886,13 +3887,24 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                            Serial.write(Layout);  Serial.write(LayerAD); Serial.write(LayerAxD);  // PC receives 0E 0F 10 0E 0F 10 00 08 02 02 01 00 00 00 00 00 00 01 01 00 0D 0A 
                                            Serial.write(VolOn);   Serial.write(MuteOn);  Serial.write(ToneOn);   Serial.write(MediaCfg); Serial.write(Media); 
                                            Serial.write(Vol1);    Serial.write(Vol3);    Serial.write(Vol4); 
-                                           Serial.write(MathSet); Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
+                                           Serial.write(MathSet); 
+                                           byte* bytePtr = (byte*)&TimePeriod; Serial.write(bytePtr, sizeof(TimePeriod));  
+                                           // Serial.write(TimePeriod / 256);  Serial.write(TimePeriod % 256);
+
+                                           Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++) Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
                                            Serial.println(Layout);            Serial.println(LayerAD);           Serial.println(LayerAxD);   
                                            Serial.println(VolOn);             Serial.println(MuteOn);            Serial.println(ToneOn);    
                                            Serial.println(MediaCfg);          Serial.println(Media); 
                                            Serial.println(Vol1);              Serial.println(Vol3);              Serial.println(Vol4); 
-                                           Serial.println(MathSet);           status("Text Data sent to PC"); StarOk = true; break; } }    
+                                           Serial.println(MathSet);           Serial.println(nChar);       
+                                           Serial.println(nKeysPage);         Serial.println(nKeys34);           Serial.println(nKeysShow);
+                                           Serial.println(CapsLock);          Serial.println(NumLock);           Serial.println(ScrollLock); 
+                                           Serial.println(OptionOS);          Serial.println(CheckSerial);       Serial.println(SDNum);  
+                                           Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);                                            
+                                           Serial.println(NormVal);           Serial.println(DimVal);            
+                                           Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println("EOC");                                                                   
+                                           status("Text Data sent to PC"); StarOk = true; break; } }    
       } return StarOk;                
 }
 
