@@ -3710,7 +3710,7 @@ bool SendBytesStarCodes()
         if (k2==0x54) { TimeRepeat = T; WriteMacroTimers(T, 8, b); } // *nT*num TimeRepeat
         StarOk = true; break;  }        
         case 22: //////////////////// KeyBrdByte[1]==0x6F&&KeyBrdByte[2]==0x73 *os* operating system toggle Windows/Linux/PiOS on/off
-      { OptionOS++; if (OptionOS>2) OptionOS=0; status(OSName[OptionOS]); SaveOptionOS = true; StarOk = true; break; }
+      { OptionOS++; if (OptionOS>2) OptionOS=0; status(OSName[OptionOS]); optionsindicators(0); SaveOptionOS = true; StarOk = true; break; }
         case 23: ////////////////////// Power Keys: KeyBrdByte[1]==0x6F  *o For example: 30 sec = *ot*030s  10 min = *oT*010m
       { T = GetT(knum);                                                // "tPowerOff", "TPowerOff" 
         if (k2==0x74) { if (knum==4) { timePowerOff =   36000; status("PowerKeys *ot* Defaults"); }
@@ -3748,10 +3748,11 @@ bool SendBytesStarCodes()
          if (knum==4) { sdShow = !sdShow; 
                                  if (sdShow) status("SDFileNames Listed ON"); else status("SDFileNames Listed OFF"); StarOk = true; break; }        
          SDNum = KeyBrdByte[4];                       // Use the [ADD]ed number to assign 1 - 9 or calc 10 - 21 next       
-         SDCardSelectFiles(1); SDNumChange = true; StarOk = true; break; }
+         SDCardSelectFiles(1); SDNumChange = true; optionsindicators(0); StarOk = true; break; }
          case 30: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]==0x65 *se* Switch off serial monitor - default is off - state is saved  
        { CheckSerial = !CheckSerial; Config1[1] = CheckSerial; WriteConfig1(0); 
-         if (CheckSerial) status("Serial COM port monitor enabled"); else status("Serial COM port monitor disabled"); StarOk = true; break; }
+         if (CheckSerial) status("Serial COM port monitor enabled"); else status("Serial COM port monitor disabled"); 
+         optionsindicators(0); StarOk = true; break; }
          //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
          //               0 12 34 56 7 89 01 -> copy to RecBytes [1] to [11]
          // Use serial *tx* yy mm dd w hh mm> 22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w
@@ -3924,13 +3925,24 @@ bool SendBytesStarCodes()
                                            Serial.write(Layout);  Serial.write(LayerAD); Serial.write(LayerAxD);  // PC receives 0E 0F 10 0E 0F 10 00 08 02 02 01 00 00 00 00 00 00 01 01 00 0D 0A 
                                            Serial.write(VolOn);   Serial.write(MuteOn);  Serial.write(ToneOn);   Serial.write(MediaCfg); Serial.write(Media); 
                                            Serial.write(Vol1);    Serial.write(Vol3);    Serial.write(Vol4); 
-                                           Serial.write(MathSet); Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
+                                           Serial.write(MathSet); 
+                                           byte* bytePtr = (byte*)&TimePeriod; Serial.write(bytePtr, sizeof(TimePeriod));  
+                                           // Serial.write(TimePeriod / 256);  Serial.write(TimePeriod % 256);
+
+                                           Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++) Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
                                            Serial.println(Layout);            Serial.println(LayerAD);           Serial.println(LayerAxD);   
                                            Serial.println(VolOn);             Serial.println(MuteOn);            Serial.println(ToneOn);    
                                            Serial.println(MediaCfg);          Serial.println(Media); 
                                            Serial.println(Vol1);              Serial.println(Vol3);              Serial.println(Vol4); 
-                                           Serial.println(MathSet);           status("Text Data sent to PC"); StarOk = true; break; } }  
+                                           Serial.println(MathSet);           Serial.println(nChar);       
+                                           Serial.println(nKeysPage);         Serial.println(nKeys34);           Serial.println(nKeysShow);
+                                           Serial.println(CapsLock);          Serial.println(NumLock);           Serial.println(ScrollLock); 
+                                           Serial.println(OptionOS);          Serial.println(CheckSerial);       Serial.println(SDNum);  
+                                           Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);                                            
+                                           Serial.println(NormVal);           Serial.println(DimVal);            
+                                           Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println("EOC");                                                                   
+                                           status("Text Data sent to PC"); StarOk = true; break; } }      
       } return StarOk; 
 }
 
