@@ -99,17 +99,17 @@ const byte MaxBytes = StrSize;   // 200 * 24 * 4 = 19.2 kbytes
 // uint8_t static const conv_table2[128][2] =  { HID_KEYCODE_TO_ASCII }; 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 0   KeySkip 1  CheckSerial 0  KeyHeldEnable  1           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
 // 7     nKeys 1       nChar  n      nKeysPage  8  nKeysCharSet[10] c         CRLF 0                    crlf1 0x0D             crlf2 0x0A
 // 23    iList 0       MuteOn 0           VolOn 1          LayerAxD 0        Media 0                   XFiles 0           Brightness 0           
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
 // 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
 // 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
-// 80  MathSet 0       MouseZ 0 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Currently last used entry MathSet 0-9 = Config1[80]; Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Currently last used entry MediaConfig[0] = Config1[82]; Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
 byte Config1[Config1Size]          = {1,  0,  1,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
@@ -118,7 +118,7 @@ cSt byte Config1Reset[Config1Size] = {1,0,1,1,0,0,0,1,'n',8,'n','o','p','q','r',
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
                                      'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 static const unsigned long int tHr  = 60*60*1000; // hour
 static const unsigned long int tMin = 60*1000;    // minute
 unsigned long int WiggleTime = 0;                 // *mW*nn MouseWiggler blocking unsigned for -1000 steps
@@ -146,6 +146,9 @@ bool LayerADChange = false;            // If changes A-D
 bool KeyOn = false;                    // <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
 byte KeyOnVal[6];                      // KeyOnVal[0] = m=key1--6 KeyOnVal[1] = n=LayerAD 0-3 KeyOnVal[2] = n=Layout 1-4 KeyOnVal[3,4] temp LayerAD Layout KeyOnVal[5] = delay
 long int KeyOnValDelay[10] = { 0,100,200,300,500,1000,2000,3000,4000,5000 }; // Delay in mS before key pressed allows for focus change if text strings sent
+bool nKeyPC = false;                   // nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+byte nKeyPCArr[7];                     // KeyOnVal[0][1][2] = nKeysPageNumber KeyOnVal[3][4][5] = nKeyNumber 001 - 996 [7] = nKeyPCDelay 
+byte nKeyPCDelay = 5;                  // KeyOnValDelay[5] = 1000 mS; 
 
 int LCDBackLight = 13;                 // Set as OUTPUT and HIGH by TFT init or Brightness level via analog PWM
 bool BLOnOff = true;                   // If Option BLOnOff is ON then pressing the black button switch backlight off
@@ -441,24 +444,24 @@ const static char FxyChr[10][4] = // F01 to F24
 {"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 108; // StarCodes Count 16+16+16+16+16+16+12 StarNum = 0-107
+const static int StarCodesMax = 112; // StarCodes Count 16+16+16+16+16+16+12 StarNum = 0-111
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", "c2", 
   "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo", "fs", 
   "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", "m0", 
-  "m1", "m2", "ma", "mb", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nt", "nT", "os", "ot", 
-  "oT", "pc", "po", "r0", "r1", "r2", "r3", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sm", "ss", 
-  "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", "vx", "x0", "x1", "x2", "x3", "x4", "x5", 
-  "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", "0x"  };
+  "m1", "m2", "ma", "mb", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", "nn", "np", 
+  "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rn", "ro", "rt", "rT", "sa", 
+  "sd", "se", "sm", "ss", "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", "vx", "x0", "x1", 
+  "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", "0x"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   64,
   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   11,   
   11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   67,
-  18,   19,   62,   66,   65,   71,   66,   20,   20,   68,   69,   70,   21,   21,   22,   23,   
-  23,   72,   25,   37,   26,   40,   41,   49,   27,   24,   24,   28,   29,   30,   28,   28,   
-  28,   31,   4,    31,   31,   31,   33,   32,   43,   61,   35,   35,   35,   35,   35,   35,   
-  35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   52      };
+  18,   19,   62,   66,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   74,   75,   
+  21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   49,   27,   24,   24,   28,   
+  29,   30,   28,   28,   28,   31,   4,    31,   31,   31,   33,   32,   43,   61,   35,   35,   
+  35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   52    };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -829,6 +832,9 @@ void loop()
 
   if (KeyOn) { delay(KeyOnValDelay[KeyOnVal[5]]); KeyOnVal[3] = LayerAD; KeyOnVal[4] = Layout; Layout = KeyOnVal[2]; LayerAD = KeyOnVal[1]; 
                buttonpress(KeyOnVal[0] + 3 + 1*(KeyOnVal[0]>3)); KeyOn = false; LayerAD = KeyOnVal[3]; Layout = KeyOnVal[4]; }     
+
+  if (nKeyPC) { delay(KeyOnValDelay[nKeyPCDelay]); byte n = nKeyPCArr[4]*10 + nKeyPCArr[5]; Numkeys123 = nKeyPCArr[1]*10 + nKeyPCArr[2]; NumKeysChange();                
+                DoNKeys(n); nKeyPC = false; }              
     
   pressed = tft.getTouch(&t_x, &t_y, 650);                                     // True if valid key pressed 650 = threshold see touch.h
   if (TinyUSBDevice.suspended() && (pressed)) {TinyUSBDevice.remoteWakeup(); } // Wake up host if in suspend mode + REMOTE_WAKEUP feature enabled by host
@@ -844,7 +850,7 @@ void loop()
 
   if (KeyHeld==7&&KeyHeldEnable) { Layout = KeyHeldLayout;                    // Swop Keys [L1-L4] to Key [Vo] if key held in > 600 millisecond
                     if (!MuteOn) { if (Layout==1) Layout=4; else Layout--; }  // RepTimePeriod = 600 Try 500-700 After this key repeat is active 
-                    MuteOn = !MuteOn; ConfigButtons(1);  }              
+                    MuteOn = !MuteOn; ConfigMedia(); ConfigButtons(1);  }            
                     
   if (CheckSerial) RecSerial();  // Switch off serial check with *se* toggle -  CheckSerial default is off
   // if (NewData) showRecData();
@@ -1035,8 +1041,11 @@ void DoNewSDCard()
                         
   a = a - 48;                          // ASCII Number 0-9 subtract 48
   
-  KeyOn = (a==59);                     // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
+  KeyOn   = (a==59);                   // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
+  nKeyPC  = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
   if (KeyOn)     { KeyOnVal[0] = RecBytes[1]-48; KeyOnVal[1] = RecBytes[2]-48; KeyOnVal[2] = RecBytes[3]-48; KeyOnVal[5] = RecBytes[4]-48; return; } 
+  if (nKeyPC)    { nKeyPCArr[0] = RecBytes[1]-48; nKeyPCArr[1] = RecBytes[2]-48; nKeyPCArr[2] = RecBytes[3]-48; 
+                   nKeyPCArr[3] = RecBytes[4]-48; nKeyPCArr[4] = RecBytes[5]-48; nKeyPCArr[5] = RecBytes[6]-48; nKeyPCDelay = RecBytes[7]-48; return; }
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
   Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
 
@@ -1089,9 +1098,12 @@ void DoNewData()
   mPlay     = (a==61);       // 0x6D = 'm' PC music Playing
   tTimeDate = (a==36);       // 0x54 = 'T' Time Date Display (not system time-date)
   KeyOn     = (a==59);       // 0x6B = 'k' PC Config App sends Keys direct - <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
+  nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
   Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII
   
-  if (KeyOn)     { KeyOnVal[0] = RecBytes[1]-48; KeyOnVal[1] = RecBytes[2]-48; KeyOnVal[2] = RecBytes[3]-48; KeyOnVal[5] = RecBytes[4]-48; return; } 
+  if (KeyOn)     { KeyOnVal[0]  = RecBytes[1]-48; KeyOnVal[1]  = RecBytes[2]-48; KeyOnVal[2]  = RecBytes[3]-48; KeyOnVal[5]  = RecBytes[4]-48; return; } 
+  if (nKeyPC)    { nKeyPCArr[0] = RecBytes[1]-48; nKeyPCArr[1] = RecBytes[2]-48; nKeyPCArr[2] = RecBytes[3]-48; 
+                   nKeyPCArr[3] = RecBytes[4]-48; nKeyPCArr[4] = RecBytes[5]-48; nKeyPCArr[5] = RecBytes[6]-48; nKeyPCDelay = RecBytes[7]-48; return; }
   if (mEdt)      { WriteMacroEditorData();  mEdt      = false; return; }
   if (sSens)     { WriteSensorData();       sSens     = false; return; }
   if (mPlay)     { WriteMusicPlayingData(); mPlay     = false; return; }
@@ -2219,8 +2231,8 @@ void buttonpress(int Button)
     
       if (ConfigKeyCount==1) {ConfigKeyCount--;
                               VolOn = !VolOn; 
-                              if (!VolOn) status("Volume V+V- Off"); else status("Volume V+V- On");                             
-                              ConfigButtons(1); break; }
+                              if (VolOn) status("Volume V+V- On"); else status("Volume V+V- Off");
+                              ConfigMedia(); ConfigButtons(1); break; }
 
       if (Media && ToneOn) {usb_hid.sendReport16(HIDCons, TrebUp); delay(dt50);
                             usb_hid.sendReport16(HIDCons, 0); break; }                              
@@ -2328,8 +2340,8 @@ void buttonpress(int Button)
 
       if (ConfigKeyCount==1) {ConfigKeyCount--;
                               MuteOn = !MuteOn; 
-                              if (!MuteOn) status("Volume Mute Off"); else status("Volume Mute On");  
-                              ConfigButtons(1); break; }
+                              if (!MuteOn) status("Volume Mute Off"); else status("Volume Mute On");
+                              ConfigMedia(); ConfigButtons(1); break; }
 
       if (Media) {usb_hid.sendReport16(HIDCons, NxtMed); delay(dt50);
                   usb_hid.sendReport16(HIDCons, 0); break; }                        
@@ -2440,7 +2452,7 @@ void buttonpress(int Button)
       if (ConfigKeyCount==1) {ConfigKeyCount--;               
                               Media = !Media; 
                               if (Media) status("Media Keys ON");  else status("Media Keys OFF"); 
-                              ConfigButtons(1); break; }
+                              ConfigMedia(); ConfigButtons(1); break; }
                               
       if (Media && ToneOn) {usb_hid.sendReport16(HIDCons, TrebDwn); delay(dt50);
                             usb_hid.sendReport16(HIDCons, 0); break; }
@@ -2899,6 +2911,15 @@ void ReadBSDKeyKArr()
      }       
 }
 
+void ConfigMedia()
+{ if (!VolOn && !MuteOn && !Media && !ToneOn)  { MediaCfg = MediaConfig[0] = 0; return; }       // *e0* all false saved
+  if (VolOn  && !MuteOn && !Media)             { MediaCfg = MediaConfig[0] = 1; return; }       // *e1* = V+ V- keys                            
+  if (VolOn  && MuteOn  && !Media)             { MediaCfg = MediaConfig[0] = 2; return; }       // *e2* = V+ V- and Mute keys                     
+  if (VolOn  && !MuteOn && Media)              { MediaCfg = MediaConfig[0] = 3; return; }       // *e3* = Volume and Media keys             
+  if (VolOn  && MuteOn  && Media)              { MediaCfg = MediaConfig[0] = 4; return; }       // *e4* = Volume + Mute + Media keys
+  if (VolOn  && !MuteOn && Media  && ToneOn)   { MediaCfg = MediaConfig[0] = 5; return; }       // *e5* = Volume + Media + Tone keys
+  if (VolOn  && MuteOn  && Media  && ToneOn)   { MediaCfg = MediaConfig[0] = 6; return; }       // *e6* = Volume + Mute + Media + Tone keys   
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReadConfig1()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2944,14 +2965,15 @@ void ReadConfig1()
   strcpy(nDir, (char *)&Config1[40]); // 40-59 60=nDirZ=0 
   for (n=1; n<11; n++) nKeysLnkChar[n-1] = Config1[60+n];    // 61-70 Config1[61-70] 
   nDirX =         Config1[71];
-  MLabel = Config1[72];  SLabel = Config1[73]; TLabel = Config1[74]; 
+  MLabel = Config1[72];  SLabel = Config1[73]; TLabel = Config1[74];   
   DelayTimeVal = Config1[75]; 
   dt25=DelayTimeArr[DelayTimeVal][0];  dt50=DelayTimeArr[DelayTimeVal][1]; 
-  dt100=DelayTimeArr[DelayTimeVal][2]; dt200=DelayTimeArr[DelayTimeVal][3]; dt500=DelayTimeArr[DelayTimeVal][4];  
-  Vol1 = Config1[76]; Vol3 = Config1[77]; Vol4 = Config1[78]; // If = 1 then enable Volume Up/Dwn in Layouts 1, 3, 4  
-  ToneOn =        Config1[79];                                // Bass/Treble controls
-  MathSet =       Config1[80];                                // 0-9 0=Default
-  MouseZ =        Config1[81];                                // 0-3 Screen 0,0 position corner LB LT RT RB
+  dt100=DelayTimeArr[DelayTimeVal][2]; dt200=DelayTimeArr[DelayTimeVal][3]; dt500=DelayTimeArr[DelayTimeVal][4];
+  Vol1 = Config1[76]; Vol3 = Config1[77]; Vol4 = Config1[78];  // If = 1 then enable Volume Up/Dwn in Layouts 1, 3, 4 
+  ToneOn =         Config1[79];                                // Bass/Treble controls
+  MathSet =        Config1[80];                                // 0-9 0=Default  
+  MouseZ =         Config1[81];                                // 0-3 Screen 0,0 position corner LB LT RT RB  
+  MediaConfig[0] = Config1[82];                                // 0-6 Media keys Volume Mute Tonecontrol combinations
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2992,12 +3014,13 @@ void WriteConfig1(bool Option)
                   strcpy((char *)&Config1[40], nDir); // 40-59 60=nDirZ=0                    
                   for (n=1; n<11; n++) Config1[60+n] = nKeysLnkChar[n-1];   // Config1[61-70] 
                   nDirX       = Config1[71];
-                  Config1[72] = MLabel; Config1[73] = SLabel; Config1[74] = TLabel;   
-                  Config1[75] = DelayTimeVal;                   
-                  Config1[76] = Vol1; Config1[77] = Vol3; Config1[78] = Vol4; // If = 1 then enable Volume Up/Dwn in Layouts 1, 3, 4  
-                  Config1[79] = ToneOn;                                       // Bass/Treble controls
-                  Config1[80] = MathSet;                                      // 0-9 0=Default
-                  Config1[81] = MouseZ;                                       // 0-3 Screen 0,0 position corner LB LT RT RB                    
+                  Config1[72] = MLabel; Config1[73] = SLabel; Config1[74] = TLabel;  
+                  Config1[75] = DelayTimeVal; 
+                  Config1[76] = Vol1; Config1[77] = Vol3; Config1[78] = Vol4; // If = 1 then enable Volume Up/Dwn in Layouts 1, 3, 4 
+                  Config1[79] = ToneOn;                                       // Bass/Treble controls     
+                  Config1[80] = MathSet;                                      // 0-9 0=Default     
+                  Config1[81] = MouseZ;                                       // 0-3 Screen 0,0 position corner LB LT RT RB       
+                  Config1[82] = MediaConfig[0];                               // 0-6 Media keys Volume Mute Tonecontrol combinations                                    
                 }
   
   File f1 = LittleFS.open("Config1", "w"); 
@@ -3571,25 +3594,26 @@ unsigned long GetT(byte knum)
 ///////////////////////////////////////////////////////////////////////////////////////
 bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be = '*'
 /////////////////////////////////////////////////////////////////////////////////////// 
-
-{ unsigned long T, z;             // t = timeclock struct
-  uint8_t a, b, c, d, h, n, m, i, k2, k5, k6, knum;
+{ unsigned long T, z;    // t = timeclock struct
+  uint8_t a, b, c, d, h, n, m, i, k2, k5, k6, k7, knum;
   bool UnLink = false, StarOk = false, Ok = true;  
-  int d99 = 0, c99 = 0, c999 =0;  
+  int nStrLen, e, d99 = 0, c99 = 0, c999 = 0, d999 = 0;   
   File f, f1;
                                                                  
   a = FindStarNum(); c = StarCodeType[a];     // Position of *code in StarCode list                              
   CmKey = false;                              // Check if *codes are from pressing [*Cm] key or entered directly
   if (a==StarCodesMax) return StarOk;         // Not found
                                
-  b = KeyBrdByte[4]-48;                 //  01234 = *  *b
-  k2 = KeyBrdByte[2];                   //  01234 = * k*
-  k5 = KeyBrdByte[5];                   //  *xx* k5
-  k6 = KeyBrdByte[6];                   //  *xx*  k6
-  knum = KeyBrdByteNum;                 //  *xx* = 4 *xx*nnn = 7
-  c99 = b*10 + k5-48;                   //  00-99 
-  c999 = b*100 + (k5-48)*10 + k6-48;    //  000=999
-  d99 = (k5-48)*10 + k6-48;             //  00-99
+  b =  KeyBrdByte[4]-48;                   //  01234 = *  *b
+  k2 = KeyBrdByte[2];                      //  01234 = * k*
+  k5 = KeyBrdByte[5];                      //  *xx* k5
+  k6 = KeyBrdByte[6];                      //  *xx*  k6
+  k7 = KeyBrdByte[7];                      //  *xx*   k7
+  knum = KeyBrdByteNum;                    //  *xx* = 4 *xx*nnn = 7
+  c99 =  b*10 + k5-48;                     //  00-99 and 
+  c999 = b*100 + (k5-48)*10 + k6-48;       //  000-999
+  d99 =  (k5-48)*10 + k6-48;               //  00-99
+  d999 = (k5-48)*100 + (k6-48)*10 + k7-48; //  000-999
 
   switch(c)
       { case 1: ///////////////////// KeyBrdByte[1]==0x61 *am*n *as*n *at*n
@@ -3634,14 +3658,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 10: //////////////////// KeyBrdByte[1]==0x65  *e0* to *e6*  Media keys Activated   
       { MediaCfg = true;             // Assume media modes now on except for *e0*     
         if ((k2==0x30) || (k2>0x36)) // *e0* or invalid choice restore to no Mediakeys
-           {VolOn = MuteOn = ToneOn = Media = false; MediaCfg = MediaConfig[0] = 0; WriteConfig1(0); status("Media Mode 0 Saved");   }    // all false saved
-        if (k2==0x31) { VolOn = true; MuteOn = false;                  status("Media 1 Volume");     }                                        // *e1* = V+ V- keys                            
-        if (k2==0x32) { VolOn = MuteOn = true;                         status("Media 2 Volume + Mute");    }                                  // *e2* = V+ V- and Mute keys                     
-        if (k2==0x33) { VolOn = Media = true; MuteOn = false;          status("Media 3 Vol + Media Controls");   }                            // *e3* = Volume and Media keys             
-        if (k2==0x34) { VolOn = MuteOn = Media = true;                 status("Media 4 Volume + Mute + Media Controls");  }                   // *e4* = Volume + Mute + Media keys
-        if (k2==0x35) { VolOn = ToneOn = Media = true; MuteOn = false; status("Media 5 Volume + Media + Tone Controls");  }                   // *e5* = Volume + Media + Tone keys
-        if (k2==0x36) { VolOn = MuteOn = ToneOn = Media = true;        status("Media 6 Volume + Mute + Media + Tone Controls");  }  // *e6* = Volume + Mute + Media + Tone keys    
-        ConfigButtons(1); StarOk = true; break; } 
+           {VolOn = MuteOn = ToneOn = Media = false; MediaCfg = MediaConfig[0] = 0; WriteConfig1(0); status("Media Mode 0 Saved");   }       // all false saved
+        if (k2==0x31) { VolOn = true; MuteOn = false; Media = false; n = 1;    status("Media 1 Volume");     }                               // *e1* = V+ V- keys                            
+        if (k2==0x32) { VolOn = MuteOn = true; Media = false; n = 2;           status("Media 2 Volume + Mute");    }                         // *e2* = V+ V- and Mute keys                     
+        if (k2==0x33) { VolOn = Media = true; MuteOn = false;  n = 3;          status("Media 3 Vol + Media Controls");   }                   // *e3* = Volume and Media keys             
+        if (k2==0x34) { VolOn = MuteOn = Media = true;  n = 4;                 status("Media 4 Volume + Mute + Media Controls");  }          // *e4* = Volume + Mute + Media keys
+        if (k2==0x35) { VolOn = ToneOn = Media = true; MuteOn = false; n = 5;  status("Media 5 Volume + Media + Tone Controls");  }          // *e5* = Volume + Media + Tone keys
+        if (k2==0x36) { VolOn = MuteOn = ToneOn = Media = true;   n = 6;       status("Media 6 Volume + Mute + Media + Tone Controls");  }   // *e6* = Volume + Mute + Media + Tone keys    
+        MediaConfig[0] = n; ConfigButtons(1); StarOk = true; break; } 
         case 11: //////////////////// KeyBrdByte[1]==0x66 *f  a,m,s,t Fill keys
       { if (k2==0x73)              // *fs* = Fill S keys with predefined coded strings
            {FillKeysStr(3); status("[S1-S24] filled"); StarOk = true; break; }
@@ -3930,7 +3954,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { n = CopySDCardFiles2Flash(); Timer2Str(FileCopy, 2, n); strcat(FileRestoreMsg, FileCopy); status(FileRestoreMsg); StarOk = true; break; }  
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
-       case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
+      case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
       { if (knum==4) { for (n=0; n<6; n++) Serial.write(XNum[n]); Serial.write(BsDNum);  Serial.write(RetNum);    // write raw data, print converts number to text
                                            Serial.write(Layout);  Serial.write(LayerAD); Serial.write(LayerAxD);  // PC receives 0E 0F 10 0E 0F 10 00 08 02 02 01 00 00 00 00 00 00 01 01 00 0D 0A 
                                            Serial.write(VolOn);   Serial.write(MuteOn);  Serial.write(ToneOn);   Serial.write(MediaCfg); Serial.write(Media); 
@@ -3943,7 +3967,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         if (knum==5) { for (n=0; n<6; n++) Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
                                            Serial.println(Layout);            Serial.println(LayerAD);           Serial.println(LayerAxD);   
                                            Serial.println(VolOn);             Serial.println(MuteOn);            Serial.println(ToneOn);    
-                                           Serial.println(MediaCfg);          Serial.println(Media); 
+                                           Serial.println(MediaConfig[0]);    Serial.println(Media); 
                                            Serial.println(Vol1);              Serial.println(Vol3);              Serial.println(Vol4); 
                                            Serial.println(MathSet);           Serial.println(nChar);       
                                            Serial.println(nKeysPage);         Serial.println(nKeys34);           Serial.println(nKeysShow);
@@ -3952,7 +3976,19 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                            Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);                                            
                                            Serial.println(NormVal);           Serial.println(DimVal);            
                                            Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println("EOC");                                                                   
-                                           status("Text Data sent to PC"); StarOk = true; break; } }       
+                                           status("Text Data sent to PC"); StarOk = true; break; } }     
+        case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App
+      { for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+        if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
+        if (nStrLen<nKeySize) { f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0; } 
+        Serial.print(nFile); status (nFile); StarOk = true; break; }      
+        case 74: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==n *nn*nnn send content of 12 nKeys on page nnn to PC App
+      { Numkeys123 = c999; NumKeysChange(); status ("nKeys List not coded"); StarOk = true; break; }          
+        case 75: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==p *np*nnn switch LCD to nKeys page on command from App switch off with a second *np*nnn
+      { if (knum==4) { NumKeys = false; PadKeysState(4, !NumKeys); StarOk = true; break; }
+        Numkeys123 = c999; NumKeysChange(); NumKeys = true; PadKeysState(4, !NumKeys); StarOk = true; break; }      
+        case 76: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==d *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
+      { if (knum==7) { e = (k6-48)*1000; delay(e); } if (c99<18) buttonpress(c99-1); StarOk = true; break; }                                                 
       } return StarOk; 
 }
 
