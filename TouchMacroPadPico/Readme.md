@@ -18,7 +18,7 @@ The [**Pico 1 RP2040**](https://www.raspberrypi.org/products/raspberry-pi-pico/)
 
 A PC Windows-based configuration tool for the Pico Touch LCD in its early development stages is included in the folder Serial2PicoApp - it will be developed over the next few months if not years. Additional tabs that must still be completed include configurations tabs for the Power and Macro Timer-Clocks, a tab for associating PC apps with macros, and a general configuration tab for various parameters such as LCD timeouts etc. Note that after unzipping the app, running the executable the first time will download and install .Net 8 run times. Pressing keys on the PC app can press the same key on the TouchLCD, which then through USB HID, send the keypress back to the PC. Start the app by selecting the Pico COM port, then press Open port, and then press Get Config to load the Pico's current configuration into the app. After the first start it should remember the COM port used and it will then automatically load the configuration after the Open port is pressed. 
 
-When the app is minimzed it will move to the sytem tray - click on the icon there to open it again. A useful direct key control has been added - switch the nKeys via the Config tab to Control - all 17 keys on any page of the LCD can then be pressed from the PC. To use the nKey or M,S,T bank of keys select the boxes "Press MST Keys with  Delay" and/or "Send nKeys with  Delay" (select a delay from the combobox next to Delay). If the TouchlCD is in the dimmed state te first keypress will be ignored and is only used to wake the Macropad. When using the nKeys remember to switch the middle pad to E=Execute and not S=Show, and check that the SDCard or Flash selected is the medium that has the nkKeys files. 
+When the app is minimzed it will move to the system tray - click on the icon there to open it again. The app can be switched to three sizes using the green and blue up and down arrows in the lowest part of the keypad. The sizes can be changed by entering it in the Config tab - it will save the new sizes automatically. A useful direct key control has been added - switch the nKeys via the Config tab to Control - all 17 keys on any page of the LCD can then be pressed from the PC. To use the nKey or M,S,T bank of keys select the boxes "Press MST Keys with  Delay" and/or "Send nKeys with  Delay" (select a delay from the combobox next to Delay). If the TouchlCD is in the dimmed state te first keypress will be ignored and is only used to wake the Macropad. When using the nKeys remember to switch the middle pad to E=Execute and not S=Show, and check that the SDCard or Flash selected is the medium that has the nKeys files. 
 
 Much of the code (but not the tab layout design), has been with the help of Google (Gemini?), and mostly various Copilot magical incantations such as the GitHub, Windows 11, and Visual Studio ones. A standalone PC clone of the TouchLCD is also planned for the far, far future - probably when humanoid robots wandering the streets are a common occurrence.
 
@@ -127,6 +127,7 @@ Below are older pictures taken of four of the LCDs namely 1, 3, 4, and 5
 <img src="images/mac3.jpg" height="87" /> 
 <img src="images/med1.jpg" height="87" /> 
 </p>
+
 
 
 
