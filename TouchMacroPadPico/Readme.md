@@ -8,8 +8,8 @@
 </p>
 
 <p align="left">
-<img src="images/Win100.png" height="175" /> 
-<img src="images/Win101.png" height="175" /> 
+<img src="images/Win10-1.png" height="175" /> 
+<img src="images/Win10-3.png" height="175" /> 
 <img src="images/Win10-2.png" height="175" />  
 <img src="images/Win103.png" height="175" />   
 </p>
@@ -127,6 +127,7 @@ Below are older pictures taken of four of the LCDs namely 1, 3, 4, and 5
 <img src="images/mac3.jpg" height="87" /> 
 <img src="images/med1.jpg" height="87" /> 
 </p>
+
 
 
 
