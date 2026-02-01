@@ -3928,7 +3928,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         optionsindicators(0); ConfigButtons(1); LayerADChange = true; StarOk = true; break; } 
         case 58: ///////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x79 *lx*lxs l=1-4 x=a,b,c,d s=s,f (SDCard or Flash) switch layouts A-D brown and white
       { if (knum==4) { Layout = 2; }             // Layout = 1-4 LayerAD = 0,1,2,3 = a,b,c,d toggle brown/white keep same A-D A=65 a=97
-        if (knum>4)  { if (b>0&&b<5) { Layout = b; if (knum==5) { ConfigButtons(1); StarOk = true; break; } } }
+        if (knum>4)  { if (b>0&&b<5)  { Layout = b; if (knum==5) { ConfigButtons(1); StarOk = true; break; } } 
+                       if (b+48=='s') { Layout = 2; buttonpress(12); StarOk = true; break; } 
+                       if (b+48=='k') { Layout = 2; buttonpress(13); StarOk = true; break; }                                                                                 
+                       if (b+48=='m') { Layout = 2; buttonpress(14); StarOk = true; break; } 
+                       if (b+48=='n') { Layout = 2; buttonpress(15); StarOk = true; break; } 
+                       if (b+48=='o') { Layout = 2; buttonpress(16); StarOk = true; break; }  break; }
         if (knum>5)  { n = LayerAD; LayerAD = k5 - 97; if (LayerAD<4) LayerADLetter[0] = 65 + LayerAD; else { LayerAD = n; break; } }
         if (knum==7) { if (k6=='s') LayerAxD = true; else if (k6=='f') LayerAxD = false; else break;  }
         optionsindicators(0); ConfigButtons(1); LayerADChange = true; StarOk = true; break; } 
@@ -5040,4 +5045,4 @@ void showKeyData()
           
  }
 
-/************* EOF line 4964 *****************/
+/************* EOF line 5048 *****************/
