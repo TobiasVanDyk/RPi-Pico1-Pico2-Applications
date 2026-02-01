@@ -20,6 +20,8 @@ A PC Windows-based configuration tool for the Pico Touch LCD in its early develo
 
 When the app is minimzed it will move to the system tray - click on the icon there to open it again. The app can be switched to three sizes (Tab row + Keypad + Config panel or by removing the Tab row and/or Config panel), using the green and blue up and down arrows in the lowest part of the keypad. The sizes can be changed by entering it in the Config tab - it will save the new sizes automatically. A useful direct key control has been added - switch the nKeys via the Config tab to Control - all 17 keys on any page of the LCD can then be pressed from the PC. To use the nKey or M,S,T bank of keys select the boxes "Press MST Keys with  Delay" and/or "Send nKeys with  Delay" (select a delay from the combobox next to Delay). If the TouchlCD is in the dimmed state te first keypress will be ignored and is only used to wake the Macropad. When using the nKeys remember to switch the middle pad to E=Execute and not S=Show, and check that the SDCard or Flash selected is the medium that has the nKeys files. 
 
+The Glyph section is currently being finished and only needs the final send command to the macropad and the Load Banks functions to be operationally useful.
+
 Much of the C# code (but not the tab layout design), has been with the help of Google (Gemini?), and mostly various Copilot magical incantations such as the GitHub, Windows 11, and Visual Studio ones. A standalone PC clone of the TouchLCD is also planned for the far, far future - probably when humanoid robots wandering the streets are a common occurrence.
 
 Serial2Pico loads the current button definitions, labels, Layouts and Layers configuration from the TouchLCD as either raw data or text data, when the Get Config button on the Main tab of Serial2Pico is pressed. This needs a new version of the TouchLCD firmware, but can be used with the older firmware but then with less functions. Download: [**Serial2Pico17.zip**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Serial2Pico17.zip). The latest firmware is uploaded here as **VolumeMacroPad-Pico2-35IPS-323.zip** and **VolumeMacroPad-Pico1-35IPS-408.zip** in the Build folders of the Pico 1 and 2 versions.
@@ -127,6 +129,7 @@ Below are older pictures taken of four of the LCDs namely 1, 3, 4, and 5
 <img src="images/mac3.jpg" height="87" /> 
 <img src="images/med1.jpg" height="87" /> 
 </p>
+
 
 
 
