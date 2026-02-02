@@ -526,6 +526,7 @@ int  Math123 = 0;                // Such as Key [abc] = a or b or c - values 0,1
 int  MathByteNum = 0;            // Size Math KeyBrdByte
 char MathChr[38];                // Current Math description = mathhexnumber + description
 char MathHexNum[5];              // Current Math Hex Number as ASCII without 0x
+bool Glyph = false;              // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send
 
 bool Fx = false;                 // F1-F12 current
 bool Fxy = false;                // 0xF0 to 0xF9 special first char in macro
@@ -674,6 +675,15 @@ byte NumBytes = 0;
 bool NewData = false;
 char AltNum[] = "1D6D1";
 bool CheckSerial = false;    // Switch off serial check unless *se* toggles CheckSerial - default is off
+
+#define r0 RecBytes[0] 
+#define r1 RecBytes[1]  
+#define r2 RecBytes[2]
+#define r3 RecBytes[3] 
+#define r4 RecBytes[4]
+#define r5 RecBytes[5]
+#define r6 RecBytes[6]
+#define r7 RecBytes[7]
 
 const int NumButtons = 17;             // Total number of buttons = 12 keys (3 rows x 4 columns) + 5 pads on right
 TFT_eSPI_Button key[NumButtons];       // Create 12 keys + 5 config buttons for keypad
@@ -1040,11 +1050,13 @@ void DoNewSDCard()
                         
   a = a - 48;                          // ASCII Number 0-9 subtract 48
   
-  KeyOn  = (a==59);                    // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
-  nKeyPC = (a==62);                    // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
-  if (KeyOn)     { KeyOnVal[0] = RecBytes[1]-48; KeyOnVal[1] = RecBytes[2]-48; KeyOnVal[2] = RecBytes[3]-48; KeyOnVal[5] = RecBytes[4]-48; return; } 
-  if (nKeyPC)    { nKeyPCArr[0] = RecBytes[1]-48; nKeyPCArr[1] = RecBytes[2]-48; nKeyPCArr[2] = RecBytes[3]-48; 
-                   nKeyPCArr[3] = RecBytes[4]-48; nKeyPCArr[4] = RecBytes[5]-48; nKeyPCArr[5] = RecBytes[6]-48; nKeyPCDelay = RecBytes[7]-48; return; } 
+  KeyOn   = (a==59);                   // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
+  nKeyPC  = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+  Glyph   = (a==55);                   // 0x55 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send
+
+  if (Glyph)     { MathHexNum[0] = r1; MathHexNum[1] = r2; MathHexNum[2] = r3; MathHexNum[3] = r4; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
+  if (KeyOn)     { KeyOnVal[0] = r1-48; KeyOnVal[1] = r2-48; KeyOnVal[2] = r3-48; KeyOnVal[5] = r4-48; return; } 
+  if (nKeyPC)    { nKeyPCArr[0] = r1-48; nKeyPCArr[1] = r2-48; nKeyPCArr[2] = r3-48; nKeyPCArr[3] = r4-48; nKeyPCArr[4] = r5-48; nKeyPCArr[5] = r6-48; nKeyPCDelay = r7-48; return; }
   
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
   Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
@@ -1100,11 +1112,12 @@ void DoNewData()
   tTimeDate = (a==36);       // 0x54 = 'T' Time Date Display (not system time-date)
   KeyOn     = (a==59);       // 0x6B = 'k' PC Config App sends Keys direct - <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
   nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+  Glyph     = (a==55);       // 0x67 = 'g' 4 digit unicode symbol hexstring received char MathHexNum[5];  Current Math Hex Number as ASCII without 0x
   Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII
   
-  if (KeyOn)     { KeyOnVal[0]  = RecBytes[1]-48; KeyOnVal[1]  = RecBytes[2]-48; KeyOnVal[2]  = RecBytes[3]-48; KeyOnVal[5]  = RecBytes[4]-48; return; } 
-  if (nKeyPC)    { nKeyPCArr[0] = RecBytes[1]-48; nKeyPCArr[1] = RecBytes[2]-48; nKeyPCArr[2] = RecBytes[3]-48; 
-                   nKeyPCArr[3] = RecBytes[4]-48; nKeyPCArr[4] = RecBytes[5]-48; nKeyPCArr[5] = RecBytes[6]-48; nKeyPCDelay = RecBytes[7]-48; return; }
+  if (Glyph)     { MathHexNum[0] = r1; MathHexNum[1] = r2; MathHexNum[2] = r3; MathHexNum[3] = r4; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
+  if (KeyOn)     { KeyOnVal[0] = r1-48; KeyOnVal[1] = r2-48; KeyOnVal[2] = r3-48; KeyOnVal[5] = r4-48; return; } 
+  if (nKeyPC)    { nKeyPCArr[0] = r1-48; nKeyPCArr[1] = r2-48; nKeyPCArr[2] = r3-48; nKeyPCArr[3] = r4-48; nKeyPCArr[4] = r5-48; nKeyPCArr[5] = r6-48; nKeyPCDelay = r7-48; return; }
   if (mEdt)      { WriteMacroEditorData();  mEdt      = false; return; }
   if (sSens)     { WriteSensorData();       sSens     = false; return; }
   if (mPlay)     { WriteMusicPlayingData(); mPlay     = false; return; }
@@ -5046,4 +5059,5 @@ void showKeyData()
  }
 
 /************* EOF line 5048 *****************/
+
 
