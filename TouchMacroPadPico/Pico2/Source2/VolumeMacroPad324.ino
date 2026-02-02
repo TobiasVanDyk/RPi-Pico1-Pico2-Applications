@@ -3923,7 +3923,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         else { status("Enter *vx*000-111=L1L3L4"); break; } }
         case 62: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x61 *ma*n *ma*0-9 Math0-Math9 Symbol Sets
       { char MathS[32] = "SDCard Symbol Set Mathx loaded";
-        if (knum==4) SaveMath(10); { status("MathX saved on SDCard"); StarOk = true; break; }
+        if (knum==4) { SaveMath(10); status("MathX saved on SDCard"); StarOk = true; break; }
         if (b>9) { status("Add number 0-9 to *ma*");  }                       // Use the [ADD]ed number to assign 0-9 only
             else { if (ReadMath(b)) { MathS[22] = b+48; status(MathS); }  }   // *ma*0-9 = Default Symbol Keys Set from file Math0 on SDCard or Math1 - Math9 loaded
         StarOk = true; break; }   
@@ -5016,3 +5016,4 @@ void showKeyData()
  }
 
 /************* EOF line 4924 *****************/
+
