@@ -8,10 +8,10 @@
 </p>
 
 <p align="left">
-<img src="images/Win10-1.png" height="186" /> 
-<img src="images/Win10-3.png" height="186" /> 
-<img src="images/Win11-15.png" height="186" />  
-<img src="images/Win103.png" height="186" />   
+<img src="images/Win10-1.png" height="182" /> 
+<img src="images/Win10-3.png" height="182" /> 
+<img src="images/Win11-15.png" height="182" />  
+<img src="images/Win103.png" height="182" />   
 </p>
 
 The [**Pico 1 RP2040**](https://www.raspberrypi.org/products/raspberry-pi-pico/) and the [**Pico 2 RP2350**](https://www.raspberrypi.com/products/raspberry-pi-pico-2/), are used as a **Touch LCD MacroPad** with direct access to six file-types: (a) file-path-pointers (similar to symbolic links - note 3), (b) macros (note 4), (c) textstrings (note 5), (d) linkfiles (note 2), (e) \*codes (note 6), and (f) key-label-definitions (note 8). From Layout 2 (Configuration), 92,628 files or "nKeys", grouped as 36 sets of type (a) (aA01-xX996 and 0001-9996), and 14,940 files of types (b) to (e), are directly available from the right-side touch Pad [n] - with the Pad character showing the current selected nKeys character set (note 7).<br> 
@@ -24,7 +24,7 @@ The Glyph section is currently being finished and can already send the glyphs pi
 
 Much of the C# code (but not the tab layout design), has been with the help of Google (Gemini?), and mostly various Copilot magical incantations such as the GitHub, Windows 11, and Visual Studio ones. A standalone PC clone of the TouchLCD is also planned for the far, far future - probably when humanoid robots wandering the streets are a common occurrence.
 
-Serial2Pico loads the current button definitions, labels, Layouts and Layers configuration from the TouchLCD as either raw data or text data, when the Get Config button on the Main tab of Serial2Pico is pressed. This needs a new version of the TouchLCD firmware, but can be used with the older firmware but then with less functions. Download: [**Serial2Pico20.zip**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Serial2Pico20.zip). The latest firmware is uploaded here as **VolumeMacroPad-Pico2-35IPS-324.zip** and **VolumeMacroPad-Pico1-35IPS-408.zip** in the Build folders of the Pico 1 and 2 versions.
+Serial2Pico loads the current button definitions, labels, Layouts and Layers configuration from the TouchLCD as either raw data or text data, when the Get Config button on the Main tab of Serial2Pico is pressed. This needs a new version of the TouchLCD firmware, but can be used with the older firmware but then with less functions. Download: [**Serial2Pico21.zip**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Serial2Pico21.zip). The latest firmware is uploaded here as **VolumeMacroPad-Pico2-35IPS-324.zip** and **VolumeMacroPad-Pico1-35IPS-408.zip** in the Build folders of the Pico 1 and 2 versions.
 
 From Layouts 1, 3, and 4 (Macro Sets M, S and T), nine sets of 24 keys of types (b), (c), (d), and (e), (mM01-mM24, sS01-sS24, tT02-T24), where each keyset M, S, T can have descriptive and easily changeable, 5-character-maximum-length, labels, as well as another six sets of 99 files (aA01-aA99 and kK01-kK99), are available (note 1). Each of the Macro and text keys and files, can be further linked through a plaintext list of 3-letter filenames with additional processing such as delay and repeat, storage switching, and chaining  or further linking. There are also another 456 (19 sets of 24 files), text files which can be accessed from the SDCard using the same macro-keys. Processing of very large text files, tested up to 67kB (manual.h), but probably only limited by SDFS or LittleFS or FAT32 filesystem size constraints, are available through the nKeys sets.<br> 
 
@@ -129,6 +129,7 @@ Below are older pictures taken of four of the LCDs namely 1, 3, 4, and 5
 <img src="images/mac3.jpg" height="87" /> 
 <img src="images/med1.jpg" height="87" /> 
 </p>
+
 
 
 
