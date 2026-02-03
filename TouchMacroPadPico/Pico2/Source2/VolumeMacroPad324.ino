@@ -3956,7 +3956,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                            Serial.println(Vol1);              Serial.println(Vol3);              Serial.println(Vol4); 
                                            Serial.println(MathSet);           Serial.println(MathX);             Serial.println(Math);     
                                            Serial.println(NumKeys);           Serial.println(nChar);             Serial.println(nKeysPage);         
-                                           Serial.println(nKeys34);           Serial.println(nKeysShow);
+                                           Serial.println(nKeys34);           Serial.println(nKeysShow);         Serial.println(Numkeys123); 
                                            Serial.println(CapsLock);          Serial.println(NumLock);           Serial.println(ScrollLock); 
                                            Serial.println(OptionOS);          Serial.println(CheckSerial);       Serial.println(SDNum);  
                                            Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);                                            
