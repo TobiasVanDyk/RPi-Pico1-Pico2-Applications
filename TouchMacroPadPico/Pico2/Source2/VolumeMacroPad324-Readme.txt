@@ -14,15 +14,15 @@ Using library SD at version 2.0.0 in folder: C:\Users\Tobias\AppData\Local\Ardui
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
-"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad323.ino.elf"
-Sketch uses 242628 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10LTSC\\Arduino/VolumeMacroPad324.ino.elf"
+Sketch uses 242804 bytes (11%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 47304 bytes (9%) of dynamic memory, leaving 476984 bytes for local variables. Maximum is 524288 bytes.
-C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad323.ino.uf2 
+C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10LTSC\Arduino/VolumeMacroPad324.ino.uf2 
 Resetting COM3
-Converting to uf2, output size: 551424, start address: 0x2000
+Converting to uf2, output size: 551936, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 551424 bytes to D:/NEW.UF2
+Wrote 551936 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -45,7 +45,7 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 
 New changes:
-1. Glyph code sent to macropad with selected delay = d in <gHHHd> HHH = unicode hexcode for glyph
+1. Glyph code sent to macropad with selected delay = d in <gHHHds> HHH = unicode hexcode for glyph s = 0 LCD send 1 PC app send
 2. Added <*lx*s> <*lx*m> <*lx*n> <*lx*0> <*lx*k> switch directly to 5 Pads in Layout 2
 2. Execute nKey when pressed on PC app executes the command on the LCD sends <npppkkkd> ppp = Page number 001-833 kkk=key number 001-996 d = delay same as for the M,S,T keys
 4. Additional nKeys *commands: 

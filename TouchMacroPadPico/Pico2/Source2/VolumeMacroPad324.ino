@@ -994,6 +994,16 @@ void DoMSTLabel(byte Option, byte mst)  // Pointer to LabelArrM,S.T [24][6] Size
                    for (n=8; n<11; n++) strcpy(keyLabel[n], LabelArr[a][n-5+LayerAD*6]); }  // 3+0,4+0,5+0 3+6   
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool CheckStarCode(byte a) // Tested ok with <*bb*75> with [A-D] brown A, <*xy*nn> sent, if ****etc then continue as if text string
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+{ if ( a=='*'&&RecBytes[3]=='*' )      // Check if 0=*, 3=* then check if valid xx in *xx*
+     { for (int n=0; n<=NumBytes; n++) KeyBrdByte[n] = RecBytes[n]; KeyBrdByteNum = NumBytes;                                       
+       if (SendBytesStarCodes()) { ConfigButtons(1); return true; }  
+     } 
+  return false;                       
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // Check and save new SDCard file strings SDFilename is in sdcard.h select with *sd*n
 // These are limited size Bytesize = 200 - sensible here because wait until written
@@ -1003,7 +1013,7 @@ void DoNewSDCard()
 { int i, n = 0;
   byte *BytePtr;
   bool Found = false, Label = false;
-  byte a, b, r5, r6, r7, c = 0;
+  byte a, r5, r6, r7, c = 0;
   int ASize;
   char LabelFile[18] = "LabelM"; 
   File f; 
@@ -1011,11 +1021,9 @@ void DoNewSDCard()
   Found = NewData = StrOK = ByteOK = false;  
 
   a =  RecBytes[0];      // * char  
-  b =  RecBytes[3];      // Also * if Starcode 
   r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];
     
-  if (a==0x2A&&b==0x2A) { for (n=0; n<=NumBytes; n++) KeyBrdByte[n] = RecBytes[n];                             // Tested ok with <*bb*75> with [A-D] brown A
-                          KeyBrdByteNum = NumBytes; if (SendBytesStarCodes()) { ConfigButtons(1); return; }  } // <*xy*nn> sent
+  if (CheckStarCode(a)) return;  // Do *code and return 
                         
   a = a - 48;                          // ASCII Number 0-9 subtract 48
   
@@ -1061,17 +1069,15 @@ void DoNewData()
 { int i, n = 0;  
   byte *BytePtr;
   bool Found = false, mEdt = false, tTime = false, aTime = false, pTime = false, wTime = false;
-  byte a, b, r5, r6, r7, c = 0;
+  byte a, r5, r6, r7, c = 0;
   int ASize;
 
   Found = NewData = StrOK = ByteOK = false;  
 
-  a = RecBytes[0];      // * char  
-  b = RecBytes[3];      // Also * if Starcode 
+  a = RecBytes[0];      // * char    
   r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];
    
-  if (a==0x2A&&b==0x2A) { for (n=0; n<=NumBytes; n++) KeyBrdByte[n] = RecBytes[n];                             // Tested ok with <*bb*35> with [A-D] white A
-                          KeyBrdByteNum = NumBytes; if (SendBytesStarCodes()) { ConfigButtons(1); return; }  } // <*xy*nn> sent
+ if (CheckStarCode(a)) return;  // Do *code and return 
                           
   a = a - 48;                // ASCII Number 0-9 subtract 48
   tTime     = (a==68);       // 0x74 = 't' Date-Time setting
@@ -3948,8 +3954,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                            Serial.println(VolOn);             Serial.println(MuteOn);            Serial.println(ToneOn);    
                                            Serial.println(MediaConfig[0]);    Serial.println(Media); 
                                            Serial.println(Vol1);              Serial.println(Vol3);              Serial.println(Vol4); 
-                                           Serial.println(MathSet);           Serial.println(nChar);       
-                                           Serial.println(nKeysPage);         Serial.println(nKeys34);           Serial.println(nKeysShow);
+                                           Serial.println(MathSet);           Serial.println(MathX);             Serial.println(Math);     
+                                           Serial.println(nKeys);             Serial.println(nChar);             Serial.println(nKeysPage);         
+                                           Serial.println(nKeys34);           Serial.println(nKeysShow);
                                            Serial.println(CapsLock);          Serial.println(NumLock);           Serial.println(ScrollLock); 
                                            Serial.println(OptionOS);          Serial.println(CheckSerial);       Serial.println(SDNum);  
                                            Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);                                            
