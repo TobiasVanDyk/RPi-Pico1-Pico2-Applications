@@ -5,6 +5,8 @@ manual.h
 -----------------------------------------------------------------------------------------------------------------------
 On First Start: 
 
+There is a PC Windows-based app for an easy way of controlling and configuring the Touch MacroPad - Serial2Pico.
+
 If asked to do so, do a four-arrow corner calibration - press at the TIP of each arrow just ONCE. If you make a 
 mistake and press the same corner twice it is likely that you will need a reset with the nuke.uf2 file (provided 
 here in the Extras section), because the LCD will not read the correct corner keys being touched.
@@ -869,6 +871,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
    *lx*lxs l = 1-4 (change Layout 1-4) x = a,b,c,d (change layers A-D) s = s,f (change SDCard or Flash)
    *lx*3 change to Layout 3 (S keys)
    *lx*1bf change to Layout 1 (M keys), Layer B, and Flash    
+    *lx*s *lx*m *lx*n *lx*0 *lx*k switch directly to 5 Pads s k m n o in Layout 2
 (M) *dt*f,m,s or *dt*0,1,2  adjust the delay times between macros/keys-pressed for slower or virtual machines, medium 
     fast PCs, and fast PC's delay times.  
 (N) *vx*000 to *vx*111 Volume enabled/disabled in Layouts 1,3,4 if enabled in Layout 2.  For example enter *vx*011 then
@@ -884,6 +887,11 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *c1* = copy all Flash Files to folder Flash on SDCard.
     *c2* = copy files in SDcard folder Flash to root of Flash memory i.e. restore previously copied Flash files.
 (R) *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.
+(S) Additional nKeys *commands: 
+   *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
+   *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
+   textfile as m = m-mmm and a-Z,0-9 and x = any character
+   *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn
 
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
@@ -1022,6 +1030,10 @@ section. Switch the A-D indicator to white not brown before sending music data.
 Date Time Display This is an alternative Date Time which is only displayed, and not used to set the Pico system 
 time-date. The procedure is explained in detail in the SetDateTime section. This uses <T > and the system time date 
 uses <t >. Switch the A-D to white not brown before sending time data.
+
+Key Controls:  Use <k list > Keys direct <kabc> a=key1--6 MST1-MST24 a=7-9,D,R other keys Cut Copy Paste Delete 
+Return b=LayerAD 0-3 c=Layout 1-4.
+Use <n list > nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
 
 -----------------------------------------------------------------------------------------------------------------------
 Panic mode reset. If for any reason your keypad becomes unresponsive or behaves strangely reset it as follows:

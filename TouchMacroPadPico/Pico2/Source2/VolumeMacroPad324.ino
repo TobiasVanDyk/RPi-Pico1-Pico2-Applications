@@ -140,6 +140,7 @@ bool LayerADChange = false;            // If changes A-D
 bool KeyOn = false;                    // <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
 byte KeyOnVal[6];                      // KeyOnVal[0] = m=key1--6 KeyOnVal[1] = n=LayerAD 0-3 KeyOnVal[2] = n=Layout 1-4 KeyOnVal[3,4] temp LayerAD Layout KeyOnVal[5] = delay
 long int KeyOnValDelay[10] = { 0,100,200,300,500,1000,2000,3000,4000,5000 }; // Delay in mS before key pressed allows for focus change if text strings sent
+byte XLateKeyOn[12] = { 0, 4, 5, 6, 8, 9, 10, 0, 1, 2, 3, 11 };              // Xlate KeysMST1-MST6 > 4-6,8-10 and 7-9,D,R to 0-4, 11
 bool nKeyPC = false;                   // nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
 byte nKeyPCArr[7];                     // KeyOnVal[0][1][2] = nKeysPageNumber KeyOnVal[3][4][5] = nKeyNumber 001 - 996 [7] = nKeyPCDelay 
 byte nKeyPCDelay = 5;                  // KeyOnValDelay[5] = 1000 mS; 
@@ -813,7 +814,7 @@ void loop()
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  } 
 
   if (KeyOn) { delay(KeyOnValDelay[KeyOnVal[5]]);  KeyOnVal[3] = LayerAD; KeyOnVal[4] = Layout; Layout = KeyOnVal[2]; LayerAD = KeyOnVal[1]; 
-               buttonpress(KeyOnVal[0] + 3 + 1*(KeyOnVal[0]>3)); KeyOn = false; LayerAD = KeyOnVal[3]; Layout = KeyOnVal[4]; }
+               if (KeyOnVal[0]<12) buttonpress(XLateKeyOn[KeyOnVal[0]]); KeyOn = false; LayerAD = KeyOnVal[3]; Layout = KeyOnVal[4]; }
 
   if (nKeyPC) { delay(KeyOnValDelay[nKeyPCDelay]); byte n = nKeyPCArr[4]*10 + nKeyPCArr[5]; Numkeys123 = nKeyPCArr[1]*10 + nKeyPCArr[2]; NumKeysChange();                
                 DoNKeys(n); nKeyPC = false; }            
@@ -1029,10 +1030,11 @@ void DoNewSDCard()
   
   KeyOn   = (a==59);                   // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
   nKeyPC  = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
-  Glyph   = (a==55);                   // 0x55 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send
+  Glyph   = (a==55);                   // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send
 
   if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
-  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; KeyOnVal[5] = RecBytes[4]-48; return; } 
+  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; KeyOnVal[5] = RecBytes[4]-48; 
+                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
   if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; nKeyPCDelay = r7-48; return; }
                    
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
@@ -1094,7 +1096,8 @@ void DoNewData()
   Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII
   
   if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
-  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; KeyOnVal[5] = RecBytes[4]-48; return; } 
+  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; KeyOnVal[5] = RecBytes[4]-48; 
+                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use : d D = Del key ; r R Return key
   if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; nKeyPCDelay = r7-48; return; }
   if (mEdt)      { WriteMacroEditorData();  mEdt      = false; return; }
   if (sSens)     { WriteSensorData();       sSens     = false; return; }
