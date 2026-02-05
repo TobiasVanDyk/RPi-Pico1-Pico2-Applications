@@ -22,7 +22,7 @@ When the app is minimzed it will move to the system tray - click on the icon the
 
 The Glyph section is currently being finished and can already send the glyphs pictures either directly or via the LCD Send, or store them in the Windows clipboard, for use in MSWord or Libre Office. If * is chosen for the Delay (default), then the focus will automatically change to the next open program such as Word by using Alt+Esc before the Glyphs is sent. Other ways include changing focus from the PC app to Word manually, i.e. send the glyph with a selected delay of about 1/2 to 2 seconds, or choose the option to trigger it from the macropad send key. The Symbols Load Banks function must still be completed. *Test the Glyphs function directly by using the Comms tab and the Send list button, and then sending <g2211\*1> with Word open - the Sum glyphs should be written in Word after the focus has changed automatically from the PC App to Word.*
 
-Note that the standard manner in which applications such as on-screen-keyboards work around the focus problem is to override two classes that ensures that the on-screen keyboard application doesn't gain the focus as a result of the mouse clicks, and also prevents the form from coming to the foreground upon loading, are not suitable for this specific program, as it needs to be able to also function as a normal keep-focus form and form decorations, such as buttons.
+Note that the standard manner in which applications such as on-screen-keyboards work around the focus problem is to override two classes that ensures that the on-screen keyboard application doesn't gain the focus as a result of mouse clicks, and also prevents the form from coming to the foreground upon loading, are not suitable for this specific program, as it needs to be able to also function as a normal keep-focus form and form decorations, such as buttons.
 
 Much of the C# code (but not the tab layout design), has been with the help of Google (Gemini?), and mostly various Copilot magical incantations such as the GitHub, Windows 11, and Visual Studio ones. A standalone PC clone of the TouchLCD is also planned for the far, far future - probably when humanoid robots wandering the streets are a common occurrence.
 
@@ -131,6 +131,7 @@ Below are older pictures taken of four of the LCDs namely 1, 3, 4, and 5
 <img src="images/mac3.jpg" height="87" /> 
 <img src="images/med1.jpg" height="87" /> 
 </p>
+
 
 
 
