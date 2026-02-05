@@ -832,11 +832,11 @@ void loop()
 
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  }    
 
-  if (KeyOn) { delay(KeyOnValDelay[KeyOnVal[5]]);  KeyOnVal[3] = LayerAD; KeyOnVal[4] = Layout; Layout = KeyOnVal[2]; LayerAD = KeyOnVal[1]; 
-               if (KeyOnVal[0]<12) buttonpress(XLateKeyOn[KeyOnVal[0]]); KeyOn = false; LayerAD = KeyOnVal[3]; Layout = KeyOnVal[4]; }   
+  if (KeyOn) { if (KeyOnVal[5]==10) DoAltEsc(); else delay(KeyOnValDelay[KeyOnVal[5]]);  KeyOnVal[3] = LayerAD; KeyOnVal[4] = Layout; Layout = KeyOnVal[2]; 
+               LayerAD = KeyOnVal[1]; if (KeyOnVal[0]<12) buttonpress(XLateKeyOn[KeyOnVal[0]]); KeyOn = false; LayerAD = KeyOnVal[3]; Layout = KeyOnVal[4]; }
 
-  if (nKeyPC) { delay(KeyOnValDelay[nKeyPCDelay]); byte n = nKeyPCArr[4]*10 + nKeyPCArr[5]; Numkeys123 = nKeyPCArr[1]*10 + nKeyPCArr[2]; NumKeysChange();                
-                DoNKeys(n); nKeyPC = false; }              
+  if (nKeyPC) { if (nKeyPCDelay==10) DoAltEsc(); else delay(KeyOnValDelay[nKeyPCDelay]); byte n = nKeyPCArr[4]*10 + nKeyPCArr[5]; 
+                Numkeys123 = nKeyPCArr[1]*10 + nKeyPCArr[2]; NumKeysChange(); DoNKeys(n); nKeyPC = false; }            
     
   pressed = tft.getTouch(&t_x, &t_y, 650);                                     // True if valid key pressed 650 = threshold see touch.h
   if (TinyUSBDevice.suspended() && (pressed)) {TinyUSBDevice.remoteWakeup(); } // Wake up host if in suspend mode + REMOTE_WAKEUP feature enabled by host
@@ -1047,10 +1047,10 @@ void DoNewSDCard()
   nKeyPC  = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
   Glyph   = (a==55);                   // 0x55 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send
 
-  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
-  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; KeyOnVal[5] = RecBytes[4]-48; 
-                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use : d D = Del key ; r R Return key
-  if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; nKeyPCDelay = r7-48; return; }
+  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
+  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
+                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
+  if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return; }
   
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
   Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
@@ -1108,10 +1108,10 @@ void DoNewData()
   Glyph     = (a==55);       // 0x67 = 'g' 4 digit unicode symbol hexstring received char MathHexNum[5];  Current Math Hex Number as ASCII without 0x
   Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII
   
-  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
-  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; KeyOnVal[5] = RecBytes[4]-48; return; } 
-  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; KeyOnVal[5] = RecBytes[4]-48; 
-                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use : d D = Del key ; r R Return key
+  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
+  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
+                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
+  if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return; }
   if (mEdt)      { WriteMacroEditorData();  mEdt      = false; return; }
   if (sSens)     { WriteSensorData();       sSens     = false; return; }
   if (mPlay)     { WriteMusicPlayingData(); mPlay     = false; return; }
@@ -1986,7 +1986,16 @@ void DoNumPad(int Button, uint8_t Action)
                        usb_hid.keyboardRelease(HIDKbrd);                                
                      }   
 }  
-
+////////////////////////////////////////////////
+void DoAltEsc()  // Move focus to next open app
+////////////////////////////////////////////////
+{
+  uint8_t keycode[6] = { 0 };     
+  keycode[0] = AltL; keycode[1] = Esc; 
+  usb_hid.keyboardReport(HIDKbrd, 0, keycode); delay(dt50); 
+  usb_hid.keyboardRelease(HIDKbrd);  
+  delay(dt100); 
+}
 /////////////////////////////
 void buttonpress(int Button)
 /////////////////////////////
@@ -4002,8 +4011,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { if (knum==4) { NumKeys = false; PadKeysState(4, !NumKeys); StarOk = true; break; }
         Numkeys123 = c999; NumKeysChange(); NumKeys = true; PadKeysState(4, !NumKeys); StarOk = true; break; }      
         case 76: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==d *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
-      { if (knum==7) delay((k6-48)*1000); if (c99<18) buttonpress(c99-1); StarOk = true; break; }                                                 
-      } return StarOk; 
+      { if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } if (c99<18) buttonpress(c99-1); StarOk = true;  } break; }                                                 
+      } return StarOk;
 }
 
 ////////////////////
