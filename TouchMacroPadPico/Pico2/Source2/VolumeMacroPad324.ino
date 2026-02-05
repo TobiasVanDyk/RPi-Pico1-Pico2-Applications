@@ -1032,7 +1032,7 @@ void DoNewSDCard()
   nKeyPC  = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
   Glyph   = (a==55);                   // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send
 
-  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
+  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
   if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
                    if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
   if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return; }
@@ -1095,7 +1095,7 @@ void DoNewData()
   Glyph     = (a==55);       // 0x67 = 'g' 4 digit unicode symbol hexstring received char MathHexNum[5];  Current Math Hex Number as ASCII without 0x
   Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII
   
-  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
+  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
   if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
                    if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
   if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return; }

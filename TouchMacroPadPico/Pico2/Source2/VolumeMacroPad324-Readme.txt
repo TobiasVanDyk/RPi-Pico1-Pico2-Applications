@@ -46,8 +46,8 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 New changes:
 1. Added Alt+Esc option instead of manual focus change for PC App using "*" for delay value after key pressed on PC app. 
-   For example <k103*> is sent from the PC app when key [S1] is pressed with checkbox selected with Delay = *. This will then send (in my case) 
-   a textstring to the next visible app which is notepad using Alt+Esc to move the focus to notepad and printthe textstring.
+   For example <k103*> is sent from the PC App when key [S1] is pressed with checkbox selected with Delay = *. This will then send (in my case) 
+   a textstring to the next visible app which is notepad using Alt+Esc to move the focus to notepad and printthe textstring. This automatic change of focus applies to nKeys, Glyphs and to the normal M,S,T and the other keys in layouts 1 to 4. You can also test these by using the Comms tab and the Send list button, and then sending <g2211*1> with Word open - the Sum glyphs should be written in word. Test the normal keys by sending <k103*> and the [S1] will be sent to Word.
 2. Glyph code sent to macropad with selected delay = d in <gHHHds> HHH = unicode hexcode for glyph s = 0 LCD send 1 PC app send
 3. Added <*lx*s> <*lx*m> <*lx*n> <*lx*0> <*lx*k> switch directly to 5 Pads in Layout 2
 4. Execute nKey when pressed on PC app executes the command on the LCD sends <npppkkkd> ppp = Page number 001-833 kkk=key number 001-996 d = delay same as for the M,S,T keys
