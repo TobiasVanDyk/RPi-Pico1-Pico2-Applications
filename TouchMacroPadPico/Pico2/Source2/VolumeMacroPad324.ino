@@ -3987,7 +3987,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { if (knum==4) { NumKeys = false; PadKeysState(4, !NumKeys); StarOk = true; break; }
         Numkeys123 = c999; NumKeysChange(); NumKeys = true; PadKeysState(4, !NumKeys); StarOk = true; break; }      
         case 76: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==d *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
-      { if (knum==7) { e = (k6-48)*1000; delay(e); } if (c99<18) buttonpress(c99-1); StarOk = true; break; }                                                 
+      { if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } if (c99<18) buttonpress(c99-1); StarOk = true;  } break; }                                                 
       } return StarOk;                
 }
 
