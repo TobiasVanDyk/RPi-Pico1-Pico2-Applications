@@ -22,7 +22,7 @@ When the app is minimzed it will move to the system tray - click on the icon the
 
 The Glyph section is currently being finished and can already send the glyphs either directly or via the LCD Send, or store them in the Windows clipboard, for use in MSWord or Libre Office. If * is chosen for the Delay (default), then the focus will automatically change to the next open program such as Word by using Alt+Esc before the Glyphs is sent. Other ways include changing focus from the PC app to Word manually, i.e. send the glyph with a selected delay of about 1/2 to 2 seconds, or choose the option to trigger it from the macropad send key. The Symbols Load Banks function must still be completed. *Test the Glyphs function directly by using the Comms tab and the Send list button, and then sending <g2211\*1> with Word open - the Sum glyphs should be written in Word after the focus has changed automatically from the PC App to Word.*
 
-To use Timer 1 (Power and Restart) in synchronous mode with the MacroPad i.e. the Pad screen will mimic that of the PC App, select in L2 either of the two checkboxes to Press Keys, then click [Cfg], then [ROf], then click one of the Timers. Make sure the LCD screen shows the same as the PC App - note that when the LCD is dimmed the first keypress will be ignored and used to wake the LCD. When you are in the mode where the [Cfg] button is [Sav] and you do not want to save the current configuration click [L2]. All 12 keys in Layout 2 is now functional but in the next layer when [Cfg] is pressed [mCT], [Opt], and [Key] must still be configured.
+To use Timer 1 (Power and Restart) in synchronous mode with the MacroPad i.e. the Pad screen will mimic that of the PC App, select in L2 either of the two checkboxes to Press Keys, then click [Cfg], then [ROf], then click one of the Timers. Make sure the LCD screen shows the same as the PC App - note that when the LCD is dimmed the first keypress will be ignored and used to wake the LCD. When you are in the mode where the [Cfg] button is [Sav] and you do not want to save the current configuration click [L2]. All 12 keys in Layout 2 is now functional but in the next layer when [Cfg] is pressed [mCT], [Opt], and [Key] must still be configured. All the media keys [Med], [Vm], [Vol] in this section are now working in MacroPad mimic mode if the Press other keys are selected in L2.
 
 Note that the standard manner in which applications such as on-screen-keyboards work around the focus problem is to override two classes that ensures that the on-screen keyboard application doesn't gain the focus as a result of mouse clicks, and also prevents the form from coming to the foreground upon loading, are not suitable for this specific program, as it needs to be able to also function as a normal keep-focus form and form decorations, such as buttons.
 
@@ -133,6 +133,7 @@ Below are older pictures taken of four of the LCDs namely 1, 3, 4, and 5
 <img src="images/mac3.jpg" height="87" /> 
 <img src="images/med1.jpg" height="87" /> 
 </p>
+
 
 
 
