@@ -90,9 +90,10 @@ Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROT
 
 uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const int  StrSize =  200;       // Check if not byte used if made larger 
+const int  StrSize =  200;       // Check if not byte used if made larger 200 * 24 * 4 = 19.2 kbytes
 const int  ByteSize = 200;       // 
-const byte MaxBytes = StrSize;   // 200 * 24 * 4 = 19.2 kbytes
+const byte MaxBytes = StrSize;   // 
+const int MaxRec = 6000;         // Big enough for MathBanks
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Example Uppercase:
 // char ch = conv_table2[keycode[n]][1]; usb_hid.keyboardPress(HIDKbrd, ch); delay(dt25); usb_hid.keyboardRelease(HIDKbrd);
@@ -672,8 +673,8 @@ char inputString[StrSize] = "Send new text to serial port start with <x end with
 bool StrOK = false;          // String is complete - ended with 0x0A
 bool ByteOK = false;         // Bytes received is complete - ended with 0x00
 int  RecBytesLen = 0;        // Number of chars in RecBytes
-byte RecBytes[MaxBytes];     // Raw bytes received must start < and end with > - can have length byte/int after < to include <> in data
-byte NumBytes = 0;
+byte RecBytes[MaxRec];       // Raw bytes received must start < and end with > - can have length byte/int after < to include <> in data
+int  NumBytes = 0;
 bool NewData = false;
 char AltNum[] = "1D6D1";
 bool CheckSerial = false;    // Switch off serial check unless *se* toggles CheckSerial - default is off
@@ -1028,7 +1029,7 @@ bool CheckStarCode(byte a) // Tested ok with <*bb*75> with [A-D] brown A, <*xy*n
 void DoNewSDCard()
 { int i, n = 0;
   byte *BytePtr;
-  bool Found = false, Label = false;
+  bool GlyphBank = false, Found = false, Label = false;
   byte a, r5, r6, r7, c = 0;
   int ASize;
   char LabelFile[18] = "LabelM"; 
@@ -1043,10 +1044,14 @@ void DoNewSDCard()
                         
   a = a - 48;                          // ASCII Number 0-9 subtract 48
   
-  KeyOn   = (a==59);                   // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
-  nKeyPC  = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
-  Glyph   = (a==55);                   // 0x55 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send
 
+  KeyOn     = (a==59);                   // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
+  nKeyPC    = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+  Glyph     = (a==55);                   // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send  
+  GlyphBank = (a==23);                   // 0x17 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
+
+  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove 0-9
+                   f1 = SDFS.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return; }
   if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
   if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
                    if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
@@ -1085,7 +1090,7 @@ void DoNewSDCard()
 void DoNewData()
 { int i, n = 0;  
   byte *BytePtr;
-  bool Found = false, mEdt = false, tTime = false, aTime = false, pTime = false, wTime = false;
+  bool GlyphBank = false, Found = false, mEdt = false, tTime = false, aTime = false, pTime = false, wTime = false;
   byte a, r5, r6, r7, c = 0;
   int ASize;
 
@@ -1104,10 +1109,14 @@ void DoNewData()
   sSens     = (a==67);       // 0x73 = 's' PC sensor value from HWInfo
   mPlay     = (a==61);       // 0x6D = 'm' PC music Playing
   tTimeDate = (a==36);       // 0x54 = 'T' Time Date Display (not system time-date)
+  KeyOn     = (a==59);       // 0x6B = 'k' PC Config App sends Keys direct - <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
   nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
   Glyph     = (a==55);       // 0x67 = 'g' 4 digit unicode symbol hexstring received char MathHexNum[5];  Current Math Hex Number as ASCII without 0x
-  Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII
-  
+  GlyphBank = (a==23);       // 0x47 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
+  Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII  
+ 
+  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove 0-9
+                   f1 = SDFS.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return; }
   if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
   if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
                    if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
@@ -1174,7 +1183,7 @@ static void timer_callback(void)
 void RecSerial() // https://forum.arduino.cc/t/serial-input-basics-updated/382007/3
 ////////////////////////////////////////////////////////////////////////////////////
 {   static boolean InProgress = false;
-    static byte n = 0;
+    static int n = 0;
     byte StartMarker = 0x3C; 
     byte EndMarker = 0x3E;
     byte b;
@@ -1183,7 +1192,7 @@ void RecSerial() // https://forum.arduino.cc/t/serial-input-basics-updated/38200
           { b = Serial.read();
             if (InProgress) { if (b!=EndMarker) { RecBytes[n] = b;
                                                   n++;
-                                                  if (n >= MaxBytes) { n = MaxBytes - 1; } }
+                                                  if (n >= MaxRec) { n = MaxRec - 1; } }
                               else { RecBytes[n] = '\0'; // terminate the string
                                      InProgress = false;
                                      NumBytes = n;   
@@ -1198,14 +1207,17 @@ void RecSerial() // https://forum.arduino.cc/t/serial-input-basics-updated/38200
 void showRecData() 
 ////////////////////////
 {   char RecStr[MaxBytes];
+    int i = NumBytes; 
     Serial.print(NumBytes);
     Serial.print(" number HEX values ");
+    if (NumBytes >= MaxBytes) NumBytes = MaxBytes; // Do not show all of MathBanks
     for (byte n = 0; n <= NumBytes; n++) 
         {RecStr[n] = RecBytes[n];
          Serial.print(RecBytes[n], HEX);
          Serial.print(' '); }
     SerPr2;
     Serial.println(RecStr);
+    NumBytes = i; 
     //NewData = false;
 }
 
@@ -1996,6 +2008,14 @@ void DoAltEsc()  // Move focus to next open app
   usb_hid.keyboardRelease(HIDKbrd);  
   delay(dt100); 
 }
+////////////////////////////////////////////////
+void DoWakeUp()  // Wake up LCD if dimmed
+////////////////////////////////////////////////
+{
+  if (NormVal==0) digitalWrite(LCDBackLight, HIGH);    // Backlight Full ON
+            else  analogWrite(LCDBackLight, NormVal);  // Backlight Brightness ON
+  BackLightOn = true;                                  
+}
 /////////////////////////////
 void buttonpress(int Button)
 /////////////////////////////
@@ -2017,11 +2037,7 @@ void buttonpress(int Button)
   // Disable the keypress skip with *ks* toggle KeySkip on-off
   //////////////////////////////////////////////////////////////
   LastMillis = millis();                                   // Reset Backlight Timer if any key pressed                                        
-  if (!BackLightOn)                                        // Keypress only active if backlight on
-     {if (NormVal==0) digitalWrite(LCDBackLight, HIGH);    // Backlight Full ON
-                else  analogWrite(LCDBackLight, NormVal);  // Backlight Brightness ON
-      BackLightOn = true;                                  //
-      if (KeySkip) return; }                               // Option to ignore first keypress if dimmed state
+  if (!BackLightOn) { DoWakeUp(); if (KeySkip) return; }   // Keypress only active if backlight on and Option to ignore first keypress if dimmed state
   
   // Macro Timers must either be executed (buttons 1 or 0,2,3,4,6,7,8,9,10) or cancelled (button 5 or 11) or stopped (button 1) 
   // If Option BLOnOff is ON then pressing the black button (11) will switch Backlight ON/OFF without leaving MacroTimer Config Screen 
@@ -4011,7 +4027,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { if (knum==4) { NumKeys = false; PadKeysState(4, !NumKeys); StarOk = true; break; }
         Numkeys123 = c999; NumKeysChange(); NumKeys = true; PadKeysState(4, !NumKeys); StarOk = true; break; }      
         case 76: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==d *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
-      { if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } if (c99<18) buttonpress(c99-1); StarOk = true;  } break; }                                                 
+      { if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } 
+        if (c99==0) { LastMillis = millis(); DoWakeUp(); StarOk = true; break; } if (c99<18) buttonpress(c99-1); StarOk = true; break; } }                                                   
       } return StarOk;
 }
 

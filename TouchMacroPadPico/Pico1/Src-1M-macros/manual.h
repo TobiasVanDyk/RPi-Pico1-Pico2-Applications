@@ -870,7 +870,14 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (Q) Backup and Restore files on Flash memory to SDCard. 
     *c1* = copy all Flash Files to folder Flash on SDCard.
     *c2* = copy files in SDcard folder Flash to root of Flash memory i.e. restore previously copied Flash files.
-
+(R) *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.  
+(S) Additional nKeys *commands: 
+    *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional). d = * send Alt+Esc to move focus to next 
+    open app before executing the key nn. <*nd*000> will wake up LCD if in dimmed state.
+    *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
+    textfile as m = m-mmm and a-Z,0-9 and x = any character
+    *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn   
+    
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
