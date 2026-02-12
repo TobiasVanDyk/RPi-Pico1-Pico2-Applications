@@ -1,0 +1,86 @@
+Code provided by ChatGPT
+
+using System;
+using System.IO;
+using System.Text;
+using System.Text.Json;
+using System.Windows.Forms;
+
+namespace ArduinoLabelTool
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            AllowDrop = true;
+            Text = "Drop Label JSON Here";
+            Width = 400;
+            Height = 120;
+
+            DragEnter += Form1_DragEnter;
+            DragDrop += Form1_DragDrop;
+        }
+
+        private void Form1_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+        }
+
+        private void Form1_DragDrop(object sender, DragEventArgs e)
+        {
+            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            foreach (var file in files)
+            {
+                if (Path.GetExtension(file).ToLower() == ".json")
+                {
+                    try
+                    {
+                        ConvertJsonToArduinoFile(file);
+                        MessageBox.Show($"Created: {Path.ChangeExtension(file, ".bin")}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+            }
+        }
+
+        private void ConvertJsonToArduinoFile(string jsonPath)
+        {
+            string json = File.ReadAllText(jsonPath);
+            var labelFile = JsonSerializer.Deserialize<LabelFile>(json);
+
+            if (labelFile.Labels.Length != 24)
+                throw new Exception("JSON must contain exactly 24 labels.");
+
+            string outputPath = Path.ChangeExtension(jsonPath, ".bin");
+
+            using var fs = new FileStream(outputPath, FileMode.Create);
+            using var bw = new BinaryWriter(fs);
+
+            foreach (var label in labelFile.Labels)
+            {
+                if (label.Length > 5)
+                    throw new Exception($"Label '{label}' is longer than 5 characters.");
+
+                byte[] buffer = new byte[5]; // auto 0x00 padded
+                var ascii = Encoding.ASCII.GetBytes(label);
+                Array.Copy(ascii, buffer, ascii.Length);
+
+                bw.Write(buffer);      // 5 bytes
+                bw.Write((byte)0x00); // terminator
+            }
+        }
+    }
+
+    public class LabelFile
+    {
+        public string[] Labels { get; set; }
+    }
+}
+
+
