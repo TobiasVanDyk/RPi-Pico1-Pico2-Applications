@@ -1016,10 +1016,10 @@ bool CheckStarCode(byte a) // Tested ok with <*bb*75> with [A-D] brown A, <*xy*n
 void DoNewSDCard()
 { int i, n = 0;
   byte *BytePtr;
-  bool GlyphBank = false, Found = false, Label = false;
+  bool GlyphBank = false, Found = false, Label = false, L = true;
   byte a, r5, r6, r7, c = 0;
   int ASize;
-  char LabelFile[18] = "LabelM"; 
+  char mst134 = '0', LabelFile[18] = "LabelM";   
   File f; 
   
   Found = NewData = StrOK = ByteOK = false;  
@@ -1046,14 +1046,12 @@ void DoNewSDCard()
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
   Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
 
-  if (Label) { LabelFile[5] = RecBytes[0] - 32;                                        // +48-32 = M, S, T
-               BytePtr = MacroBuff; 
+  if (Label) { if (NumBytes==145) { LabelFile[0]='l'; if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; } else LabelFile[5]=RecBytes[0]-32;    
+               BytePtr = MacroBuff;    // Is it a labelfile or LabelMST file then +48-32 = M, S, T from m, s, t originally
                for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; } // Skip 1 = char <m,<s,<t < is removed earlier
-
-               if (LayerAxD) f = SD.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T
+               if (LayerAxD) f = SD.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T ot label1,2,3 or label0
                f.write(BytePtr, NumBytes-1);                                                      // Write filename to SDCard or Flash
-               f.print('\0');                                                                     // Add NULL to end of filename in File LabelX    
-               f.close();  
+               if (L) f.print('\0'); f.close();                                                   // Add NULL to end of filename in File LabelX  
                strcat(LabelFile, " saved"); status(LabelFile); return; }
   
   if (Found){ if (a>0) c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24 -> 1-24 used  
