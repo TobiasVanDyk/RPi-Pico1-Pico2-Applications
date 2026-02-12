@@ -1,3 +1,5 @@
+Arduino Label Tools converts label.json files to Pico macropad LabelM, LabelS or LabelT type Arduino files. See the example label001.json for the JSON format. Drag and drop the json label file into the form, then rename to LabelM,S,T and copy to SDCard.
+
 Instructions for Serial2Pico with json Symbols Bank loader:
 1. Put your json math0.json to math9.json files in a folder such as C:\Temp, or any other folder.
 2. Open Serial2Pico - you may get two messages that the math bank file cannot be found - click OK on each message.
