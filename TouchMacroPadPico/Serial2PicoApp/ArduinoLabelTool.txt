@@ -67,6 +67,9 @@ namespace ArduinoLabelTool
                 if (label.Length > 5)
                     throw new Exception($"Label '{label}' is longer than 5 characters.");
 
+                if (label.Any(c => c > 127))
+                    throw new Exception($"Label '{label}' contains non-ASCII characters.");
+
                 byte[] buffer = new byte[5]; // auto 0x00 padded
                 var ascii = Encoding.ASCII.GetBytes(label);
                 Array.Copy(ascii, buffer, ascii.Length);
@@ -158,4 +161,5 @@ static void ConvertArduinoFileToJson(string binPath, string jsonPath)
 
     File.WriteAllText(jsonPath, json);
 }
+
 
