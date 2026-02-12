@@ -1019,7 +1019,7 @@ void DoNewSDCard()
   bool GlyphBank = false, Found = false, Label = false, L = true;
   byte a, r5, r6, r7, c = 0;
   int ASize;
-  char mst134 = '0', LabelFile[18] = "LabelM";   
+  char mst134 = '0', LabelFile[40] = "LabelM";   
   File f; 
   
   Found = NewData = StrOK = ByteOK = false;  
@@ -1027,7 +1027,7 @@ void DoNewSDCard()
   a =  RecBytes[0];      // * char  
   r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];
     
-  if (CheckStarCode(a)) return;  // Do *code and return   
+  if (CheckStarCode(a)) return;  // Do *code and return     
                          
   a = a - 48;                            // ASCII Number 0-9 subtract 48
   
@@ -1046,7 +1046,8 @@ void DoNewSDCard()
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
   Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
 
-  if (Label) { if (NumBytes==145) { LabelFile[0]='l'; if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; } else LabelFile[5]=RecBytes[0]-32;    
+  if (Label) { for (n=0; n<40; n++) LabelFile[n] = 0x00; if (NumBytes!=145) LabelFile[5]=RecBytes[0]-32; 
+               else { LabelFile[0]='l'; if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; }     
                BytePtr = MacroBuff;    // Is it a labelfile or LabelMST file then +48-32 = M, S, T from m, s, t originally
                for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; } // Skip 1 = char <m,<s,<t < is removed earlier
                if (LayerAxD) f = SD.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T ot label1,2,3 or label0
