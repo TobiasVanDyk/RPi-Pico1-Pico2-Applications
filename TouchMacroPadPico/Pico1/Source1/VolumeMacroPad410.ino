@@ -446,25 +446,26 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 112; // StarCodes Count 16+16+16+16+16+16+12 StarNum = 0-111
+const static int StarCodesMax = 113; // StarCodes Count 16+16+16+16+16+16+12 StarNum = 0-112
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", "c2", 
   "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo", "fs", 
   "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", "m0", 
   "m1", "m2", "ma", "mb", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", "nn", "np", 
-  "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rn", "ro", "rt", "rT", "sa", 
-  "sd", "se", "sm", "ss", "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", "vx", "x0", "x1", 
-  "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", "0x"  };
+  "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", 
+  "sa", "sd", "se", "sm", "ss", "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", "vx", "x0", 
+  "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", 
+  "0x"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   64,
   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   11,   
   11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   67,
   18,   19,   62,   66,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   74,   75,   
-  21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   49,   27,   24,   24,   28,   
-  29,   30,   28,   28,   28,   31,   4,    31,   31,   31,   33,   32,   43,   61,   35,   35,   
-  35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   52    };
-
+  21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   24,   24,   
+  28,   29,   30,   28,   28,   28,   31,   4,    31,   31,   31,   33,   32,   43,   61,   35,   
+  35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   
+  52    };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1028,10 +1029,10 @@ bool CheckStarCode(byte a) // Tested ok with <*bb*75> with [A-D] brown A, <*xy*n
 void DoNewSDCard()
 { int i, n = 0;
   byte *BytePtr;
-  bool GlyphBank = false, Found = false, Label = false;
+  bool GlyphBank = false, Found = false, Label = false, L = true;
   byte a, r5, r6, r7, c = 0;
   int ASize;
-  char LabelFile[18] = "LabelM"; 
+  char mst134 = '0', LabelFile[18] = "LabelM"; 
   File f; 
   
   Found = NewData = StrOK = ByteOK = false;  
@@ -1058,14 +1059,12 @@ void DoNewSDCard()
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
   Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
 
-  if (Label) { LabelFile[5] = RecBytes[0] - 32;                                      // +48-32 = M, S, T
-               BytePtr = MacroBuff; 
+  if (Label) { if (NumBytes==145) { LabelFile[0]='l'; if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; } else LabelFile[5]=RecBytes[0]-32;    
+               BytePtr = MacroBuff;    // Is it a labelfile or LabelMST file then +48-32 = M, S, T from m, s, t originally
                for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; } // Skip 1 = char <m,<s,<t < is removed earlier
-
-               if (LayerAxD) f = SDFS.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T
-               f.write(BytePtr, NumBytes-1);                                                        // Write filename to SDCard or Flash
-               f.print('\0');                                                                       // Add NULL to end of filename in File LabelX    
-               f.close();  
+               if (LayerAxD) f = SDFS.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T ot label1,2,3 or label0
+               f.write(BytePtr, NumBytes-1);                                                      // Write filename to SDCard or Flash
+               if (L) f.print('\0'); f.close();                                                   // Add NULL to end of filename in File LabelX  
                strcat(LabelFile, " saved"); status(LabelFile); return; }
   
   if (Found){ if (a>0) c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24 -> 1-24 used  
@@ -4033,7 +4032,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Numkeys123 = c999; NumKeysChange(); NumKeys = true; PadKeysState(4, !NumKeys); StarOk = true; break; }      
         case 76: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==d *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
       { if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } 
-        if (c99==0) { LastMillis = millis(); DoWakeUp(); StarOk = true; break; } if (c99<18) buttonpress(c99-1); StarOk = true; break; } }                                                  
+        if (c99==0) { LastMillis = millis(); DoWakeUp(); StarOk = true; break; } if (c99<18) buttonpress(c99-1); StarOk = true; break; } }     
+         case 77: ////////////////////// KeyBrdByte[1]==0x72&&KeyBrdByte[2]==0x6D *rm*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
+       { if (knum<5) { status("Use *rm*filename name is file or //folder"); StarOk = true; break; }
+         n = 0; while (n<=knum-4) { KeyBrdByte[n] = KeyBrdByte[n+4]; n++; } if (LayerAxD) SrcDst = 2; else SrcDst = 1; KeyBrdByteNum = knum - 4;   // LayerAxD = sdcard = true     
+         RemoveMacro(); StarOk = true; break; }  // Test by *rm*filename then press [EXE] (not [Sav] or [Rmv])                                                     
       } return StarOk;                                                  
 }
 

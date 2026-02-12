@@ -890,6 +890,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
     textfile as m = m-mmm and a-Z,0-9 and x = any character
     *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn   
+(T) *rm*filename remove/delete filename or if //dirname - will use currentLayerAxD to determine if file on SDcard or 
+    Flash //folder must be empty.    
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
