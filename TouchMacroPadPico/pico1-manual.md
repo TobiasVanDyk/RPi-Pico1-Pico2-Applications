@@ -2,7 +2,9 @@
 ```
 manual.h
 -----------------------------------------------------------------------------------------------------------------------
-On First Start: 
+On First Start:
+
+There is a PC Windows-based app for an easy way of controlling and configuring the Touch MacroPad - Serial2Pico.
 
 If asked to do so, do a four-arrow corner calibration - press at the TIP of each arrow just ONCE. If you make a 
 mistake and press the same corner twice it is likely that you will need a reset with the nuke.uf2 file (provided 
@@ -1048,4 +1050,5 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
+
 
