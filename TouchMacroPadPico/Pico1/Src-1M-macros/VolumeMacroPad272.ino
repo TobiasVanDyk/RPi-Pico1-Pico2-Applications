@@ -352,7 +352,7 @@ const static char MediaLabel2[12][4] =                                          
 // Numkeys1[x][]   "BsD", "7",  "8",   "9",     "Ret",  "4",    "5",  "6",     "0",   "1",   "2",    "3"
 // nKeys[x][]       n01    n02   n03    n04      n05     n06     n07   n08      n09    n10    n11     n12                                        
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const int nKeySize = ByteSize;       // Indirection i.e. n01-n9996 keys only holds [/folder][/]filename[.ext] of target file
+const int nKeySize = 6144;           // Indirection i.e. n01-n9996 keys only holds [/folder][/]filename[.ext] of target file
 char nFile[nKeySize] = "1234567890"; // Name of current nKey content i.e. [path]filename  
 char MacroChar[11] = {"stmakSTMAK"}; // These are handled as macros/strings not file paths
 bool nKeys = true;                   // Numpad Pages or Macro keys n01 - n9996 change char n with *0n*char 
@@ -446,24 +446,26 @@ const static char FxyChr[10][4] = // F01 to F24
 {"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 112; // StarCodes Count 16+16+16+16+16+16+12 StarNum = 0-111
+const static int StarCodesMax = 115; // StarCodes Count 16+16+16+16+16+16+16+3 StarNum = 0-114
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", "c2", 
   "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo", "fs", 
   "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", "m0", 
   "m1", "m2", "ma", "mb", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", "nn", "np", 
-  "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rn", "ro", "rt", "rT", "sa", 
-  "sd", "se", "sm", "ss", "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", "vx", "x0", "x1", 
-  "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", "0x"  };
+  "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", 
+  "sa", "sd", "se", "sf", "sF","sm", "ss", "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", 
+  "vx", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", 
+  "0s", "0t", "0x"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   64,
   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   11,   
   11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   67,
   18,   19,   62,   66,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   74,   75,   
-  21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   49,   27,   24,   24,   28,   
-  29,   30,   28,   28,   28,   31,   4,    31,   31,   31,   33,   32,   43,   61,   35,   35,   
-  35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   52    };
+  21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   24,   24,   
+  28,   29,   30,   78,   79,   28,   28,   28,   31,   4,    31,   31,   31,   33,   32,   43,   
+  61,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,  
+  48,   54,   52    };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -929,11 +931,10 @@ void GetTimeData(datetime_t *a)
   if (RecBytes[10]==0x2d) a->min   = -1; else { a->min   = (RecBytes[10]-48)*10 + (RecBytes[11]-48); } 
   a->sec = 0;  
   
-  if (RecBytes[0]=='t') { TimeSet = true;     optionsindicators(0); } 
-  if (RecBytes[0]=='a') { alarmEnable = true; optionsindicators(0); }
-  if (RecBytes[0]=='w') { timerEnable = true; optionsindicators(0); }
+  if (RecBytes[0]=='T') { TimeSet = true;     optionsindicators(0); } 
+  if (RecBytes[0]=='A') { alarmEnable = true; optionsindicators(0); }
+  if (RecBytes[0]=='W') { timerEnable = true; optionsindicators(0); }
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 void WriteSensorData()                   // PC sensor value sent from HWInfo
@@ -1021,54 +1022,90 @@ bool CheckStarCode(byte a) // Tested ok with <*bb*75> with [A-D] brown A, <*xy*n
   return false;                       
 }
 
+//////////////////////
+bool GetMatch(byte a)
+//////////////////////
+{ int i, n = 0;
+  byte *BytePtr;
+  bool GlyphBank = false, Found = false, Label = false, mEdt = false, tTime = false, aTime = false, pTime = false, wTime = false, L = true;
+  byte r5, r6, r7, c = 0;
+  int ASize;
+  char mst134 = '0', LabelFile[40] = "LabelM"; 
+  File f; 
+  
+  r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];                        
+  a = a - 48;                          // ASCII Number 0-9 subtract 48
+  
+  tTime     = (a==36);       // 0x55 = 'T' Date-Time setting
+  aTime     = (a==17);       // 0x41 = 'A' Date-Time setting
+  pTime     = (a==32);       // 0x50 = 'P' Date-Time setting
+  wTime     = (a==39);       // 0x57 = 'W' Date-Time setting  
+  mEdt      = (a==51);       // 0x63 = 'c' MacroEditor [ADD] string
+  sSens     = (a==35);       // 0x53 = 'S' PC sensor value from HWInfo
+  mPlay     = (a==29);       // 0x4D = 'M' PC music Playing
+  tTimeDate = (a==25);       // 0x49 = 'I' Time Date Display (not system time-date)
+  KeyOn     = (a==59);       // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
+  nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+  Glyph     = (a==55);       // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send  
+  GlyphBank = (a==23);       // 0x17 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
+  
+  Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
+  Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
+
+  if (Label) { for (n=0; n<40; n++) LabelFile[n] = 0x00; if (NumBytes!=145) { strcpy(LabelFile, "LabelX"); LabelFile[5]=RecBytes[0]-32; }
+               else { strcpy(LabelFile, "label1"); if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; }     
+               BytePtr = MacroBuff;    // Is it a labelfile or LabelMST file then +48-32 = M, S, T from m, s, t originally
+               for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; } // Skip 1 = char <m,<s,<t < is removed earlier
+               if (LayerAxD) f = SDFS.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T ot label1,2,3 or label0
+               f.write(BytePtr, NumBytes-1);                                                      // Write filename to SDCard or Flash
+               if (L) f.print('\0'); f.close();                                                   // Add NULL to end of filename in File LabelX  
+               strcat(LabelFile, " saved"); status(LabelFile); return Found; }
+               
+  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove 0-9
+                   f1 = SDFS.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return Found; }
+  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return Found; } 
+  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
+                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return Found; }  // Can use d D = Del key r R Return key
+  if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return Found; }
+  if (mEdt)      { WriteMacroEditorData();  mEdt      = false; return Found; }
+  if (sSens)     { WriteSensorData();       sSens     = false; return Found; }
+  if (mPlay)     { WriteMusicPlayingData(); mPlay     = false; return Found; }
+  if (tTimeDate) { WriteDateTime();         tTimeDate = false; return Found; }
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //             0 12 34 56 7 89 01
+  // Use serial <T yy mm dd w hh mm> 22110341200 12:00am 3 Nov 2022 Thursday
+  // datetime_t t = { .year  = 2022, .month = 11, .day   = 03, .dotw  = 4, .hour  = 14,  .min   = 00, .sec   = 00 };
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  if (tTime) { GetTimeData(&t); rtc_set_datetime(&t); TimeSet = true; status(datetime_str); optionsindicators(0); return Found; }              
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  if (aTime) { GetTimeData(&alarm); status("Macro Timer set [R-C][O-C]"); return Found; }
+  if (wTime) { GetTimeData(&timer); status("Macro Timer set [RcT][OcT]"); return Found; }
+  if (pTime) { GetTimeData(&power); status("Power Timer set [O-C][R-C]"); return Found; } 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // These are currently the same type of alarm timer as aTime
+  // Can be changed to Clock Time countdown timer: add_alarm_in_ms(2000, alarm_callback, NULL, false);
+  //                                               add_repeating_timer_ms(500, repeating_timer_callback, NULL, &timer);
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+  return Found;  
+}
 ///////////////////////////////////////////////////////////////////////////////////////
 // Check and save new SDCard file strings SDFilename is in sdcard.h select with *sd*n
 // These are limited size Bytesize = 200 - sensible here because wait until written
 // Directly written to SDCard files with PC only limited by SDCard capacity
 ///////////////////////////////////////////////////////////////////////////////////////
 void DoNewSDCard()
-{ int i, n = 0;
+{ int n = 0;
   byte *BytePtr;
-  bool GlyphBank = false, Found = false, Label = false;
-  byte a, r5, r6, r7, c = 0;
-  int ASize;
-  char LabelFile[18] = "LabelM"; 
+  bool Found = false;
+  byte a, c = 0;
   File f; 
   
-  Found = NewData = StrOK = ByteOK = false;  
+  NewData = StrOK = ByteOK = false;  
 
-  a = RecBytes[0];      // * char  
-  r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];
-   
-  if (CheckStarCode(a)) return;  // Do *code and return 
-                        
-  a = a - 48;                          // ASCII Number 0-9 subtract 48
-  
-
-  KeyOn     = (a==59);                   // 0x6B = 'k' PC Config App sends Keys direct <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
-  nKeyPC    = (a==62);                   // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
-  Glyph     = (a==55);                   // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send  
-  GlyphBank = (a==23);                   // 0x17 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
-
-  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove 0-9
-                   f1 = SDFS.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return; }
-  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
-  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
-                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
-  if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return; }
-  
-  Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
-  Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
-
-  if (Label) { LabelFile[5] = RecBytes[0] - 32;                                      // +48-32 = M, S, T
-               BytePtr = MacroBuff; 
-               for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; } // Skip 1 = char <m,<s,<t < is removed earlier
-
-               if (LayerAxD) f = SDFS.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T
-               f.write(BytePtr, NumBytes-1);                                                        // Write filename to SDCard or Flash
-               f.print('\0');                                                                       // Add NULL to end of filename in File LabelX    
-               f.close();  
-               strcat(LabelFile, " saved"); status(LabelFile); return; }
+  a = RecBytes[0];  
+  if (CheckStarCode(a)) return;                    // Do *code and return      
+  Found = GetMatch(a); if (!Found) return;                      
+  a = a - 48;                                      // ASCII Number 0-9 subtract 48
   
   if (Found){ if (a>0) c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24 -> 1-24 used  
                                                    // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23
@@ -1088,72 +1125,32 @@ void DoNewSDCard()
 // Check and save new character strings or macros
 ///////////////////////////////////////////////////
 void DoNewData()
-{ int i, n = 0;  
+{ int ASize, n = 0;  
   byte *BytePtr;
-  bool GlyphBank = false, Found = false, mEdt = false, tTime = false, aTime = false, pTime = false, wTime = false;
-  byte a, r5, r6, r7, c = 0;
-  int ASize;
+  bool Found = false;
+  byte a, c = 0;
+  char Msg[10] = "Xx";  // Mx, Sx, Tx
+  
+  NewData = StrOK = ByteOK = false;  
 
-  Found = NewData = StrOK = ByteOK = false;  
-
-  a = RecBytes[0];               // * char = 0x20A 
-  r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];
-  if (CheckStarCode(a)) return;  // Do *code and return 
-                          
-  a = a - 48;                // ASCII Number 0-9 subtract 48
-  tTime     = (a==68);       // 0x74 = 't' Date-Time setting
-  aTime     = (a==49);       // 0x61 = 'a' Date-Time setting
-  pTime     = (a==64);       // 0x70 = 'p' Date-Time setting
-  wTime     = (a==71);       // 0x77 = 'w' Date-Time setting  
-  mEdt      = (a==51);       // 0x63 = 'c' MacroEditor [ADD] string  
-  sSens     = (a==67);       // 0x73 = 's' PC sensor value from HWInfo
-  mPlay     = (a==61);       // 0x6D = 'm' PC music Playing
-  tTimeDate = (a==36);       // 0x54 = 'T' Time Date Display (not system time-date)
-  KeyOn     = (a==59);       // 0x6B = 'k' PC Config App sends Keys direct - <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
-  nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
-  Glyph     = (a==55);       // 0x67 = 'g' 4 digit unicode symbol hexstring received char MathHexNum[5];  Current Math Hex Number as ASCII without 0x
-  GlyphBank = (a==23);       // 0x47 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
-  Found = (a<10);            // a = 1 to 6 text a = 7 - 9 non ASCII  
- 
-  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove 0-9
-                   f1 = SDFS.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return; }
-  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return; } 
-  if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
-                   if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return; }  // Can use d D = Del key r R Return key
-  if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return; }
-  if (mEdt)      { WriteMacroEditorData();  mEdt      = false; return; }
-  if (sSens)     { WriteSensorData();       sSens     = false; return; }
-  if (mPlay)     { WriteMusicPlayingData(); mPlay     = false; return; }
-  if (tTimeDate) { WriteDateTime();         tTimeDate = false; return; }
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //             0 12 34 56 7 89 01
-  // Use serial <t yy mm dd w hh mm> 22110341200 12:00am 3 Nov 2022 Thursday
-  // datetime_t t = { .year  = 2022, .month = 11, .day   = 03, .dotw  = 4, .hour  = 14,  .min   = 00, .sec   = 00 };
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  if (tTime) { GetTimeData(&t); rtc_set_datetime(&t); TimeSet = true; status(datetime_str); return; }              
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  if (aTime) { GetTimeData(&alarm); status("Macro Timer set [R-C][O-C]"); return; }
-  if (wTime) { GetTimeData(&timer); status("Macro Timer set [RcT][OcT]"); return; }
-  if (pTime) { GetTimeData(&power); status("Power Timer set [O-C][R-C]"); return; } 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // These are currently the same type of alarm timer as aTime
-  // Can be changed to Clock Time countdown timer: add_alarm_in_ms(2000, alarm_callback, NULL, false);
-  //                                               add_repeating_timer_ms(500, repeating_timer_callback, NULL, &timer);
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
-    
+  a = RecBytes[0];     
+  if (CheckStarCode(a)) return;                    // Do *code and return             
+  Found = GetMatch(a); if (!Found) return;                          
+  a = a - 48;                // ASCII Number 0-9 subtract 48  
+   
   if (Found){ if (a>0) c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24
   DoMSTName(c, Layout);   
 
               if (Layout==3) {if (a>0) {ByteOK = true;  BytePtr = Str1to12[c]; 
-                                        MacroS1S12[c] = 1; MacroSizeS1S12[c] = NumBytes; status("Saved [Sx]"); }  }  // Keys S1-S24                                  
+                                        MacroS1S12[c] = 1; MacroSizeS1S12[c] = NumBytes; Msg[0]='S'; }  }  // Keys S1-S24                                  
               if (Layout==4) {if (a>0) {ByteOK = true;  BytePtr = Ttr1to12[c]; 
-                                        MacroT1T12[c] = 1; MacroSizeT1T12[c] = NumBytes; status("Saved [Tx]"); }  }  // Keys T1-T24                                  
+                                        MacroT1T12[c] = 1; MacroSizeT1T12[c] = NumBytes; Msg[0]='T'; }  }  // Keys T1-T24                                  
               if (Layout==1) {if (a>0) {ByteOK = true;  BytePtr = Mtr1to12[c];
-                                        MacroM1M12[c] = 1; MacroSizeM1M12[c] = NumBytes; status("Saved [Mx]"); }  }  // Keys M1-M24
+                                        MacroM1M12[c] = 1; MacroSizeM1M12[c] = NumBytes; Msg[0]='M'; }  }  // Keys M1-M24
                   
               for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; }  }           // Skip 1,2 = char <#               
     
-   if ((Found)&&(ByteOK)) {ASize = DoFileBytes(ByteOK, MSTName, BytePtr, NumBytes, 0); }  // Save to Flash                                         
+   if ((Found)&&(ByteOK)) {strcat(Msg, " saved"); status(Msg); ASize = DoFileBytes(ByteOK, MSTName, BytePtr, NumBytes, 0); }  // Save to Flash                                         
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3993,42 +3990,54 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
       case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
-      { if (knum==4) { for (n=0; n<6; n++) Serial.write(XNum[n]); Serial.write(BsDNum);  Serial.write(RetNum);    // write raw data, print converts number to text
-                                           Serial.write(Layout);  Serial.write(LayerAD); Serial.write(LayerAxD);  // PC receives 0E 0F 10 0E 0F 10 00 08 02 02 01 00 00 00 00 00 00 01 01 00 0D 0A 
-                                           Serial.write(VolOn);   Serial.write(MuteOn);  Serial.write(ToneOn);   Serial.write(MediaCfg); Serial.write(Media); 
-                                           Serial.write(Vol1);    Serial.write(Vol3);    Serial.write(Vol4); 
-                                           Serial.write(MathSet); 
-                                           byte* bytePtr = (byte*)&TimePeriod; Serial.write(bytePtr, sizeof(TimePeriod));  
-                                           // Serial.write(TimePeriod / 256);  Serial.write(TimePeriod % 256);
-
-                                           Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
-        if (knum==5) { for (n=0; n<6; n++) Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
-                                           Serial.println(Layout);            Serial.println(LayerAD);           Serial.println(LayerAxD);   
-                                           Serial.println(VolOn);             Serial.println(MuteOn);            Serial.println(ToneOn);    
-                                           Serial.println(MediaConfig[0]);    Serial.println(Media); 
-                                           Serial.println(Vol1);              Serial.println(Vol3);              Serial.println(Vol4); 
-                                           Serial.println(MathSet);           Serial.println(MathX);             Serial.println(Math);     
-                                           Serial.println(NumKeys);           Serial.println(nChar);             Serial.println(nKeysPage);         
-                                           Serial.println(nKeys34);           Serial.println(nKeysShow);         Serial.println(Numkeys123); 
-                                           Serial.println(CapsLock);          Serial.println(NumLock);           Serial.println(ScrollLock); 
-                                           Serial.println(OptionOS);          Serial.println(CheckSerial);       Serial.println(SDNum);  
-                                           Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);                                            
-                                           Serial.println(NormVal);           Serial.println(DimVal);            
-                                           Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println("EOC");                                                                   
-                                           status("Text Data sent to PC"); StarOk = true; break; } }   
-        case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App
-      { for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
-        if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
+      { if (knum==4) { for (n=0; n<6; n++)            Serial.write(XNum[n]);  Serial.write(BsDNum);   Serial.write(RetNum);    // write raw data, print converts number to text
+        Serial.write(Layout);  Serial.write(LayerAD); Serial.write(LayerAxD);                                                  // PC receives 0E 0F 10 0E 0.....0 01 01 00 0D 0A 
+        Serial.write(VolOn);   Serial.write(MuteOn);  Serial.write(ToneOn);   Serial.write(MediaCfg); Serial.write(Media); 
+        Serial.write(Vol1);    Serial.write(Vol3);    Serial.write(Vol4);     Serial.write(MathSet); 
+        byte* bytePtr = (byte*)&TimePeriod;           Serial.write(bytePtr, sizeof(TimePeriod)); // Serial.write(TimePeriod / 256);  Serial.write(TimePeriod % 256);
+        Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
+        if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
+        Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
+        Serial.println(ToneOn);      Serial.println(MediaConfig[0]);    Serial.println(Media);             Serial.println(Vol1);              Serial.println(Vol3);          
+        Serial.println(Vol4);        Serial.println(MathSet);           Serial.println(MathX);             Serial.println(Math);              Serial.println(NumKeys);           
+        Serial.println(nChar);       Serial.println(nKeysPage);         Serial.println(nKeys34);           Serial.println(nKeysShow);         Serial.println(Numkeys123); 
+        Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
+        Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
+        Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println("EOC");             
+        status("Text Data sent to PC"); StarOk = true; break; } }  
+        case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
+      { if (nKeys34 && d999<100) { NameStr3[0] = b+48; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
+            else for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+        if (LayerAxD) f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
         if (nStrLen<nKeySize) { f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0; } 
-        Serial.print(nFile); status (nFile); StarOk = true; break; }      
+        Serial.print(nFile); status(nFile); StarOk = true; break; }      
         case 74: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==n *nn*nnn send content of 12 nKeys on page nnn to PC App
-      { Numkeys123 = c999; NumKeysChange(); status ("nKeys List not coded"); StarOk = true; break; }          
-        case 75: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==p *np*nnn switch LCD to nKeys page on command from App switch off either with a second *np*nnn or with *np*
+      { Numkeys123 = c999; NumKeysChange(); status("nKeys List not coded"); StarOk = true; break; }          
+        case 75: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==p *np*nnn switch LCD to nKeys page on command from App switch off with a second *np*nnn
       { if (knum==4) { NumKeys = false; PadKeysState(4, !NumKeys); StarOk = true; break; }
         Numkeys123 = c999; NumKeysChange(); NumKeys = true; PadKeysState(4, !NumKeys); StarOk = true; break; }      
         case 76: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==d *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
       { if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } 
-        if (c99==0) { LastMillis = millis(); DoWakeUp(); StarOk = true; break; } if (c99<18) buttonpress(c99-1); StarOk = true; break; } }                                                   
+        if (c99==0) { LastMillis = millis(); DoWakeUp(); StarOk = true; break; } if (c99<18) buttonpress(c99-1); StarOk = true; break; } }  
+         case 77: ////////////////////// KeyBrdByte[1]==0x72&&KeyBrdByte[2]==0x6D *rm*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
+       { if (knum<5) { status("Use *rm*filename file or //folder"); StarOk = true; break; }
+         n = 0; while (n<=knum-4) { KeyBrdByte[n] = KeyBrdByte[n+4]; n++; } if (LayerAxD) SrcDst = 3; else SrcDst = 0; KeyBrdByteNum = knum - 4;   // LayerAxD = sdcard = true     
+         RemoveMacro(); StarOk = true; break; }  // Test by *rm*filename then press [EXE] (not [Sav] or [Rmv])    
+         case 78: ////////////////////// KeyBrdByte[1]=='s'&&KeyBrdByte[2]=='f' *sf*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
+       { if (knum<6) { status("Use *sf*filename file or /folder/filename"); StarOk = true; break; }
+         for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+         if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
+         if (nStrLen>=nKeySize) nStrLen = nKeySize-1; f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00;  
+         if ( nFile[0]<128) { for (e = 0; e<nStrLen; e++) { if (nFile[e]<128 && nFile[e]!=0x00) Serial.write(nFile[e]); else Serial.print("."); } SerPr2; }
+         if ( nFile[0]>127) { for (e = 0; e<nStrLen; e++) { Serial.print(nFile[e], HEX); SerPr1; } SerPr2; }
+         strcat(NameStr3, " readable file sent"); status(NameStr3); StarOk = true; break; }     
+         case 79: ////////////////////// KeyBrdByte[1]=='s'&&KeyBrdByte[2]=='F' *sF*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
+       { if (knum<6) { status("Use *sF*filename file or /folder/filename"); StarOk = true; break; }
+         for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+         if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
+         if (nStrLen>=nKeySize) { status("File too large > 6144 bytes"); StarOk = true; break; }
+         f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00; for (e=0; e<nStrLen; e++) Serial.write(nFile[e]);         
+         strcat(NameStr3, " raw file sent"); status(NameStr3); StarOk = true; break; }                                                   
       } return StarOk;
 }
 

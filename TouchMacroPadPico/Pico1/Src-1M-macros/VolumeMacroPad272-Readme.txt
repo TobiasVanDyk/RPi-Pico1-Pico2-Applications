@@ -8,8 +8,13 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad272.ino.elf"
-Sketch uses 253388 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 52408 bytes (19%) of dynamic memory, leaving 209736 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 253852 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 58344 bytes (22%) of dynamic memory, leaving 203800 bytes for local variables. Maximum is 262144 bytes.
+Resetting COM9
+Converting to uf2, output size: 580096, start address: 0x2000
+Scanning for RP2040 devices
+Flashing D: (RPI-RP2)
+Wrote 580096 bytes to D:/NEW.UF2
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -33,20 +38,30 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
 
 
 New changes:
-1. PC App can now send json symbolBanks 0-9 to Pico macropad. Edit macrobanks as json files on PC.
-2. Added Alt+Esc option instead of manual focus change for PC App using "*" for delay value after key pressed on PC app. 
+1. New rules for <x > serial port commands to enable <m,s,t > from both SDCard and Flash modes. Refer to manual but previous m s t Flash now M S I and
+   Timeset <T > for example sensordata now with <S > not <s >, Foobar now M not m. This means all <x > data the same to both SDCard and Flash modes.
+2. *sf*filename send file contents of file filename over serial to PC App in filtered readable format - maximum size 6144 bytes - A-D white = flash or brown = SDCard choose media
+   *sF*filename send file contents of file filename over serial to PC App in raw format - maximum size 6144 bytes. Use A-D white = flash or brown = SDCard to choose media
+3. Can send Label.json files to macropad via PC App. Use the converter to convert from Arduino format to json file. Checkbox in config tab 
+   if LabelM,S,T file must be automatically updated when new labelfiles are uploaded. labelfiles are saved as label1,2,3 depending if L1,l2,L3 upload used.
+4. *rm*filename or use <*rm*filename> = remove filename. If //folder but folder must be empty. Delete files from Comms tab filelist (use the Config tab to s
+   end the filelist), by selecting filename, right-click and select Delete File. Brown A-D file on SDCard, white A-D file on Flash.
+5. PC App can now send json symbolBanks 0-9 to Pico macropad. Edit macrobanks as json files on PC.
+6. Added Alt+Esc option instead of manual focus change for PC App using "*" for delay value after key pressed on PC app. 
    For example <k103*> is sent from the PC App when key [S1] is pressed with checkbox selected with Delay = *. This will then send (in my case) 
-   a textstring to the next visible app which is notepad using Alt+Esc to move the focus to notepad and printthe textstring. This automatic change of focus applies to nKeys, Glyphs and to the normal M,S,T and the other keys in layouts 1 to 4. You can also test these by using the Comms tab and the Send list button, and then sending <g2211*1> with Word open - the Sum glyphs should be written in word. Test the normal keys by sending <k103*> and the [S1] will be sent to Word.
-3. Glyph code sent to macropad with selected delay = d in <gHHHds> HHH = unicode hexcode for glyph s = 0 LCD send 1 PC app send
-4. Added <*lx*s> <*lx*m> <*lx*n> <*lx*0> <*lx*k> switch directly to 5 Pads in Layout 2
-5. Execute nKey when pressed on PC app executes the command on the LCD sends <npppkkkd> ppp = Page number 001-833 kkk=key number 001-996 d = delay same as for the M,S,T keys
-6. Additional nKeys *commands: 
-   *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
-   *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other textfile as m = m-mmm and a-Z,0-9 and x = any character
-   *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn
-7. Fixed furher Media *en* logic and expanded config to PC
-8. Added press keys M,S,T1-M,S,T24 on TouchLCD from PC with <kabcd> a=key1--6 b=LayerAD 0-3 c=Layout 1-4 d=delay (0 to 5 seconds for focus change if text string sent). Note that if LCD is dimmed it
-   requires one keypress to wake, i.e. two keypresses before it acts. Delay is 1=100mS and 9=5 seconds. Use the checkbox + combobox in Layout 2 to configure.  
+   a textstring to the next visible app which is notepad using Alt+Esc to move the focus to notepad and printthe textstring. This automatic change of focus applies to nKeys, 
+   Glyphs and to the normal M,S,T and the other keys in layouts 1 to 4. You can also test these by using the Comms tab and the Send list button, and then sending <g2211*1> with 
+   Word open - the Sum glyphs should be written in word. Test the normal keys by sending <k103*> and the [S1] will be sent to Word.
+7. Glyph code sent to macropad with selected delay = d in <gHHHds> HHH = unicode hexcode for glyph s = 0 LCD send 1 PC app send
+8. Added <*lx*s> <*lx*m> <*lx*n> <*lx*0> <*lx*k> switch directly to 5 Pads in Layout 2
+9. Execute nKey when pressed on PC app executes the command on the LCD sends <npppkkkd> ppp = Page number 001-833 kkk=key number 001-996 d = delay same as for the M,S,T keys
+10. Additional nKeys *commands: 
+    *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
+    *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other textfile as m = m-mmm and a-Z,0-9 and x = any character
+    *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn
+11. Fixed furher Media *en* logic and expanded config to PC
+12. Added press keys M,S,T1-M,S,T24 on TouchLCD from PC with <kabcd> a=key1--6 b=LayerAD 0-3 c=Layout 1-4 d=delay (0 to 5 seconds for focus change if text string sent). 
+    Note that if LCD is dimmed it requires one keypress to wake, i.e. two keypresses before it acts. Delay is 1=100mS and 9=5 seconds. Use the checkbox + combobox in Layout 2 to configure. 
 
 
 Previous changes:
