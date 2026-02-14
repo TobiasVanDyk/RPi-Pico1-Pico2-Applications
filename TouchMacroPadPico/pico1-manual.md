@@ -4,8 +4,6 @@ manual.h
 -----------------------------------------------------------------------------------------------------------------------
 On First Start: 
 
-There is a PC Windows-based app for an easy way of controlling and configuring the Touch MacroPad - Serial2Pico.
-
 If asked to do so, do a four-arrow corner calibration - press at the TIP of each arrow just ONCE. If you make a 
 mistake and press the same corner twice it is likely that you will need a reset with the nuke.uf2 file (provided 
 here in the Extras section), because the LCD will not read the correct corner keys being touched.
@@ -48,12 +46,6 @@ if found. To load a specific Symbol Set use *ma*n with n = 0-9.
 When pressing the [*Cm] key in the MacroEditor (green Pad [k]) it is not necessary to press [ADD] - it is added
 automatically. For example to switch the serial port on/off press [*Cm] until *se* shows then press [EXE] - no
 need to press {ADD] before [EXE]. If you did press [ADD] by mistake just press the [*Cm] key again.
-
-If you have sent timedata <t...> from the PC via powershell or a serial monitor and suddenly your custom labels for 
-the T key set (Layout 4) is scrambled that is because you were in the SDCard mode (brown A-D). Correct it by sending 
-the custom label file <tlabelfilename>, from the PC to the touchpad for the t key set with the A-D label in brown, 
-and send time data (<t or <T) with A-D in white. Use [Cfg][A-D] to change between white and brown. Similarly send
-HWInfo sensor data and Foobar2000 music playing data with A-D in white not brown.
 
 -----------------------------------------------------------------------------------------------------------------------
 Layout 1 - M Keys - [M1]-[M24] - Cycle through Layout 1 to 4 press [L1-L4] or long-press [Vo] 
@@ -869,8 +861,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
    *sd*bs switch to layer B on Flash
    *lx*lxs l = 1-4 (change Layout 1-4) x = a,b,c,d (change layers A-D) s = s,f (change SDCard or Flash)
    *lx*3 change to Layout 3 (S keys)
-   *lx*1bf change to Layout 1 (M keys), Layer B, and Flash    
-    *lx*s *lx*m *lx*n *lx*0 *lx*k switch directly to 5 Pads s k m n o in Layout 2
+   *lx*1bf change to Layout 1 (M keys), Layer B, and Flash
 (M) *dt*f,m,s or *dt*0,1,2  adjust the delay times between macros/keys-pressed for slower or virtual machines, medium 
     fast PCs, and fast PC's delay times. 
 (N) *vx*000 to *vx*111 Volume enabled/disabled in Layouts 1,3,4 if enabled in Layout 2.  For example enter *vx*011 then
@@ -887,11 +878,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *c2* = copy files in SDcard folder Flash to root of Flash memory i.e. restore previously copied Flash files.
 (R) *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.  
 (S) Additional nKeys *commands: 
-   *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
-   *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
-   textfile as m = m-mmm and a-Z,0-9 and x = any character
-   *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn
-    
+    *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional). d = * send Alt+Esc to move focus to next 
+    open app before executing the key nn. <*nd*000> will wake up LCD if in dimmed state.
+    *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
+    textfile as m = m-mmm and a-Z,0-9 and x = any character
+    *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn   
+(T) *rm*filename remove/delete filename or if //dirname - will use currentLayerAxD to determine if file on SDcard or 
+    Flash //folder must be empty.    
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
@@ -979,14 +972,14 @@ then press [EXE].
 
 Both single macros from M, S and T 1-24 and linked macros can be used for the timers - if a linked macro is used add
 a number 1* to 8* instead of 1 to 8. The Timers are programmed as Time-Fire-Time-Fire. There will be an option later 
-to change this to Fire-Time-Fire-Time for the Repeat timers. The two real-time (using the Pico's HW RTC or Clock)
-timers are configured by first setting the Clock Time by sending the string <tyymmddwhhmm> -> <t22110341439> is Thursday
-3 Nov 2022 at 14h30. Then set the alarm time by sending the string <ayymmddwhhmm> -> <a22110601439> is Sunday 6 Nov 
+to change this to Fire-Time-Fire-Time for the Repeat timers. The two real-time (using the Pico 2's TimeLib SW Clock)
+timers are configured by first setting the Clock Time by sending the string <Tyymmddwhhmm> -> <T22110341439> is Thursday
+3 Nov 2022 at 14h30. Then set the alarm time by sending the string <Ayymmddwhhmm> -> <A22110601439> is Sunday 6 Nov 
 2022 at 14h30. To send a repeat macro every 1 minute send <a-1-1-1--1-1> (the double -- is for the day of week not
 significant), and associate with it 5 [R-C]. The clock time and alarm time are sent to a serial terminal and displayed
 in the status bar by pressing [Cgf] twice. Can use a *code *tx*yymmddwhhmm to send all the clock values else send these
 either manually using a serial terminal or use a Proccessing script, or a scheduled task powershell script. Note that 
-the Pico has a HW RTC but does not have a dedicated battery backup for its HW RTC.
+the Pico 2 does not have a HW RTC.
 
 The Repeat-only mode (i.e send macro fixed number of times with a delay or no delay, is not implemented as yet.
 
@@ -1018,20 +1011,19 @@ Example 3: Send the macro 0x3C 0x34 0xE0 0xE1 0x29 0x3E (which is <4 Control Shi
 with Layer 4 visible, then pressing [M4] will open the Task Manager.
 
 PC Sensor Data: The sensor data read from HWInfo's Gadget Regisry data can be sent to the touchpad and displayed on the
-LCD statusbar. The procedure is explained in detail in the MacropadPCSensorData section. Switch the A-D to white not 
-brown before sending sensor data.
+LCD statusbar. The procedure is explained in detail in the MacropadPCSensorData section. Use <S data text > to display 
+the sensor data.
 
 PC Music Playing Data: The Music Playing data read from Foobar2000's Now Playing Simple foobar2000 plugin, can be sent
 to the touchpad and displayed on the LCD statusbar. The procedure is explained in detail in the MacropadFoobarPlaying 
-section. Switch the A-D indicator to white not brown before sending music data.
+section. Use <M data text > to display the sensor data.
 
 Date Time Display This is an alternative Date Time which is only displayed, and not used to set the Pico system 
-time-date. The procedure is explained in detail in the SetDateTime section. This uses <T > and the system time date 
-uses <t >. Switch the A-D to white not brown before sending time data.
+time-date. The procedure is explained in detail in the SetDateTime section. This uses <I > and the system time date 
+uses <T >. 
 
-Key Controls:  Use <k list > Keys direct <kabc> a=key1--6 MST1-MST24 a=7-9,D,R other keys Cut Copy Paste Delete 
-Return b=LayerAD 0-3 c=Layout 1-4.
-Use <n list > nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+Key Controls:  Use <k list > Keys direct <kabc> a=key1--6 MST1-MST24 a=7-9,D,R other keys Cut Copy Paste Delete Return
+b=LayerAD 0-3 c=Layout 1-4. Use <n list > nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
 
 -----------------------------------------------------------------------------------------------------------------------
 Panic mode reset. If for any reason your keypad becomes unresponsive or behaves strangely reset it as follows:
@@ -1056,3 +1048,4 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
+
