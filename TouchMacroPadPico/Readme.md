@@ -8,7 +8,7 @@
 </p>
 
 <p align="left">
-<img src="images/Win10-1.png" height="172" /> 
+<img src="images/win10-77.png" height="172" /> 
 <img src="images/Win10-3.png" height="172" /> 
 <img src="images/Win11-77.png" height="172" />  
 <img src="PicoMacropadpCApp.gif" height="172" />   
@@ -123,6 +123,7 @@ Below are older pictures taken of four of the LCDs namely 1, 3, 4, and 5
 <img src="images/mac3.jpg" height="87" /> 
 <img src="images/med1.jpg" height="87" /> 
 </p>
+
 
 
 
