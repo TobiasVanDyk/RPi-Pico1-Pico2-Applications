@@ -446,7 +446,7 @@ const static char FxyChr[10][4] = // F01 to F24
 {"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 115; // StarCodes Count 16+16+16+16+16+16+16+3 StarNum = 0-114
+const static int StarCodesMax = 116; // StarCodes Count 16+16+16+16+16+16+16+4 StarNum = 0-115
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", "c2", 
   "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo", "fs", 
@@ -454,8 +454,8 @@ const static char StarCode[StarCodesMax][3] =
   "m1", "m2", "ma", "mb", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", "nn", "np", 
   "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", 
   "sa", "sd", "se", "sf", "sF","sm", "ss", "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", 
-  "vx", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", 
-  "0s", "0t", "0x"  };
+  "vx", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", 
+  "0p", "0s", "0t", "0x"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   64,
@@ -464,8 +464,8 @@ const static byte StarCodeType[StarCodesMax] =
   18,   19,   62,   66,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   74,   75,   
   21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   24,   24,   
   28,   29,   30,   78,   79,   28,   28,   28,   31,   4,    31,   31,   31,   33,   32,   43,   
-  61,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,  
-  48,   54,   52    };
+  61,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   
+  47,   48,   54,   52    };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -862,13 +862,7 @@ void loop()
   if (NewData) if (!LayerAxD) DoNewData();     // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time  
                          else DoNewSDCard();   // Same <n......> format save SDCard file choice 1-9 key 1-24 or M,S.T or K,k
 
-  if (Change && !BusyCNS) 
-     { indicators();
-       if (!BackLightOn) {if (NormVal==0) digitalWrite(LCDBackLight, HIGH);    // Backlight Full ON
-                                    else  analogWrite(LCDBackLight, NormVal);  // Backlight Brightness ON
-           BackLightOn = true; } 
-        Change = false;
-     }
+  if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                          
 } // main Loop
 ////////////////////////////////////////////
@@ -4016,9 +4010,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 75: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==p *np*nnn switch LCD to nKeys page on command from App switch off with a second *np*nnn
       { if (knum==4) { NumKeys = false; PadKeysState(4, !NumKeys); StarOk = true; break; }
         Numkeys123 = c999; NumKeysChange(); NumKeys = true; PadKeysState(4, !NumKeys); StarOk = true; break; }      
-        case 76: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==d *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
-      { if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } 
-        if (c99==0) { LastMillis = millis(); DoWakeUp(); StarOk = true; break; } if (c99<18) buttonpress(c99-1); StarOk = true; break; } }  
+        case 76: ///////////////////// KeyBrdByte[1]=='n'&&KeyBrdByte[2]=='d' *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional)
+      { if (c99==0) { LastMillis = millis(); Change = StarOk = true; break; }  // This is a wakeup *nd*00 or *nd*000 but triggers false Key M5 S5 T5 pressed if sent from PC App
+        if (knum==7) { if (k6=='*') { DoAltEsc(); delay(dt100); } else { e = (k6-48)*1000; delay(e); } 
+        if (c99<18) buttonpress(c99-1); StarOk = true; break; } } 
          case 77: ////////////////////// KeyBrdByte[1]==0x72&&KeyBrdByte[2]==0x6D *rm*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
        { if (knum<5) { status("Use *rm*filename file or //folder"); StarOk = true; break; }
          n = 0; while (n<=knum-4) { KeyBrdByte[n] = KeyBrdByte[n+4]; n++; } if (LayerAxD) SrcDst = 3; else SrcDst = 0; KeyBrdByteNum = knum - 4;   // LayerAxD = sdcard = true     
@@ -4037,7 +4032,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
          if (nStrLen>=nKeySize) { status("File too large > 6144 bytes"); StarOk = true; break; }
          f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00; for (e=0; e<nStrLen; e++) Serial.write(nFile[e]);         
-         strcat(NameStr3, " raw file sent"); status(NameStr3); StarOk = true; break; }                                                   
+         strcat(NameStr3, " raw file sent"); status(NameStr3); StarOk = true; break; } 
+         case 80: ///////////////////// KeyBrdByte[1]=='w'&&KeyBrdByte[2]=='a' *wa* wake up dimmed LCD - does not trigger false M5 S5 T5 like *nd*00
+       { LastMillis = millis(); DoWakeUp(); StarOk = true; break; }                                                            
       } return StarOk;
 }
 
