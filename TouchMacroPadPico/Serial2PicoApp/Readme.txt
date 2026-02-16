@@ -1,5 +1,3 @@
-15 Feb 2026: Replaced Serial2Pico40 with same version but removed the cause of spurious triggering of key 5 on startup namely a wake-up to the macropad if in the dimmed state - will fix in next version.
-
 Arduino Label Tools converts label.json files to Pico macropad label1,2,3 type Arduino files. See the example label001.json for the JSON format. Drag and drop the json label file into the form, then rename to LabelM,S,T and copy to SDCard. Can send Label.json files to macropad via PC App. Use the checkbox in config tab if LabelM,S,T file must be automatically updated when new labelfiles are uploaded. labelfiles are saved as label1,2,3 depending if L1,l2,L3 upload used.
 
 After generating a list files on the SDCard and Flash memory with the File List option from the Config Tab, a right-click on the selected filename gives the option to delete or view the file (in a readable format). If the file is in the SDCard list make sure the A-D indicator is brown, and similarly white A-D if in the Flash listing, before clicking on one of the two options. The other three options  (Clear, Copy, and  Select all), are text and not file operation options.
