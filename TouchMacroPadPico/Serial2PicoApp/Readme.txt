@@ -12,6 +12,8 @@ To send a symbols bank to the LCD touchpad select a file with the [...] button i
 
 The combo-box at the bottom loads symbol banks 0-9 from the default location into the PC App. After selecting a bank press Page1-4 once to see the new bank.
 
+An example how to use the Send List i the Comms Tab: Copy file LabelT from SDCard to Flash: On the macropad press Pad [k] then press Pad [o] until the source on the let is brown and the destination on the right is white. On the PC App enter the string <*cf*LabelT=LabelT> and press Send File to copy the file.
+
 Refer to Win11-77.png for a layout of the Symbols tab.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 A PC Windows-based configuration tool for the Pico Touch LCD in its early development stages is included in the folder Serial2PicoApp - it will be developed over the next few months if not years. Additional tabs that must still be completed include configurations tabs for the Power and Macro Timer-Clocks, a tab for associating PC apps with macros, and a general configuration tab for various parameters such as LCD timeouts etc. Note that after unzipping the app, running the executable the first time will download and install .Net 8 run times. Pressing keys on the PC app can press the same key on the TouchLCD, which then through USB HID, send the keypress back to the PC. Start the app by selecting the Pico COM port, then press Open port, and then press Get Config to load the Pico's current configuration into the app. After the first start it should remember the COM port used and it will then automatically load the configuration after the Open port is pressed.
