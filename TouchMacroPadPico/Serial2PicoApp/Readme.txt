@@ -12,7 +12,7 @@ To send a symbols bank to the LCD touchpad select a file with the [...] button i
 
 The combo-box at the bottom loads symbol banks 0-9 from the default location into the PC App. After selecting a bank press Page1-4 once to see the new bank.
 
-An example how to use the Send List in the Comms Tab to copy files: Copy file LabelT from SDCard to Flash - On the macropad press Pad [k] then press Pad [o] until the source on the left is brown and the destination on the right is white. On the PC App enter the string <*cf*LabelT=LabelT> in the textbox to the left of the button [Send List], and then press [Send List] to copy the file.
+An example how to use the Send List in the Comms Tab to copy files: Copy file LabelT from SDCard to Flash - On the macropad press Pad [k] then press Pad [o] until the source on the left is brown and the destination on the right is white. On the PC App enter the string <*cf*LabelT=LabelT> in the textbox to the left of the button [Send List], and then press [Send List] to copy the file. As an alternative to using the macropad send <*ae*2> to change the Source=SDCard and Destination=Flash before sending the copy command. Note that <*ae*1> would copy from Flash to SDCard (because 1 = 01 and 2 = 10).
 
 Refer to Win11-77.png for a layout of the Symbols tab.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
