@@ -842,8 +842,8 @@ void loop()
                     
   if (CheckSerial) RecSerial();  // Switch off serial check with *se* toggle -  CheckSerial default is off
   // if (NewData) showRecData();
-  if (NewData) if (LayerAxD) DoNewSDCard();           // SDCard Files 1-9 key 1-24 or M,S.T or K,k and also as listed below
-               else if (!SaveSerial) DoNewSDCard();   // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time   
+  if (NewData) if (LayerAxD) DoNewSDCard();         // SDCard Files 1-9 key 1-24 or M,S.T or K,k and also as listed below
+               else if (!SaveSerial) DoNewData();   // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time  
                          
   if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                 
@@ -5075,3 +5075,4 @@ void showKeyData()
  }
 
 /************* EOF line 5064*****************/
+
