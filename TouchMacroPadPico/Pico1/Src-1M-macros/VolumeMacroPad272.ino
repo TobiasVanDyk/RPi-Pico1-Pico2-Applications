@@ -3850,9 +3850,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { if (knum==4) { BLOnOff = !BLOnOff; Config1[3] = BLOnOff; WriteConfig1(0);  // Toggle On/Off 
                         if (BLOnOff) status("Black Switch BL On/Off Enabled"); else status("Black Switch BL On/Off Disabled"); }
          if (knum==5) { digitalWrite(LCDBackLight, b);  }                            // b = 0,1   
-         if (knum==6) { analogWrite(LCDBackLight, c99); }                            // c99 = 00 - 99 
-         if (knum>6)  { break; }                                                     // invalid choice          
-         StarOk = true; break; } 
+         if (knum==6) { analogWrite(LCDBackLight, c99); }                            // c99 = 00 - 99 (max = 255)
+         if (knum>6)  { BLOnOffToggle = false; LastMillis = -TimePeriod; }           // Magic - try <*bl*000>         
+         StarOk = true; break; }  
          case 37: ///////////////////// KeyBrdByte[1]==0x72&&KeyBrdByte[2]==0x30 *r0* Reset/Reboot LCD
        { status("Rebooting LCD in 2.222 seconds..."); delay(2222); rp2040.reboot(); break; }
          case 38: ////////////////////// KeyBrdByte[1]==0x6b&&KeyBrdByte[2]==0x72 *kr* Duration/100 before KeyRepeat activein milliseconds
