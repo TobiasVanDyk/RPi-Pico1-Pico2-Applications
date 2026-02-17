@@ -683,7 +683,7 @@ bool NewData = false;
 char AltNum[] = "1D6D1";
 bool CheckSerial = false;    // Switch off serial check unless *se* toggles CheckSerial - default is off
 bool SaveSerial = false;     // Enables savinf serial data without the < data > files saved as file01, file02, .. file99
-byte fnum = 0;               // Counts file01-file99
+int  fnum = 0;               // Counts file01-file99
 
 const int NumButtons = 17;             // Total number of buttons = 12 keys (3 rows x 4 columns) + 5 pads on right
 TFT_eSPI_Button key[NumButtons];       // Create 12 keys + 5 config buttons for keypad
@@ -842,8 +842,8 @@ void loop()
                     
   if (CheckSerial) RecSerial();  // Switch off serial check with *se* toggle -  CheckSerial default is off
   // if (NewData) showRecData();
-  if (NewData) if (!LayerAxD) DoNewData();     // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time  
-                         else DoNewSDCard();   // Same <n......> format save SDCard file choice 1-9 key 1-24 or M,S.T or K,k
+  if (NewData) if (LayerAxD) DoNewSDCard();           // SDCard Files 1-9 key 1-24 or M,S.T or K,k and also as listed below
+               else if (!SaveSerial) DoNewSDCard();   // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time   
                          
   if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                 
@@ -1025,9 +1025,9 @@ void DoNewSDCard()
   Found = GetMatch(a); if (!Found && !SaveSerial) return;  
 
   if (SaveSerial)                                          
-  { Timer2Str(fnumber, 0, fnum*1000); strcat(fname, fnumber); //  file1 - file9999
+  { Timer2Str(fnumber, 2, fnum); strcat(fname, fnumber); //  file1 - file9999
     File f = SD.open(fname, "w");  f.write(RecBytes, NumBytes); f.close(); 
-    status(fname); fnum++; /*SaveSerial = false;*/ return; 
+    /*status(fname);*/ fnum++; /*SaveSerial = false;*/ return; 
   }
   
   a = a - 48;
@@ -1118,7 +1118,7 @@ void DoNewData()
   
   NewData = StrOK = ByteOK = false; 
 
-  if (SaveSerial) status("Disable File Mode or enable SDCard"); return;  // Else could fill Flash FS quickly  
+  // if (SaveSerial) status("Disable File Mode or enable SDCard"); return;  // Else could fill Flash FS quickly  
 
   a = RecBytes[0];   
    if (CheckStarCode(a)) return;                                         // Do *code and return        
@@ -1183,12 +1183,12 @@ void showRecData()
     //NewData = false;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
-void Timer2Str(char * TStr, byte Option, long int PVal)
-////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+void Timer2Str(char * TStr, byte Option, long int PVal) // Option = 2 avoids PVal/1000
+////////////////////////////////////////////////////////////////////////////////////////
 // Used: https://www.geeksforgeeks.org/how-to-convert-an-integer-to-a-string-in-c/
 { int j, k, i;
-  // Serial.println(PVal);
+  // Serial.println(PVal);  
   if (Option==0) PVal = PVal/1000;                                                            // millis -> s seconds
   if (Option==1) { if (timeU=='m') PVal = PVal/60000; if (timeU=='h') PVal = PVal/3600000; }  // seconds -> m minutes -> h hours
   
