@@ -1,6 +1,6 @@
 Files can now be dragged and dropped into the PC App Comms Tab receive box where they are listed alphabetically and then sent one by one to the Pico macropad where they are named numerically as file, file1 to file9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01> for example, or use the [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e. A-D must be brown, as these files could be large, and should never be saved directly to Flash memory. The matching Pico macropad firmware for this new functionality is VolumeMacroPad-Pico2-35IPS-328.zip which matches Serial2Pico43.zip.
 
-The recommended combinations are Serial2Pico42.zip with VolumeMacroPad-Pico2-35IPS-327.zip, VolumeMacroPad-Pico1-35IPS-422.zip, or 1M-macros.zip.
+The recommended combinations are for the time being the older versions without this functionality namely Serial2Pico42.zip with VolumeMacroPad-Pico2-35IPS-327.zip, VolumeMacroPad-Pico1-35IPS-422.zip, or 1M-macros.zip.
 
 Arduino Label Tools converts label.json files to Pico macropad label1,2,3 type Arduino files. See the example label001.json for the JSON format. Drag and drop the json label file into the form, then rename to LabelM,S,T and copy to SDCard. Can send Label.json files to macropad via PC App. Use the checkbox in config tab if LabelM,S,T file must be automatically updated when new labelfiles are uploaded. labelfiles are saved as label1,2,3 depending if L1,l2,L3 upload used.
 
