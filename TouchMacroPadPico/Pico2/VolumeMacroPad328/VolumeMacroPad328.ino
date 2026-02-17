@@ -683,7 +683,7 @@ bool NewData = false;
 char AltNum[] = "1D6D1";
 bool CheckSerial = false;    // Switch off serial check unless *se* toggles CheckSerial - default is off
 bool SaveSerial = false;     // Enables savinf serial data without the < data > files saved as file01, file02, .. file99
-int  fnum = 0;               // Counts file01-file99
+int  fnum = 1;               // Counts file01-file99
 
 const int NumButtons = 17;             // Total number of buttons = 12 keys (3 rows x 4 columns) + 5 pads on right
 TFT_eSPI_Button key[NumButtons];       // Create 12 keys + 5 config buttons for keypad
@@ -843,7 +843,7 @@ void loop()
   if (CheckSerial) RecSerial();  // Switch off serial check with *se* toggle -  CheckSerial default is off
   // if (NewData) showRecData();
   if (NewData) if (LayerAxD) DoNewSDCard();         // SDCard Files 1-9 key 1-24 or M,S.T or K,k and also as listed below
-               else if (!SaveSerial) DoNewData();   // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time  
+               else if (!SaveSerial) DoNewData();   // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time   
                          
   if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                 
@@ -5075,4 +5075,3 @@ void showKeyData()
  }
 
 /************* EOF line 5064*****************/
-
