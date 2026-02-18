@@ -8,8 +8,8 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad272.ino.elf"
-Sketch uses 253844 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 58344 bytes (22%) of dynamic memory, leaving 203800 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 254124 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 58528 bytes (22%) of dynamic memory, leaving 203616 bytes for local variables. Maximum is 262144 bytes.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -33,7 +33,12 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
 
 
 New changes:
-1. *wa* Wakeup dimmed LCD. 
+1. File transfer from files dragged and dropped into the PC App Comms Tab receive box where they are listed alphabetically and then sent one by 
+   one to the Pico macropad where they are named numerically as file1 to file 9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01>
+   for example, or use the [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e. A-D must be brown, these files
+   should not be saved to Flash directly as they can be large. Use *sx* to reset the number cpount to 1. Use *sx*flename or *sx*/foldername to change the name used or path where 
+   files are saved. These setting are not saved
+2. *wa* Wakeup dimmed LCD. 
 
 Previous changes
 1. New rules for <x > serial port commands to enable <m,s,t > from both SDCard and Flash modes. Refer to manual but previous m s t Flash now M S I and

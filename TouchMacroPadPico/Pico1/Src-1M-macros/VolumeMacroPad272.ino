@@ -446,16 +446,16 @@ const static char FxyChr[10][4] = // F01 to F24
 {"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 116; // StarCodes Count 16+16+16+16+16+16+16+4 StarNum = 0-115
+const static int StarCodesMax = 117; // StarCodes Count 16+16+16+16+16+16+16+5 StarNum = 0-116
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", "c2", 
   "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo", "fs", 
   "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", "m0", 
   "m1", "m2", "ma", "mb", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", "nn", "np", 
   "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", 
-  "sa", "sd", "se", "sf", "sF","sm", "ss", "st", "ta", "tb", "tp", "tt", "tw", "ua", "ul", "up", 
-  "vx", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", 
-  "0p", "0s", "0t", "0x"  };
+  "sa", "sd", "se", "sf", "sF","sm",  "ss", "st", "sx", "ta", "tb", "tp", "tt", "tw", "ua", "ul", 
+  "up", "vx", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", 
+  "0n", "0p", "0s", "0t", "0x"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   64,
@@ -463,9 +463,9 @@ const static byte StarCodeType[StarCodesMax] =
   11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   67,
   18,   19,   62,   66,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   74,   75,   
   21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   24,   24,   
-  28,   29,   30,   78,   79,   28,   28,   28,   31,   4,    31,   31,   31,   33,   32,   43,   
-  61,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   
-  47,   48,   54,   52    };
+  28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   4,    31,   31,   31,   33,   32,   
+  43,   61,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   
+  46,   47,   48,   54,   52    };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -680,6 +680,11 @@ int  NumBytes = 0;
 bool NewData = false;
 char AltNum[] = "1D6D1";
 bool CheckSerial = false;    // Switch off serial check unless *se* toggles CheckSerial - default is off
+bool FileSend = false;       // Files sent from PCApp with drag and drop
+int  fnum = 1;               // Counts file1-file9999
+char fname[40] = "file";     // Drag and Drop files in PC App use this as basis filename 
+char fpath[85] = "";         // Holds fdir + fname + fnum=1-9999
+char fdir[40]  = "/";        // Drag and Drop files in PC App use this as basis folder
 
 const int NumButtons = 17;             // Total number of buttons = 12 keys (3 rows x 4 columns) + 5 pads on right
 TFT_eSPI_Button key[NumButtons];       // Create 12 keys + 5 config buttons for keypad
@@ -1025,6 +1030,7 @@ bool GetMatch(byte a)
   byte r5, r6, r7, c = 0;
   int ASize;
   char mst134 = '0', LabelFile[40] = "LabelM"; 
+  char fnumber[8] = "";   
   File f; 
   
   r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];                        
@@ -1042,9 +1048,10 @@ bool GetMatch(byte a)
   nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
   Glyph     = (a==55);       // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send  
   GlyphBank = (a==23);       // 0x17 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
+  FileSend  = (a==22);       // 0x46 - 'F' List of Files sent from drag and drop to PC App  
   
-  Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
-  Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
+  Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;    
+  Found = (a<10);                      // a = 1 to 6 text a = 7 - 9 non ASCII  
 
   if (Label) { for (n=0; n<40; n++) LabelFile[n] = 0x00; if (NumBytes!=145) { strcpy(LabelFile, "LabelX"); LabelFile[5]=RecBytes[0]-32; }
                else { strcpy(LabelFile, "label1"); if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; }     
@@ -1055,6 +1062,8 @@ bool GetMatch(byte a)
                if (L) f.print('\0'); f.close();                                                   // Add NULL to end of filename in File LabelX  
                strcat(LabelFile, " saved"); status(LabelFile); return Found; }
                
+  if (FileSend)  { memmove(RecBytes, RecBytes + 1, NumBytes - 1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber); // Remove F  
+                   File f1 = SDFS.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); return Found; }                                          // save as file1-File9999
   if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove 0-9
                    f1 = SDFS.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return Found; }
   if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return Found; } 
@@ -4034,7 +4043,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00; for (e=0; e<nStrLen; e++) Serial.write(nFile[e]);         
          strcat(NameStr3, " raw file sent"); status(NameStr3); StarOk = true; break; } 
          case 80: ///////////////////// KeyBrdByte[1]=='w'&&KeyBrdByte[2]=='a' *wa* wake up dimmed LCD - does not trigger false M5 S5 T5 like *nd*00
-       { LastMillis = millis(); DoWakeUp(); StarOk = true; break; }                                                            
+       { LastMillis = millis(); DoWakeUp(); StarOk = true; break; }  
+         case 81: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]=='x' *sx* Drag n Drop file list save 
+       { if (knum==4) { fnum = 1; status("fnum reset"); StarOk = true; break; }
+         if (knum<44) { if (b+48!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[n] = 0x00; status(fname); }
+                        if (b+48=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[n]  = 0x00; status(fdir);  } StarOk = true; break; } break; }                                                                    
       } return StarOk;
 }
 
