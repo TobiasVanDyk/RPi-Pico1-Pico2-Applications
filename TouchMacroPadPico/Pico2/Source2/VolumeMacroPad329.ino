@@ -1071,11 +1071,11 @@ bool GetMatch(byte a)
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;    
   Found = (a<10);                      // a = 1 to 6 text a = 7 - 9 non ASCII  
 
-  if (FileSend)  { memmove(RecBytes, RecBytes + 1, NumBytes - 1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber); // Remove F                     
-                   File f1 = SD.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); return Found; }                                          // save as file1-File9999
-  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove G and 0-9
+  if (FileSend)  { memmove(RecBytes, RecBytes+1, NumBytes-1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber); // Remove F                    
+                   File f1 = SD.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); return Found; }                                      // save as file1-File9999
+  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; memmove(RecBytes, RecBytes+2, NumBytes-2); NumBytes -= 2;                                    // Remove G and 0-9
                    f1 = SD.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return Found; }
-  if (Glyph)     { for (i=0; i<4; i++) MathHexNum[i] = RecBytes[i+1]; if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return Found; } 
+  if (Glyph)     { memcpy(MathHexNum, RecBytes+1, 4); if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return Found; } 
   if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
                    if (KeyOnVal[0]==54 || KeyOnVal[0]==20) KeyOnVal[0] = 10; if (KeyOnVal[0]==66 || KeyOnVal[0]==34) KeyOnVal[0] = 11; return Found; }  // Can use d D = Del key r R Return key
   if (nKeyPC)    { for (i=0; i<6; i++) nKeyPCArr[i] = RecBytes[i+1]-48; if (r7=='*') nKeyPCDelay = 10; else nKeyPCDelay = r7-48; return Found; }
@@ -3606,21 +3606,22 @@ unsigned long GetT(byte knum)
 bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be = '*'
 /////////////////////////////////////////////////////////////////////////////////////// 
 { unsigned long T, z;    // t = timeclock struct
-  uint8_t a, b, c, d, h, n, m, i, k2, k5, k6, k7, knum;
+  uint8_t a, b, c, d, h, n, m, i, k2, k4, k5, k6, k7, knum;
   bool UnLink = false, StarOk = false, Ok = true;  
   int nStrLen, e, d99 = 0, c99 = 0, c999 = 0, d999 = 0;   
   File f, f1;
                                                                  
   a = FindStarNum(); c = StarCodeType[a];     // Position of *code in StarCode list                              
   CmKey = false;                              // Check if *codes are from pressing [*Cm] key or entered directly
-  if (a==StarCodesMax) return StarOk;         // Not found
-                               
-  b =  KeyBrdByte[4]-48;                   //  01234 = *  *b
+  if (a==StarCodesMax) return StarOk;         // Not found                              
+  
   k2 = KeyBrdByte[2];                      //  01234 = * k*
+  k4 = KeyBrdByte[4];                      //  *xx*k4
   k5 = KeyBrdByte[5];                      //  *xx* k5
   k6 = KeyBrdByte[6];                      //  *xx*  k6
   k7 = KeyBrdByte[7];                      //  *xx*   k7
   knum = KeyBrdByteNum;                    //  *xx* = 4 *xx*nnn = 7
+  b =  k4-48;                              //  01234 = *  *b
   c99 =  b*10 + k5-48;                     //  00-99 and 
   c999 = b*100 + (k5-48)*10 + k6-48;       //  000-999
   d99 =  (k5-48)*10 + k6-48;               //  00-99
@@ -3716,7 +3717,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         if (b<100) {MouseDelta = b; status("Cursor Move changed"); SaveMouse(); StarOk = true; break; } else break; }
         case 71: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x6d *mc*udlr,UDLR,nn = Cursor move Up Down Left Righ UDLR = 10 x udlr nn = 01-99 pixels move 
        { if (knum!=7 || d99>99) break; 
-                         else { m=b+48; if (m<0x5B) d=10; else d=1; 
+                         else { m=k4; if (m<0x5B) d=10; else d=1; 
                                 if (m=='U'||m=='u') MouseU(d99, d, 5); if (m=='D'||m=='d') MouseD(d99, d, 5);  // Move Up/Down d99*10 or d99
                                 if (m=='L'||m=='l') MouseL(d99, d, 5); if (m=='R'||m=='r') MouseR(d99, d, 5);  // Move Left/Right d99*10 or d99
                                 StarOk = true; } break; }        
@@ -3846,7 +3847,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { //               01234567890123456789012345678
          char KRVal[] = {"Key Repeat x00 msec"} ;
          if (b<2) { status("Add number 2-9"); break; }             // Use the [ADD]ed number to assign 2-9
-         RepTimePeriod = b*100; KeyRepeat = b; KRVal[11] = b+48;   // Value 2-9 => 200-900 milliseconds 
+         RepTimePeriod = b*100; KeyRepeat = b; KRVal[11] = k4;     // Value 2-9 => 200-900 milliseconds 
          WriteConfig1Change = true;  status((char *)KRVal); StarOk = true; break; }   
          case 39: ////////////////////// KeyBrdByte[1]==0x6b&&KeyBrdByte[2]==0x65 *ke* Enable/Disable Volume Mute Processing 
        { KeyHeldEnable = !KeyHeldEnable; Config1[2] = KeyHeldEnable; WriteConfig1(0);
@@ -3932,12 +3933,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         optionsindicators(0); ConfigButtons(1); LayerADChange = true; StarOk = true; break; } 
         case 58: ///////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x79 *lx*lxs l=1-4 x=a,b,c,d s=s,f (SDCard or Flash) switch layouts A-D brown and white
       { if (knum==4) { Layout = 2; }             // Layout = 1-4 LayerAD = 0,1,2,3 = a,b,c,d toggle brown/white keep same A-D A=65 a=97
-        if (knum>4)  { if (b>0&&b<5)  { Layout = b; if (knum==5) { ConfigButtons(1); StarOk = true; break; } } 
-                       if (b+48=='s') { Layout = 2; buttonpress(12); StarOk = true; break; } 
-                       if (b+48=='k') { Layout = 2; buttonpress(13); StarOk = true; break; }                                                                                 
-                       if (b+48=='m') { Layout = 2; buttonpress(14); StarOk = true; break; } 
-                       if (b+48=='n') { Layout = 2; buttonpress(15); StarOk = true; break; } 
-                       if (b+48=='o') { Layout = 2; buttonpress(16); StarOk = true; break; }  break; }
+        if (knum>4)  { if (b>0&&b<5) { Layout = b; if (knum==5) { ConfigButtons(1); StarOk = true; break; } } 
+                       if (k4=='s')  { Layout = 2; buttonpress(12); StarOk = true; break; } 
+                       if (k4=='k')  { Layout = 2; buttonpress(13); StarOk = true; break; }                                                                                 
+                       if (k4=='m')  { Layout = 2; buttonpress(14); StarOk = true; break; } 
+                       if (k4=='n')  { Layout = 2; buttonpress(15); StarOk = true; break; } 
+                       if (k4=='o')  { Layout = 2; buttonpress(16); StarOk = true; break; }  break; }
         if (knum>5)  { n = LayerAD; LayerAD = k5 - 97; if (LayerAD<4) LayerADLetter[0] = 65 + LayerAD; else { LayerAD = n; break; } }
         if (knum==7) { if (k6=='s') LayerAxD = true; else if (k6=='f') LayerAxD = false; else break;  }
         optionsindicators(0); ConfigButtons(1); LayerADChange = true; StarOk = true; break; } 
@@ -3954,13 +3955,13 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                        dt200=DelayTimeArr[DelayTimeVal][3]; dt500=DelayTimeArr[DelayTimeVal][4]; } }
         strcpy(DelayStatus, DelayStatusStr[dtChange]); if (dtChange) strcat(DelayStatus, DelayStr[DelayTimeVal]); status(DelayStatus); WriteConfig1Change = StarOk = true; break; }   
         case 61: ///////////////////// KeyBrdByte[1]==0x77&&KeyBrdByte[2]==0x79 *vx*000 to *vx*111 Volume enabled/disabled in Layouts 1,3,4 if enabled in Layout 2 
-      { if (knum==7) { char vx[] = "*vx*111 VolEnable"; Vol1=b; Vol3=k5-48; Vol4=k6-48; vx[5] = b+48; vx[6] = k5; vx[7] = k6; status(vx); WriteConfig1Change = StarOk = true; break; } 
+      { if (knum==7) { char vx[] = "*vx*111 VolEnable"; Vol1=b; Vol3=k5-48; Vol4=k6-48; vx[5] = k4; vx[6] = k5; vx[7] = k6; status(vx); WriteConfig1Change = StarOk = true; break; } 
         else { status("Enter *vx*000-111=L1L3L4"); break; } }
         case 62: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x61 *ma*n *ma*0-9 Math0-Math9 Symbol Sets
       { char MathS[32] = "SDCard Symbol Set Mathx loaded";
         if (knum==4) { SaveMath(10); status("MathX saved on SDCard"); StarOk = true; break; }
         if (b>9) { status("Add number 0-9 to *ma*");  }                       // Use the [ADD]ed number to assign 0-9 only
-            else { if (ReadMath(b)) { MathS[22] = b+48; status(MathS); }  }   // *ma*0-9 = Default Symbol Keys Set from file Math0 on SDCard or Math1 - Math9 loaded
+            else { if (ReadMath(b)) { MathS[22] = k4; status(MathS); }  }   // *ma*0-9 = Default Symbol Keys Set from file Math0 on SDCard or Math1 - Math9 loaded
         StarOk = true; break; }   
         case 63: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x31 *c1* = copy all Flash Files to SDCard in folder Flash
       { n = CopyFlashFiles2SDCard(); Timer2Str(FileCopy, 2, n); strcat(FileCopyMsg, FileCopy); status(FileCopyMsg); StarOk = true; break; }    
@@ -3985,7 +3986,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println("EOC");             
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
-      { if (nKeys34 && d999<100) { NameStr3[0] = b+48; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
+      { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
             else for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
         if (LayerAxD)  f = SD.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
         if (nStrLen<nKeySize) { f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0; } 
@@ -4021,9 +4022,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 80: ///////////////////// KeyBrdByte[1]=='w'&&KeyBrdByte[2]=='a' *wa* wake up dimmed LCD - does not trigger false M5 S5 T5 like *nd*00
       { LastMillis = millis(); DoWakeUp(); StarOk = true; break; }    
          case 81: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]=='x' *sx* Drag n Drop file list save 
-       { if (knum==4) { fnum = 1; status("fnum reset"); Serial.println(knum); Serial.println(fpath); Serial.println(fdir); Serial.println(fname); StarOk = true; break; }
-         if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); StarOk = true; break; }
-                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  StarOk = true; break; } } break; }                                                                            
+       { if (knum==4) { fnum = 1; status("fnum reset"); StarOk = true; break; }
+         if (k4=='/' && k5=='/') { strcpy(fdir, "");  status("fdir reset");  StarOk = true; break; }
+         if (k4=='*' && k5=='*') { strcpy(fname, ""); status("fname reset"); StarOk = true; break; }
+         if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); }
+                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  } } StarOk = true; break; }                                                                            
       } return StarOk;                
 }
 
@@ -5071,4 +5074,4 @@ void showKeyData()
          
  }
 
-/************* EOF line 5064*****************/
+/************* EOF line 5077*****************/

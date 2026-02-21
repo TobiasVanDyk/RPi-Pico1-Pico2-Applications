@@ -882,16 +882,31 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *c2* = copy files in SDcard folder Flash to root of Flash memory i.e. restore previously copied Flash files.
 (R) *pc* or *pc*t send raw or text TouchLCD configuration data to a PC.
 (S) Additional nKeys *commands: 
-   *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional). d = * send Alt+Esc to move focus to next 
-   open app before executing the key nn. <*nd*000> will wake up LCD if in dimmed state.
-   *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
-   textfile as m = m-mmm and a-Z,0-9 and x = any character
-   *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn
+    *nd*nnd send raw keys 1-17 -> 0-16 to LCD d = delay*1000 mS (optional). d = * send Alt+Esc to move focus to next 
+    open app before executing the key nn. <*nd*000> will wake up LCD if in dimmed state.
+    *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
+    textfile as m = m-mmm and a-Z,0-9 and x = any character
+    *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn
 (T) *rm*filename remove/delete filename or if //dirname - will use currentLayerAxD to determine if file on SDcard or 
     Flash //folder must be empty.
 (U) *sf*filename send file contents of file filename over serial to PC App in filtered readable format.
     *sF*filename send file contents of file filename over serial to PC App in raw format - maximum size 6144 bytes. 
     Use A-D white = flash or brown = SDCard to choose media on PC App
+(V) *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber
+    to 1. One or many files can be copied from the PC App to the Pico Macropad using the [Select and Send Files] button
+    on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next
+    to the button is filled with the list of files sent. If one of these are selected, or a new file and its path typed
+    into the combobox, the button when pressed will not first open a dialog box to select files but will send the single
+    file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file
+    9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01> for example, or use the 
+    [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e.
+    A-D must be brown, these files should not be saved to Flash directly as they can be large. Use *sx* to reset the 
+    number count to 1. Use *sx*flename or *sx*/foldername/ to change the name used or path where files are saved - 
+    but these setting are not saved. The Pico is not a PC so when dragging more than ten or twenty files they should be 
+    small, or for larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal
+    for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
+    filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
+    between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null.
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
