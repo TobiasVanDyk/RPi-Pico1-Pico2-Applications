@@ -1054,26 +1054,27 @@ bool GetMatch(byte a)
   r5 = RecBytes[5];  r6 = RecBytes[6];  r7 = RecBytes[7];                      
   a = a - 48;                          // ASCII Number 0-9 subtract 48
   
-  tTime     = (a==36);       // 0x55 = 'T' Date-Time setting
-  aTime     = (a==17);       // 0x41 = 'A' Date-Time setting
-  pTime     = (a==32);       // 0x50 = 'P' Date-Time setting
-  wTime     = (a==39);       // 0x57 = 'W' Date-Time setting  
-  mEdt      = (a==51);       // 0x63 = 'c' MacroEditor [ADD] string  
-  sSens     = (a==35);       // 0x53 = 'S' PC sensor value from HWInfo
-  mPlay     = (a==29);       // 0x4D = 'M' PC music Playing
-  tTimeDate = (a==25);       // 0x49 = 'I' Time Date Display (not system time-date)
-  KeyOn     = (a==59);       // 0x6B = 'k' PC Config App sends Keys direct - <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
-  nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
-  Glyph     = (a==55);       // 0x67 = 'g' 4 digit unicode symbol hexstring received char MathHexNum[5];  Current Math Hex Number as ASCII without 0x
-  GlyphBank = (a==23);       // 0x47 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number  
-  FileSend  = (a==22);       // 0x46 - 'F' List of Files sent from drag and drop to PC App  
+  tTime     = (a==36);        // 0x55 = 'T' Date-Time setting
+  aTime     = (a==17);        // 0x41 = 'A' Date-Time setting
+  pTime     = (a==32);        // 0x50 = 'P' Date-Time setting
+  wTime     = (a==39);        // 0x57 = 'W' Date-Time setting  
+  mEdt      = (a==51);        // 0x63 = 'c' MacroEditor [ADD] string  
+  sSens     = (a==35);        // 0x53 = 'S' PC sensor value from HWInfo
+  mPlay     = (a==29);        // 0x4D = 'M' PC music Playing
+  tTimeDate = (a==25);        // 0x49 = 'I' Time Date Display (not system time-date)
+  KeyOn     = (a==59);        // 0x6B = 'k' PC Config App sends Keys direct - <kabc> a=key1--6 b=LayerAD 0-3 c=Layout 1-4
+  nKeyPC    = (a==62);        // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+  Glyph     = (a==55);        // 0x67 = 'g' 4 digit unicode symbol hexstring received char MathHexNum[5];  Current Math Hex Number as ASCII without 0x
+  GlyphBank = (a==23);        // 0x47 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number  
+  FileSend  = (a==22||a==54); // 0x46 - 'F' or 'f' List of Files sent [Select and Send Files] button in Comms Tab=F or nKeys Tab=f Final path = fdir + fname + fnumber=1-999
   
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;    
   Found = (a<10);                      // a = 1 to 6 text a = 7 - 9 non ASCII  
 
-  if (FileSend)  { memmove(RecBytes, RecBytes+1, NumBytes-1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber); // Remove F                    
-                   File f1 = SD.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); return Found; }                                      // save as file1-File9999
-  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; memmove(RecBytes, RecBytes+2, NumBytes-2); NumBytes -= 2;                                    // Remove G and 0-9
+  if (FileSend)  { if (a==54) { strcpy(NameStr1, fname); if (fnum<10) strcpy(fname, "n0"); else strcpy(fname, "n"); fname[0] = nChar; } 
+                   memmove(RecBytes, RecBytes+1, NumBytes-1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber);  // Remove F or f                   
+                   File f1 = SD.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); if (a==54) strcpy(fname, NameStr1); return Found; }   // save as file1-File9999
+  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; memmove(RecBytes, RecBytes+2, NumBytes-2); NumBytes -= 2;                                     // Remove G and 0-9
                    f1 = SD.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return Found; }
   if (Glyph)     { memcpy(MathHexNum, RecBytes+1, 4); if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return Found; } 
   if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
