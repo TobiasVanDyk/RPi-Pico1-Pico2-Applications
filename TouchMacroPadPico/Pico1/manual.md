@@ -1,11 +1,8 @@
-
 # Pico 1 Touch Macropad with SDCard
 ```
 manual.h
 -----------------------------------------------------------------------------------------------------------------------
-On First Start:
-
-There is a PC Windows-based app for an easy way of controlling and configuring the Touch MacroPad - Serial2Pico.
+On First Start: 
 
 If asked to do so, do a four-arrow corner calibration - press at the TIP of each arrow just ONCE. If you make a 
 mistake and press the same corner twice it is likely that you will need a reset with the nuke.uf2 file (provided 
@@ -49,6 +46,12 @@ if found. To load a specific Symbol Set use *ma*n with n = 0-9.
 When pressing the [*Cm] key in the MacroEditor (green Pad [k]) it is not necessary to press [ADD] - it is added
 automatically. For example to switch the serial port on/off press [*Cm] until *se* shows then press [EXE] - no
 need to press {ADD] before [EXE]. If you did press [ADD] by mistake just press the [*Cm] key again.
+
+If you have sent timedata <t...> from the PC via powershell or a serial monitor and suddenly your custom labels for 
+the T key set (Layout 4) is scrambled that is because you were in the SDCard mode (brown A-D). Correct it by sending 
+the custom label file <tlabelfilename>, from the PC to the touchpad for the t key set with the A-D label in brown, 
+and send time data (<t or <T) with A-D in white. Use [Cfg][A-D] to change between white and brown. Similarly send
+HWInfo sensor data and Foobar2000 music playing data with A-D in white not brown.
 
 -----------------------------------------------------------------------------------------------------------------------
 Layout 1 - M Keys - [M1]-[M24] - Cycle through Layout 1 to 4 press [L1-L4] or long-press [Vo] 
@@ -885,9 +888,28 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     open app before executing the key nn. <*nd*000> will wake up LCD if in dimmed state.
     *nf*xmmm x = nChar mmm = nKeyNumber  Send content of nkeyfile to PC App - can also use to get content of any other 
     textfile as m = m-mmm and a-Z,0-9 and x = any character
-    *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn   
+    *np*nnn switch LCD to nKeys page on command from App - switch off with a second *np*nnn
 (T) *rm*filename remove/delete filename or if //dirname - will use currentLayerAxD to determine if file on SDcard or 
-    Flash //folder must be empty.    
+    Flash //folder must be empty.
+(U) *sf*filename send file contents of file filename over serial to PC App in filtered readable format.
+    *sF*filename send file contents of file filename over serial to PC App in raw format - maximum size 6144 bytes. 
+    Use A-D white = flash or brown = SDCard to choose media on PC App
+(V) *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber
+    to 1. One or many files can be copied from the PC App to the Pico Macropad using the [Select and Send Files] button
+    on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next
+    to the button is filled with the list of files sent. If one of these are selected, or a new file and its path typed
+    into the combobox, the button when pressed will not first open a dialog box to select files but will send the single
+    file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file
+    9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01> for example, or use the 
+    [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e.
+    A-D must be brown, these files should not be saved to Flash directly as they can be large. Use *sx* to reset the 
+    number count to 1. Use *sx*flename or *sx*/foldername/ to change the name used or path where files are saved - 
+    but these setting are not saved. The Pico is not a PC so when dragging more than ten or twenty files they should be 
+    small, or for larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal
+    for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
+    filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
+    between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null. 
+      
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
@@ -975,14 +997,14 @@ then press [EXE].
 
 Both single macros from M, S and T 1-24 and linked macros can be used for the timers - if a linked macro is used add
 a number 1* to 8* instead of 1 to 8. The Timers are programmed as Time-Fire-Time-Fire. There will be an option later 
-to change this to Fire-Time-Fire-Time for the Repeat timers. The two real-time (using the Pico 2's TimeLib SW Clock)
-timers are configured by first setting the Clock Time by sending the string <Tyymmddwhhmm> -> <T22110341439> is Thursday
-3 Nov 2022 at 14h30. Then set the alarm time by sending the string <Ayymmddwhhmm> -> <A22110601439> is Sunday 6 Nov 
+to change this to Fire-Time-Fire-Time for the Repeat timers. The two real-time (using the Pico's HW RTC or Clock)
+timers are configured by first setting the Clock Time by sending the string <tyymmddwhhmm> -> <t22110341439> is Thursday
+3 Nov 2022 at 14h30. Then set the alarm time by sending the string <ayymmddwhhmm> -> <a22110601439> is Sunday 6 Nov 
 2022 at 14h30. To send a repeat macro every 1 minute send <a-1-1-1--1-1> (the double -- is for the day of week not
 significant), and associate with it 5 [R-C]. The clock time and alarm time are sent to a serial terminal and displayed
 in the status bar by pressing [Cgf] twice. Can use a *code *tx*yymmddwhhmm to send all the clock values else send these
 either manually using a serial terminal or use a Proccessing script, or a scheduled task powershell script. Note that 
-the Pico 2 does not have a HW RTC.
+the Pico has a HW RTC but does not have a dedicated battery backup for its HW RTC.
 
 The Repeat-only mode (i.e send macro fixed number of times with a delay or no delay, is not implemented as yet.
 
@@ -1014,19 +1036,16 @@ Example 3: Send the macro 0x3C 0x34 0xE0 0xE1 0x29 0x3E (which is <4 Control Shi
 with Layer 4 visible, then pressing [M4] will open the Task Manager.
 
 PC Sensor Data: The sensor data read from HWInfo's Gadget Regisry data can be sent to the touchpad and displayed on the
-LCD statusbar. The procedure is explained in detail in the MacropadPCSensorData section. Use <S data text > to display 
-the sensor data.
+LCD statusbar. The procedure is explained in detail in the MacropadPCSensorData section. Switch the A-D to white not 
+brown before sending sensor data.
 
 PC Music Playing Data: The Music Playing data read from Foobar2000's Now Playing Simple foobar2000 plugin, can be sent
 to the touchpad and displayed on the LCD statusbar. The procedure is explained in detail in the MacropadFoobarPlaying 
-section. Use <M data text > to display the sensor data.
+section. Switch the A-D indicator to white not brown before sending music data.
 
 Date Time Display This is an alternative Date Time which is only displayed, and not used to set the Pico system 
-time-date. The procedure is explained in detail in the SetDateTime section. This uses <I > and the system time date 
-uses <T >. 
-
-Key Controls:  Use <k list > Keys direct <kabc> a=key1--6 MST1-MST24 a=7-9,D,R other keys Cut Copy Paste Delete Return
-b=LayerAD 0-3 c=Layout 1-4. Use <n list > nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
+time-date. The procedure is explained in detail in the SetDateTime section. This uses <T > and the system time date 
+uses <t >. Switch the A-D to white not brown before sending time data.
 
 -----------------------------------------------------------------------------------------------------------------------
 Panic mode reset. If for any reason your keypad becomes unresponsive or behaves strangely reset it as follows:
@@ -1051,5 +1070,4 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
-
 
