@@ -856,9 +856,9 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     enable Volume in Layout 2 with [Cfg][Vol]. The Volume Up/Dwn keys will show in Layouts 3, and 4 (and 2), but not in 
     Layout 1.         
 (O) *ma*n with n = 0-9 or *ma* with no number added. Load Symbol set 0-9. You can now use up to 1080 Special Symbols 
-   (Math and Greek etc). Load symbol set 0-9 using *ma*0-9 or by using the [Load] key in the Symbols page - if the file 
-   Math0 to Math9 exists on the SDCard it is loaded as the current symbol set. Read mathKeys.h for more instructions - 
-   you can use *ma* with no number added to save the 3 Math Arrays in mathKeys.h to the SDCard as file MathX.    
+    (Math and Greek etc). Load symbol set 0-9 using *ma*0-9 or by using the [Load] key in the Symbols page - if the file 
+    Math0 to Math9 exists on the SDCard it is loaded as the current symbol set. Read mathKeys.h for more instructions - 
+    you can use *ma* with no number added to save the 3 Math Arrays in mathKeys.h to the SDCard as file MathX.    
 (P) *md* - Direct Mode (Blue D indicator in MacroEditor), accessed via *md* to switch on. To switch off press [*Cm] key. 
     Use direct mode by pressing any character then press [EXE] to send it to PC.
 (Q) Backup and Restore files on Flash memory to SDCard. 
@@ -876,6 +876,22 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (U) *sf*filename send file contents of file filename over serial to PC App in filtered readable format.
     *sF*filename send file contents of file filename over serial to PC App in raw format - maximum size 6144 bytes. 
     Use A-D white = flash or brown = SDCard to choose media on PC App    
+(V) *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber
+    to 1. One or many files can be copied from the PC App to the Pico Macropad using the [Select and Send Files] button
+    on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next
+    to the button is filled with the list of files sent. If one of these are selected, or a new file and its path typed
+    into the combobox, the button when pressed will not first open a dialog box to select files but will send the single
+    file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file
+    9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01> for example, or use the 
+    [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e.
+    A-D must be brown, these files should not be saved to Flash directly as they can be large. Use *sx* to reset the 
+    number count to 1. Use *sx*flename or *sx*/foldername/ to change the name used or path where files are saved - 
+    but these setting are not saved. The Pico is not a PC so when dragging more than ten or twenty files they should be 
+    small, or for larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal
+    for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
+    filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
+    between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null.
+        
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
