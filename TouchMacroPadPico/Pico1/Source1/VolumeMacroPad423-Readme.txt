@@ -8,13 +8,13 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad423.ino.elf"
-Sketch uses 253644 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 58632 bytes (22%) of dynamic memory, leaving 203512 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 253996 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 58664 bytes (22%) of dynamic memory, leaving 203480 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
-Converting to uf2, output size: 579584, start address: 0x2000
+Converting to uf2, output size: 580608, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RPI-RP2)
-Wrote 579584 bytes to D:/NEW.UF2
+Wrote 580608 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -25,13 +25,11 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
     Use USB Stack Adafruit TinyUSB
     Use 200 or 125 MHz CPU when higher SPI read is used:  #define SPI_FREQUENCY      35000000  // 50MHz causes volume artifacts
                                                           #define SPI_READ_FREQUENCY 15000000  // 20 MHz also ok
+
 New changes:
-1. File transfer from files dragged and dropped into the PC App Comms Tab receive box where they are listed alphabetically and then sent one by 
-   one to the Pico macropad where they are named numerically as file1 to file 9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01>
-   for example, or use the [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e. A-D must be brown, these files
-   should not be saved to Flash directly as they can be large. Use *sx* to reset the number cpount to 1. Use *sx*flename or *sx*/foldername to change the name used or path where 
-   files are saved. These setting are not saved
-2. *wa* Wakeup dimmed LCD. 
+1. Fixed *sx*filename and *sx*folder code.
+2. *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber to 1. One or many files can be copied from the PC App to the Pico Macropad using the [Select and Send Files] button on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next to the button is filled with the list of files sent. If one of these are selected, or a new file and its path typed into the combobox, the button when pressed will not first open a dialog box to select files but will send the single file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file 9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01> for example, or use the [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e. A-D must be brown, these files should not be saved to Flash directly as they can be large. Use *sx* to reset the number count to 1. Use *sx*flename or *sx*/foldername/ to change the name used or path where files are saved - but these setting are not saved. The Pico is not a PC so when dragging more than ten or twenty files they should be small, or for larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null.
+3. *wa* Wakeup dimmed LCD. 
 
 Previous changes
 1. New rules for <x > serial port commands to enable <m,s,t > from both SDCard and Flash modes. Refer to manual but previous m s t Flash now M S I and
