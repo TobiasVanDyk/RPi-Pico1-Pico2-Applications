@@ -646,7 +646,7 @@ char * ttr1to12[] = {ttr1, ttr2, ttr3, ttr4, ttr5, ttr6, ttr7, ttr8, ttr9, ttr10
 const int  StrSize =  200;       // Check if not byte used if made larger 200 * 24 * 4 = 19.2 kbytes
 const int  ByteSize = 200;       // 
 const byte MaxBytes = StrSize;   // 
-const int MaxRec = 6144;         // Big enough for MathBanks
+const int  MaxRec = 6144;        // Big enough for MathBanks
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 byte Str1[ByteSize],   Str2[ByteSize],   Str3[ByteSize],   Str4[ByteSize],   Str5[ByteSize],   Str6[ByteSize];
 byte Str7[ByteSize],   Str8[ByteSize],   Str9[ByteSize],   Str10[ByteSize],  Str11[ByteSize],  Str12[ByteSize];
@@ -686,7 +686,7 @@ bool FileSend = false;       // Files sent from PCApp with drag and drop
 int  fnum = 1;               // Counts file1-file9999
 char fname[40] = "file";     // Drag and Drop files in PC App use this as basis filename 
 char fpath[85] = "";         // Holds fdir + fname + fnum=1-9999
-char fdir[40]  = "/";        // Drag and Drop files in PC App use this as basis folder
+char fdir[40]  = "";         // Drag and Drop files in PC App use this as basis folder
 
 const int NumButtons = 17;             // Total number of buttons = 12 keys (3 rows x 4 columns) + 5 pads on right
 TFT_eSPI_Button key[NumButtons];       // Create 12 keys + 5 config buttons for keypad
@@ -1071,7 +1071,7 @@ bool GetMatch(byte a)
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;    
   Found = (a<10);                      // a = 1 to 6 text a = 7 - 9 non ASCII  
 
-  if (FileSend)  { memmove(RecBytes, RecBytes + 1, NumBytes - 1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber); // Remove F  
+  if (FileSend)  { memmove(RecBytes, RecBytes + 1, NumBytes - 1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber); // Remove F                     
                    File f1 = SD.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); return Found; }                                          // save as file1-File9999
   if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; for (i=0; i<NumBytes-1; i++) RecBytes[i] = RecBytes[i+2]; NumBytes = NumBytes-2; // Remove G and 0-9
                    f1 = SD.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return Found; }
@@ -4021,9 +4021,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 80: ///////////////////// KeyBrdByte[1]=='w'&&KeyBrdByte[2]=='a' *wa* wake up dimmed LCD - does not trigger false M5 S5 T5 like *nd*00
       { LastMillis = millis(); DoWakeUp(); StarOk = true; break; }    
          case 81: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]=='x' *sx* Drag n Drop file list save 
-       { if (knum==4) { fnum = 1; status("fnum reset"); StarOk = true; break; }
-         if (knum<44) { if (b+48!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[n] = 0x00; status(fname); }
-                        if (b+48=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[n]  = 0x00; status(fdir);  } StarOk = true; break; } break; }                                                                                   
+       { if (knum==4) { fnum = 1; status("fnum reset"); Serial.println(knum); Serial.println(fpath); Serial.println(fdir); Serial.println(fname); StarOk = true; break; }
+         if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); StarOk = true; break; }
+                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  StarOk = true; break; } } break; }                                                                            
       } return StarOk;                
 }
 

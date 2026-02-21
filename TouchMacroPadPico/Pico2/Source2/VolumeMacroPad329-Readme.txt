@@ -15,7 +15,7 @@ Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Ard
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad329.ino.elf"
-Sketch uses 244260 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 244348 bytes (11%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 59380 bytes (11%) of dynamic memory, leaving 464908 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad329.ino.uf2 
 Resetting COM3
@@ -45,12 +45,13 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 
 New changes:
-1. File transfer from files dragged and dropped into the PC App Comms Tab receive box where they are listed alphabetically and then sent one by 
+1. Fixed *sx*filename and *sx*folder
+2. File transfer from files dragged and dropped into the PC App Comms Tab receive box where they are listed alphabetically and then sent one by 
    one to the Pico macropad where they are named numerically as file1 to file 9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01>
    for example, or use the [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e. A-D must be brown, these files
    should not be saved to Flash directly as they can be large. Use *sx* to reset the number cpount to 1. Use *sx*flename or *sx*/foldername to change the name used or path where 
    files are saved. These setting are not saved
-2. *wa* Wakeup dimmed LCD. 
+3. *wa* Wakeup dimmed LCD. 
 
 Previous changes
 1. New rules for <x > serial port commands to enable <m,s,t > from both SDCard and Flash modes. Refer to manual but previous m s t Flash now M S I and
