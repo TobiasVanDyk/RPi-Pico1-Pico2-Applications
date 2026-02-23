@@ -4030,13 +4030,17 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); }
                         if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  } } StarOk = true; break; } 
          case 82: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='s' *1s*char Serial Start Marker
-       { if (knum==5) StartMarker = k4; status("Serial Start Marker changed"); WriteConfig1(1); StarOk = true; break; } 
+       { if (knum==4) { StartMarker = '<'; EndMarker = '>'; status("< > Serial Comms Markers"); } 
+         if (knum==5) { StartMarker = k4; status("Serial Start Marker changed"); } 
+         if (knum==6) { StartMarker = k4; EndMarker = k5; status("Serial Start + End Markers changed"); } WriteConfig1(1); StarOk = true; break; } 
          case 83: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='e' *1e*char Serial End Marker
-       { if (knum==5) EndMarker = k4; status("Serial End Marker changed"); WriteConfig1(1); StarOk = true; break; }      
+       { if (knum==4) { StartMarker = '<'; EndMarker = '>'; status("< data > Serial Markers"); } 
+         if (knum==5) { EndMarker = k4; status("Serial End Marker changed"); } 
+         if (knum==6) { StartMarker = k4; EndMarker = k5; status("Comms Start + End Markers changed"); } WriteConfig1(1); StarOk = true; break; }      
          case 84: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='s' *1s*char Serial Start Marker
-       { if (knum==5) StartMarker = k4; status("Serial Start Marker changed"); StarOk = true; break; } 
+       { if (knum==5) { StartMarker = k4; status("Serial Start Marker changed"); StarOk = true; } break; } 
          case 85: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='e' *1e*char Serial End Marker
-       { if (knum==5) EndMarker = k4; status("Serial End Marker changed"); StarOk = true; break; }                                                                                                 
+       { if (knum==5) { EndMarker = k4; status("Serial End Marker changed"); StarOk = true; } break; }                                                                                                 
       } return StarOk;                
 }
 
