@@ -925,7 +925,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
     remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
     *command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
-    the values will be 0 after loading the new firmware. Use the Macro editor on the Pico and enter *1s
+    the values will be 0 after loading the new firmware.  Use the Macro editor on the Pico and enter *1s* and save 
+    with the [Cfg]->[Sav] config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
@@ -1091,3 +1092,4 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 ```
 */
+
