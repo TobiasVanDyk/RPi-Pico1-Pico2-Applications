@@ -49,6 +49,13 @@ When pressing the [*Cm] key in the MacroEditor (green Pad [k]) it is not necessa
 automatically. For example to switch the serial port on/off press [*Cm] until *se* shows then press [EXE] - no
 need to press {ADD] before [EXE]. If you did press [ADD] by mistake just press the [*Cm] key again.
 
+Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed
+from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
+as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
+Start marker and *1e*char for the End marker. When it is changed on the Pico change it on the PC App before syncing,
+and when changed on the PC App via *1s,e*char remember to change the start char to the newly changed one when sending
+the *command to change the end character.
+
 -----------------------------------------------------------------------------------------------------------------------
 Layout 1 - M Keys - [M1]-[M24] - Cycle through Layout 1 to 4 press [L1-L4] or long-press [Vo] 
 -----------------------------------------------------------------------------------------------------------------------
@@ -906,6 +913,12 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
     filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
     between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null.
+(W) Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed
+    from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
+    as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
+    Start marker and *1e*char for the End marker. When it is changed on the Pico change it on the PC App before syncing,
+    and when changed on the PC App via *1s,e*char remember to change the start char to the newly changed one when sending
+    the *command to change the end character.
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
@@ -1070,4 +1083,3 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
-
