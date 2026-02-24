@@ -917,17 +917,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
     filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
     between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null. 
-(W) Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed 
-    from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
-    as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
-    Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end 
-    characters, or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App 
-    before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
-    remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
-    *command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
-    the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
-    to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] 
-    config button, before opening the PC App, or enter as *1s*< and *1e*> and save.     
+      
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
@@ -1016,9 +1006,9 @@ then press [EXE].
 Both single macros from M, S and T 1-24 and linked macros can be used for the timers - if a linked macro is used add
 a number 1* to 8* instead of 1 to 8. The Timers are programmed as Time-Fire-Time-Fire. There will be an option later 
 to change this to Fire-Time-Fire-Time for the Repeat timers. The two real-time (using the Pico's HW RTC or Clock)
-timers are configured by first setting the Clock Time by sending the string <tyymmddwhhmm> -> <t22110341439> is Thursday
-3 Nov 2022 at 14h30. Then set the alarm time by sending the string <ayymmddwhhmm> -> <a22110601439> is Sunday 6 Nov 
-2022 at 14h30. To send a repeat macro every 1 minute send <a-1-1-1--1-1> (the double -- is for the day of week not
+timers are configured by first setting the Clock Time by sending the string <Tyymmddwhhmm> -> <t22110341439> is Thursday
+3 Nov 2022 at 14h30. Then set the alarm time by sending the string <Ayymmddwhhmm> -> <A22110601439> is Sunday 6 Nov 
+2022 at 14h30. To send a repeat macro every 1 minute send <A-1-1-1--1-1> (the double -- is for the day of week not
 significant), and associate with it 5 [R-C]. The clock time and alarm time are sent to a serial terminal and displayed
 in the status bar by pressing [Cgf] twice. Can use a *code *tx*yymmddwhhmm to send all the clock values else send these
 either manually using a serial terminal or use a Proccessing script, or a scheduled task powershell script. Note that 
@@ -1054,17 +1044,20 @@ Example 3: Send the macro 0x3C 0x34 0xE0 0xE1 0x29 0x3E (which is <4 Control Shi
 with Layer 4 visible, then pressing [M4] will open the Task Manager.
 
 PC Sensor Data: The sensor data read from HWInfo's Gadget Regisry data can be sent to the touchpad and displayed on the
-LCD statusbar. The procedure is explained in detail in the MacropadPCSensorData section. Switch the A-D to white not 
-brown before sending sensor data.
+LCD statusbar. The procedure is explained in detail in the MacropadPCSensorData section. Use <S data text > to display 
+the sensor data.
 
 PC Music Playing Data: The Music Playing data read from Foobar2000's Now Playing Simple foobar2000 plugin, can be sent
 to the touchpad and displayed on the LCD statusbar. The procedure is explained in detail in the MacropadFoobarPlaying 
-section. Switch the A-D indicator to white not brown before sending music data.
+section. Use <M data text > to display the sensor data.
 
 Date Time Display This is an alternative Date Time which is only displayed, and not used to set the Pico system 
 time-date. The procedure is explained in detail in the SetDateTime section. This uses <T > and the system time date 
-uses <t >. Switch the A-D to white not brown before sending time data.
+time-date. The procedure is explained in detail in the SetDateTime section. This uses <I > and the system time date 
+uses <T >. 
 
+Key Controls:  Use <k list > Keys direct <kabc> a=key1--6 MST1-MST24 a=7-9,D,R other keys Cut Copy Paste Delete Return
+b=LayerAD 0-3 c=Layout 1-4. Use <n list > nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
 -----------------------------------------------------------------------------------------------------------------------
 Panic mode reset. If for any reason your keypad becomes unresponsive or behaves strangely reset it as follows:
 
@@ -1088,4 +1081,3 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
-
