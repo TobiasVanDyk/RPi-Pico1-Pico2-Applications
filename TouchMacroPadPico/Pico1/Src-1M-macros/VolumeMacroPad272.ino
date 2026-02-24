@@ -90,10 +90,14 @@ Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROT
 
 uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const int  StrSize =  200;       // Check if not byte used if made larger 200 * 24 * 4 = 19.2 kbytes
-const int  ByteSize = 200;       // 
-const byte MaxBytes = StrSize;   // 
-const int MaxRec = 6000;         // Big enough for MathBanks
+const int  StrSize =  200;        // Check if not byte used if made larger 200 * 24 * 4 = 19.2 kbytes
+const int  ByteSize = 200;        // 
+const byte MaxBytes = StrSize;    // 
+const int  MaxRec = 6144;         // Big enough for MathBanks
+byte StartMarker  = 0x3C;         // <  Change with *1s*char Start of Text (STX - ASCII 2 / 0x02) 
+byte EndMarker    = 0x3E;         // >  Change with *1e*char End of Text   (ETX - ASCII 3 / 0x03)
+byte StartMarker2 = 0x02;         // Or use backtick/grave ` Change with *2s*char
+byte EndMarker2   = 0x03;         // Or use backtick/grave ` Change with *2e*char
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Example Uppercase:
 // char ch = conv_table2[keycode[n]][1]; usb_hid.keyboardPress(HIDKbrd, ch); delay(dt25); usb_hid.keyboardRelease(HIDKbrd);
@@ -107,17 +111,17 @@ const int MaxRec = 6000;         // Big enough for MathBanks
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
 // 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
 // 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
-// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0
+// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Currently last used entry MediaConfig[0] = Config1[82]; Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+// Currently last used entry EndMarker = Config1[84]; Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
 byte Config1[Config1Size]          = {1,  0,  1,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0  };
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };
 cSt byte Config1Reset[Config1Size] = {1,0,1,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
-                                      0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0  };                                    
+                                      0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 static const unsigned long int tHr  = 60*60*1000; // hour
@@ -446,16 +450,16 @@ const static char FxyChr[10][4] = // F01 to F24
 {"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 117; // StarCodes Count 16+16+16+16+16+16+16+5 StarNum = 0-116
+const static int StarCodesMax = 121; // StarCodes Count 16+16+16+16+16+16+16+9 StarNum = 0-120
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", "c2", 
   "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo", "fs", 
   "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", "m0", 
   "m1", "m2", "ma", "mb", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", "nn", "np", 
   "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", 
-  "sa", "sd", "se", "sf", "sF","sm",  "ss", "st", "sx", "ta", "tb", "tp", "tt", "tw", "ua", "ul", 
+  "sa", "sd", "se", "sf", "sF","sm", "ss", "st",  "sx", "ta", "tb", "tp", "tt", "tw", "ua", "ul", 
   "up", "vx", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", 
-  "0n", "0p", "0s", "0t", "0x"  };
+  "0n", "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   64,
@@ -465,7 +469,7 @@ const static byte StarCodeType[StarCodesMax] =
   21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   24,   24,   
   28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   4,    31,   31,   31,   33,   32,   
   43,   61,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   
-  46,   47,   48,   54,   52    };
+  46,   47,   48,   54,   52,   82,   83,   84,   85    };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -1048,7 +1052,7 @@ bool GetMatch(byte a)
   nKeyPC    = (a==62);       // 0x6E = 'n' nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
   Glyph     = (a==55);       // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send  
   GlyphBank = (a==23);       // 0x17 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
-  FileSend  = (a==22);       // 0x46 - 'F' List of Files sent from drag and drop to PC App  
+  FileSend  = (a==22||a==54); // 0x46 - 'F' or 'f' List of Files sent [Select and Send Files] button in Comms Tab=F or nKeys Tab=f Final path = fdir + fname + fnumber=1-999
   
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;    
   Found = (a<10);                      // a = 1 to 6 text a = 7 - 9 non ASCII  
@@ -1062,9 +1066,10 @@ bool GetMatch(byte a)
                if (L) f.print('\0'); f.close();                                                   // Add NULL to end of filename in File LabelX  
                strcat(LabelFile, " saved"); status(LabelFile); return Found; }
                
-  if (FileSend)  { memmove(RecBytes, RecBytes+1, NumBytes-1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber); // Remove F                    
-                   File f1 = SDFS.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); return Found; }                                      // save as file1-File9999
-  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; memmove(RecBytes, RecBytes+2, NumBytes-2); NumBytes -= 2;                                    // Remove G and 0-9
+  if (FileSend)  { if (a==54) { strcpy(NameStr1, fname); if (fnum<10) strcpy(fname, "n0"); else strcpy(fname, "n"); fname[0] = nChar; } 
+                   memmove(RecBytes, RecBytes+1, NumBytes-1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber);  // Remove F or f                   
+                   File f1 = SDFS.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); if (a==54) strcpy(fname, NameStr1); return Found; } // save as file1-File9999
+  if (GlyphBank) { File f1; char MathN[6] = "Math "; MathN[4] = RecBytes[1]; memmove(RecBytes, RecBytes+2, NumBytes-2); NumBytes -= 2;                                     // Remove G and 0-9
                    f1 = SDFS.open(MathN, "w"); f1.write(RecBytes, NumBytes);  f1.close();  status(MathN); return Found; }
   if (Glyph)     { memcpy(MathHexNum, RecBytes+1, 4); if (r5=='*') { DoAltEsc(); delay(dt100); } else delay(KeyOnValDelay[r5-48]); if (r6-48 == 1) { SendMath(); MathByteNum=0; } return Found; } 
   if (KeyOn)     { for (i=0; i<3; i++) KeyOnVal[i]  = RecBytes[i+1]-48; if (RecBytes[4]=='*') KeyOnVal[5] = 10; else KeyOnVal[5] = RecBytes[4]-48; 
@@ -1091,69 +1096,69 @@ bool GetMatch(byte a)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   return Found;  
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // Check and save new SDCard file strings SDFilename is in sdcard.h select with *sd*n
 // These are limited size Bytesize = 200 - sensible here because wait until written
 // Directly written to SDCard files with PC only limited by SDCard capacity
 ///////////////////////////////////////////////////////////////////////////////////////
 void DoNewSDCard()
-{ int n = 0;
-  byte *BytePtr;
+{ int n;   
   bool Found = false;
-  byte a, c = 0;
+  byte a, c = 0;  
   File f; 
   
   NewData = StrOK = ByteOK = false;  
 
-  a = RecBytes[0];  
-  if (CheckStarCode(a)) return;                    // Do *code and return      
-  Found = GetMatch(a); if (!Found) return;                      
-  a = a - 48;                                      // ASCII Number 0-9 subtract 48
-  
+  a =  RecBytes[0]; 
+  if (CheckStarCode(a)) return;                    // Do *code and return        
+  Found = GetMatch(a); if (!Found) return;          
+  a = a - 48;
+   
   if (Found){ if (a>0) c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24 -> 1-24 used  
-                                                   // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23
-                                                   
-              if (Layout!=2) {if (a>0) {ByteOK = true;  BytePtr = MacroBuff;           // No need for 24 SDC1to24[c]
-                                        status((char *)SDName[c]); }  }                // SDCard file 1-21 x 1-24
-                  
-              for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; }  }           // Skip 1,2 = char <#               
+                                                   // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23                                                   
+              if (Layout!=2) {if (a>0) { ByteOK = true; status((char *)SDName[c]); }  }    // SDCard file 1-21 x 1-24
+              for (n=1; n<=NumBytes; n++) { RecBytes[n-1] = RecBytes[n]; }                 // Skip 1 # = char <#               
+              if (RecBytes[n]!=0x00) { RecBytes[n] = 0x00; NumBytes++; }                   // Add null incase file = text string
+            }                            
     
-   if ((Found)&&(ByteOK))   { File f = SDFS.open(SDName[c], "w");  // Filename set with *sd*1-9,(13-19), k,K,M,S,T
-                              f.write(BytePtr, NumBytes);          // (13-19=A-G must be directly copied to SDCard
-                              //f.print('\0');                     // 4-9=U-Z can be written here    
+   if ((Found)&&(ByteOK))   { File f = SDFS.open(SDName[c], "w");   // Filename set with *sd*1-9,(13-19), k,K,M,S,T
+                              f.write(RecBytes, NumBytes);        // (13-19=A-G must be directly copied to SDCard
+                              //f.print('\0');                    // 4-9=U-Z can be written here    
                               f.close();    }                                        
 }
 
-///////////////////////////////////////////////////
-// Check and save new character strings or macros
-///////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+// Check and save 200 byte max new character strings or macros
+// Filenames from DoMST() 0mcst0MCST0 fromLayout and UpLowerCase flag
+/////////////////////////////////////////////////////////////////////
 void DoNewData()
 { int ASize, n = 0;  
   byte *BytePtr;
   bool Found = false;
   byte a, c = 0;
-  char Msg[10] = "Xx";  // Mx, Sx, Tx
   
   NewData = StrOK = ByteOK = false;  
 
-  a = RecBytes[0];     
-  if (CheckStarCode(a)) return;                    // Do *code and return             
-  Found = GetMatch(a); if (!Found) return;                          
-  a = a - 48;                // ASCII Number 0-9 subtract 48  
-   
-  if (Found){ if (a>0) c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24
-  DoMSTName(c, Layout);   
-
-              if (Layout==3) {if (a>0) {ByteOK = true;  BytePtr = Str1to12[c]; 
-                                        MacroS1S12[c] = 1; MacroSizeS1S12[c] = NumBytes; Msg[0]='S'; }  }  // Keys S1-S24                                  
-              if (Layout==4) {if (a>0) {ByteOK = true;  BytePtr = Ttr1to12[c]; 
-                                        MacroT1T12[c] = 1; MacroSizeT1T12[c] = NumBytes; Msg[0]='T'; }  }  // Keys T1-T24                                  
-              if (Layout==1) {if (a>0) {ByteOK = true;  BytePtr = Mtr1to12[c];
-                                        MacroM1M12[c] = 1; MacroSizeM1M12[c] = NumBytes; Msg[0]='M'; }  }  // Keys M1-M24
-                  
-              for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; }  }           // Skip 1,2 = char <#               
+  a =  RecBytes[0];                                            // <a a=1-6,mst,Ff,tT etc
+  if (CheckStarCode(a)) return;                                // Do *code and return        
+  Found = GetMatch(a); if (!Found) return;                     // a not 1-6 but mst,fF,tT etc 
+  if (NumBytes>MaxBytes) { status("File too large"); return; } // Max 200 bytes here else use SDCard   
+  a = a - 48;                                                  // a=1-6
     
-   if ((Found)&&(ByteOK)) {strcat(Msg, " saved"); status(Msg); ASize = DoFileBytes(ByteOK, MSTName, BytePtr, NumBytes, 0); }  // Save to Flash                                         
+  if (Found) { if (a>0) c = a + (LayerAD)*6 - 1;    // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23
+  
+               DoMSTName(c, Layout);                // Filenames from DoMST() 0mcst0MCST0  
+               if (Layout!=2) ByteOK = true; 
+
+               if (Layout==3) {if (a>0) { BytePtr = Str1to12[c]; MacroS1S12[c] = 1; MacroSizeS1S12[c] = NumBytes; status("Saved [Sx]"); }  }  // Keys S1-S24                                  
+               if (Layout==4) {if (a>0) { BytePtr = Ttr1to12[c]; MacroT1T12[c] = 1; MacroSizeT1T12[c] = NumBytes; status("Saved [Tx]"); }  }  // Keys T1-T24                                  
+               if (Layout==1) {if (a>0) { BytePtr = Mtr1to12[c]; MacroM1M12[c] = 1; MacroSizeM1M12[c] = NumBytes; status("Saved [Mx]"); }  }  // Keys M1-M24
+                  
+               for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; }  // Skip 1,2 = char <#  
+             }                          
+    
+   if ((Found)&&(ByteOK)) { ASize = DoFileBytes(ByteOK, MSTName, BytePtr, NumBytes, 0); }  // Save to Flash                                         
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1183,26 +1188,25 @@ static void timer_callback(void)
 void RecSerial() // https://forum.arduino.cc/t/serial-input-basics-updated/382007/3
 ////////////////////////////////////////////////////////////////////////////////////
 {   static boolean InProgress = false;
-    static int n = 0;
-    byte StartMarker = 0x3C; 
-    byte EndMarker = 0x3E;
+    static int n = 0, a = 1;
     byte b;
 
-    while ((Serial.available()>0) && (!NewData)) 
+    while ( Serial.available()>0 && !NewData) 
           { b = Serial.read();
             if (InProgress) { if (b!=EndMarker) { RecBytes[n] = b;
                                                   n++;
-                                                  if (n >= MaxRec) { n = MaxRec - 1; } }
-                              else { RecBytes[n] = '\0'; // terminate the string
+                                                  if (n >= MaxRec) { n = MaxRec - 1; } 
+                                                }
+                              else { if (RecBytes[n-1]!=0x00) { RecBytes[n] = '\0'; a--; } 
                                      InProgress = false;
-                                     NumBytes = n;   
-                                     n = 0;
+                                     NumBytes = n - a;
                                      NewData = true;
                                    }
                              }
-            else if (b == StartMarker) { InProgress = true; }
+            else if (b == StartMarker) { InProgress = true; }  // Ok if restart after first start
           }
 }
+
 ////////////////////////
 void showRecData() 
 ////////////////////////
@@ -1601,20 +1605,40 @@ void Bank123Select(int B, byte c, int Button)
   status(Labels[LayerAD][Layout-1][Button]); 
 }
 
+////////////////////////////////////////////////////
+void SendFilteredByte(byte b, int dTime)
+////////////////////////////////////////////////////
+{
+    // Apply same CR/LF filtering rules as DoLargeFile
+    if ((b == crlf1 && (CRLF == 1 || CRLF == 3)) ||
+        (b == crlf2 && (CRLF > 1)))
+    {
+        return;   // Skip filtered LF/CR
+    }
+
+    usb_hid.keyboardPress(HIDKbrd, b); delay(dTime);
+    usb_hid.keyboardRelease(HIDKbrd);  delay(dTime);
+}
 ///////////////////////////////////////////////////////////////////////////
 bool ReadSDCard(byte c)   // This is for large textfiles stored on SDCard
                           // Executed by Layout 3 (S1-S24 keys) only
 ///////////////////////////////////////////////////////////////////////////
-{ File SDFile;   
+{ File SDFile;
+  int dTime = 5, nStrLen = 0;
+  char FileName[30] = "";  
+   
   if (SDNum==0) return false;   // SDCard Files disabled 
   
   if (LayerAxD)  SDFile = SDFS.open(SDName[c], "r");
   if (!LayerAxD) SDFile = LittleFS.open(SDName[c], "r");
+  
+  nStrLen = SDFile.size(); if (nStrLen<ByteSize) dTime = 10;
+  strcpy(FileName, SDName[c]); strcat(FileName, " Text File not found");  
+  
   if (SDFile) { while (SDFile.available()) { SDByte = (SDFile.read()); 
-                                             usb_hid.keyboardPress(HIDKbrd, SDByte); delay(10);
-                                             usb_hid.keyboardRelease(HIDKbrd);       delay(10); } 
+                                             SendFilteredByte(SDByte, dTime); } 
                        SDFile.close(); return true; }                                    
-         else { status("Text File unavailable"); return false; }
+         else { status(FileName); return false; }
 }
 
 //////////////////////////////////
@@ -2953,6 +2977,7 @@ void ConfigMedia()
   if (VolOn  && !MuteOn && Media  && ToneOn)   { MediaCfg = MediaConfig[0] = 5; return; }       // *e5* = Volume + Media + Tone keys
   if (VolOn  && MuteOn  && Media  && ToneOn)   { MediaCfg = MediaConfig[0] = 6; return; }       // *e6* = Volume + Mute + Media + Tone keys   
 }
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ReadConfig1()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3007,6 +3032,8 @@ void ReadConfig1()
   MathSet =        Config1[80];                                // 0-9 0=Default  
   MouseZ =         Config1[81];                                // 0-3 Screen 0,0 position corner LB LT RT RB  
   MediaConfig[0] = Config1[82];                                // 0-6 Media keys Volume Mute Tonecontrol combinations
+  StartMarker =    Config1[83];                                // Serial Comms start was < now 0x02       
+  EndMarker  =     Config1[84];                                // Serial Comms end was > now 0x03   
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3053,7 +3080,9 @@ void WriteConfig1(bool Option)
                   Config1[79] = ToneOn;                                       // Bass/Treble controls     
                   Config1[80] = MathSet;                                      // 0-9 0=Default     
                   Config1[81] = MouseZ;                                       // 0-3 Screen 0,0 position corner LB LT RT RB       
-                  Config1[82] = MediaConfig[0];                               // 0-6 Media keys Volume Mute Tonecontrol combinations                                    
+                  Config1[82] = MediaConfig[0];                               // 0-6 Media keys Volume Mute Tonecontrol combinations
+                  Config1[83] = StartMarker;                                  // Serial Comms start was < now 0x02       
+                  Config1[84] = EndMarker;                                    // Serial Comms end was > now 0x03                                                      
                 }
   
   File f1 = LittleFS.open("Config1", "w"); 
@@ -3071,18 +3100,19 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
   int ASize =0, m = 0, n = 0;
   uint16_t ByteLen = 0;
   
-  // WriteConfig1(0); delay(10); // Use only once then comment out when there are changes to Config1 structure or size
+  // WriteConfig1(0); delay(10); // Use only once then comment out when there are changes to Config1 structure or size 
   
   if (Option) {
-    
+
       if (!SDFS.exists("Math0"))                SaveMath(0);                                            // Save default Symbols values
       
-      if (LittleFS.exists("Config1"))           ReadConfig1();          else WriteConfig1(2);           // Read Config1 else write default values
-     
+      if (LittleFS.exists("Config1"))           ReadConfig1(); else WriteConfig1(2);                    // Read Config1 else write default values
+      if (StartMarker==0x00 && EndMarker==0x00) { StartMarker=0x3C; EndMarker=0x3E; }                   // Mainly for 1st run can remove later
+      
       if (LittleFS.exists("SDCardArr"))         ReadSDCardArr();
       if (LittleFS.exists("MouseCfg"))          ReadMouse();
       if (LittleFS.exists("iList"))             ReadInstructionList();                                  // iList -> MacroInstructionList
-      if (LittleFS.exists("DoCal"))             DoCal    = true;        else DoCal           = false;   // 1 -> Run calibration on start
+      if (LittleFS.exists("DoCal"))             DoCal    = true; else DoCal = false;                    // 1 -> Run calibration on start
       if (LittleFS.exists("MacroUL"))           MacroUL  = true; SwitchMacroUL(0);                      // Upper/Lower case filenames
       if (LittleFS.exists("x1x6"))              Readx1x6();                                             // always read if exists
       if (LittleFS.exists("Bank123File"))       ReadBank123();                                          // always read if exists
@@ -3108,6 +3138,8 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint16_t DoFileBytes(byte DoWrite, const char *STRf,  byte *BytePtr, uint16_t ByteArrayLen, bool SDCard)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Returns 0 + LargeFile true if > 200 bytes filesize else return filesize < 200 byte LargeFile false
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 { uint16_t ByteLen = 0;
   int n;
   byte b;
@@ -3115,67 +3147,62 @@ uint16_t DoFileBytes(byte DoWrite, const char *STRf,  byte *BytePtr, uint16_t By
 
   LargeFile = false; 
     
-  if (!DoWrite)                                 // DoWrite = 0 read data     
-     {if (SDCard)  { if (SDFS.exists(STRf))     f = SDFS.open(STRf, "r");      else return 0; }
-      if (!SDCard) { if (LittleFS.exists(STRf)) f = LittleFS.open(STRf, "r");  else return 0; }
-      if (f.size() > ByteSize) 
-         { for (n=0; n<10; n++) { b = f.read(); BytePtr[n++] = b; }
-           ByteLen = f.size(); f.close(); LargeFile = true; return 0; }  // return 0 not ByteLen test LargeFile true
+  if (!DoWrite)    // DoWrite = 0 read data     
+     { if (SDCard)  { if (SDFS.exists(STRf))       f = SDFS.open(STRf, "r");        else return 0; }
+       if (!SDCard) { if (LittleFS.exists(STRf)) f = LittleFS.open(STRf, "r");  else return 0; }
+       if (f.size() > ByteSize) 
+          { for (n=0; n<10; n++) { b = f.read(); BytePtr[n++] = b; }      // Only read first 10 bytes
+            ByteLen = f.size(); f.close(); LargeFile = true; return 0; }  // return 0 not ByteLen + LargeFile true
        
-      n = 0;
-      while (f.available())
-            {b = f.read();
-             BytePtr[n++] = b; }
-      //if (n >= ByteArrayLen) break; }
-      ByteLen = f.size();
-      f.close(); }
+       n = 0;
+       while (f.available()) { b = f.read(); BytePtr[n++] = b; }
+       ByteLen = f.size();
+       f.close(); 
+       return ByteLen;
+     }
      
-  if (DoWrite>0)                                 // DoWrite = 1 write data DoWrite = 2 do not add 0x00 at end 
-     {if (SDCard) f = SDFS.open(STRf, "w");
-             else f = LittleFS.open(STRf, "w");              
-      b = BytePtr[ByteArrayLen-1];  
-      f.write(&BytePtr[0], ByteArrayLen);        // write the whole array to the file
-      if (b!=0x00 && DoWrite!=2) f.print('\0');  // need this extra 0x00 only once CopyMacro uses DoWrite = 2 here
-      ByteLen = f.size();
-      f.close();  }
+  if (DoWrite>0)   // DoWrite = 1 write data DoWrite = 2 do not add 0x00 at end 
+     { if (SDCard) f = SDFS.open(STRf, "w"); else f = LittleFS.open(STRf, "w");              
+       b = BytePtr[ByteArrayLen-1];  
+       f.write(&BytePtr[0], ByteArrayLen);        // write the whole array to the file
+       if (b!=0x00 && DoWrite!=2) f.print('\0');  // need this extra 0x00 only once CopyMacro uses DoWrite = 2 here
+       ByteLen = f.size();
+       f.close();  
+     }
 
   return ByteLen;
 }
 
-////////////////////////////////////////////////////////////////////////////
-// case 1:  ChrPtr = Ttr1; NameStr = TTR1f; 
-// if (Found) DoFileStrings(StrOK, NameStr,   ChrPtr); 
-//            DoFileStrings(StrOK, TTR1f, ChrPtr); 
-// Can use: void DoFileStrings(bool DoWrite, char *STRf,  char *ChrPtr)
-//          void DoFileStrings(bool DoWrite, char STRf[],  char *ChrPtr)
-// Must then redo all such as DoFileStrings(0, "DeleteBackspace", ChrPtr);
-// Because ISO C++ forbids converting a string constant to 'char*' 
-////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 void DoFileStrings(bool DoWrite, const char *STRf,  char *ChrPtr, bool SDCard)
+////////////////////////////////////////////////////////////////////////////////////////
+// Returns LargeFile true if > StrSize = 200 bytes filesize else return LargeFile false
+// Adds 0x00 to file if last byte not 0x00  then filesize + 1
+////////////////////////////////////////////////////////////////////////////////////////
 { uint16_t StrLen;
   File f;
 
   LargeFile = false; 
     
-  if (!DoWrite)                                 // read data     
-     {if (SDCard)  { if (SDFS.exists(STRf))     f = SDFS.open(STRf, "r");      else return; }
-      if (!SDCard) { if (LittleFS.exists(STRf)) f = LittleFS.open(STRf, "r");  else return; }
-      if (f.size() > StrSize)  { f.close(); LargeFile = true; return; }
+  if (!DoWrite)    // read data     
+     { if (SDCard)  { if (SDFS.exists(STRf))     f = SDFS.open(STRf, "r");      else return; }
+       if (!SDCard) { if (LittleFS.exists(STRf)) f = LittleFS.open(STRf, "r");  else return; }
+       if (f.size() > StrSize)  { f.close(); LargeFile = true; return; }
       
-      //StrLen = f.available(); 
-      //StrLen = strlen(Str1); 
-      StrLen = f.size();
-      f.readBytes((char *)ChrPtr, StrLen);
-      f.close(); }
+       StrLen = f.size();
+       f.readBytes((char *)ChrPtr, StrLen);
+       f.close(); 
+     }
        
-  if (DoWrite)                                // write data
-     {if (SDCard) f = SDFS.open(STRf, "w");
-             else f = LittleFS.open(STRf, "w"); 
-      StrLen = strlen(ChrPtr);               // Sent string <5This is S5> then STRf=StrData5 StrLen=10 which is correct
-      f.print(ChrPtr);                       // if byte[] not char[]?
-      f.print('\0');
-      f.close();  }
+  if (DoWrite)     // write data
+     { if (SDCard) f = SDFS.open(STRf, "w"); else f = LittleFS.open(STRf, "w"); 
+       StrLen = strlen(ChrPtr);               // Sent string <5This is S5> then STRf=StrData5 StrLen=10 which is correct
+       f.print(ChrPtr);                       // if byte[] not char[]?
+       if (ChrPtr[StrLen-1]!=0x00) f.print('\0');
+       f.close();  
+     }
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // LittleFS supports directories. Path + filename have a maximum of 255 characters 
 // Dir dir = LittleFS.openDir("/");
@@ -3295,7 +3322,7 @@ void GetSysInfo(int Action)
   if (MediaChange) { if (VolOn!=Config1[25] || MuteOn!=Config1[24] || Media!=Config1[27] || ToneOn!=Config1[79]) { WriteConfig1(1); MediaChange = false; } }     
   if (SaveOptionOS) { WriteConfig1(1); SaveOptionOS = false; }  
   
-  Serial.println("Version: VolumeMacro272 1-million-macros - Tobias van Dyk November 2025 License GPL3");
+  Serial.println("Version: VolumeMacro272 1-million-macros - Tobias van Dyk February 2026 License GPL3");
   Serial.println("Hardware: Waveshare Pico 1 + ILI9488 Resistive TouchLCD 3.5inch"); 
   Serial.printf("CPU MHz (Pico 1 or RP20240): %d\n\r", fCPU);
   Serial.printf("FreeHeap: %d\n\r", fHeap);
@@ -3315,6 +3342,10 @@ void GetSysInfo(int Action)
   Serial.println("\n");
   
   DisplayClocks(false);
+
+  SerPr2;
+  Serial.print("Serial Comms Start and End Markers: "); 
+  Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);
   
   SerPr2;
   ReadTimers(1);
@@ -4007,7 +4038,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(nChar);       Serial.println(nKeysPage);         Serial.println(nKeys34);           Serial.println(nKeysShow);         Serial.println(Numkeys123); 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
-        Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println("EOC");             
+        Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
+        Serial.println("EOC");             
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -4050,7 +4082,15 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (k4=='/' && k5=='/') { strcpy(fdir, "");  status("fdir reset");  StarOk = true; break; }
          if (k4=='*' && k5=='*') { strcpy(fname, ""); status("fname reset"); StarOk = true; break; }
          if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); }
-                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  } } StarOk = true; break; }                                                                   
+                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  } } StarOk = true; break; }   
+         case 82: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='s' *1s*char Serial Start Marker
+       { if (knum==5) StartMarker = k4; status("Serial Start Marker changed"); StarOk = true; break; } 
+         case 83: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='e' *1e*char Serial End Marker
+       { if (knum==5) EndMarker = k4; status("Serial End Marker changed"); StarOk = true; break; } 
+         case 84: ////////////////////// KeyBrdByte[1]=='2'&&KeyBrdByte[2]=='s' *2s*char 2nd Serial Start Marker
+       { if (knum==5) StartMarker2 = k4; status("2nd Serial Start Marker  not implemented"); StarOk = true; break; } 
+         case 85: ////////////////////// KeyBrdByte[1]=='2'&&KeyBrdByte[2]=='e' *2e*char 2nd Serial End Marker
+       { if (knum==5) EndMarker2 = k4; status("2nd Serial End Marker not implemented"); StarOk = true; break; }                                                                                         
       } return StarOk;
 }
 

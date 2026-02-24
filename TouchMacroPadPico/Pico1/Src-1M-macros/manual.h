@@ -3,6 +3,8 @@ manual.h
 -----------------------------------------------------------------------------------------------------------------------
 On First Start: 
 
+There is a PC Windows-based app for an easy way of controlling and configuring the Touch MacroPad - Serial2Pico.
+
 If asked to do so, do a four-arrow corner calibration - press at the TIP of each arrow just ONCE. If you make a 
 mistake and press the same corner twice it is likely that you will need a reset with the nuke.uf2 file (provided 
 here in the Extras section), because the LCD will not read the correct corner keys being touched.
@@ -28,9 +30,9 @@ again at the next switch-on.
 The VolumeMute long-press function is off by default (the navigation labels are L1->L2->L3->L4). To switch it to on
 when long-pressed on the navigation key press [Cfg][Opt]3x then Pad[o] - the labels will change to V1,V2,V3,V4.
 
-If the nKeys are used to print a large text file and there are extra line spaces use the *code *cr*0-3 to filter 
-i.e. remove, CR 0D \n and LF 0A \r during sending nKeys text files. To add filter CR using the Macro Editor: Press
-Pad[k], then press [*Cm] until *cr* shows then press [012]2x[ADD]EXE].   
+If the nKeys or the S1-S24 keys are used to print a large text file from the SDCard and there are extra line spaces
+use the *code *cr*0-3 to filter i.e. remove, CR 0D \n and LF 0A \r during sending nKeys text files. To add filter 
+CR using the *Macro Editor: Press Pad[k], then press [*Cm] until *cr* shows then press [012]2x[ADD]EXE].   
 
 As a replacement for the Volume [V+] key choose from a set of 54 options (Del Bks Tab aTb Ins Esc PrS aPr Ret Snp 
 Osk UnD ReD Scr Cut Cpy Pst Tsk Run wX CPi Ts1 Ts6  K1 - K24 Num Cap). With the Volume key off, press [Cfg] and then 
@@ -46,6 +48,17 @@ When pressing the [*Cm] key in the MacroEditor (green Pad [k]) it is not necessa
 automatically. For example to switch the serial port on/off press [*Cm] until *se* shows then press [EXE] - no
 need to press {ADD] before [EXE]. If you did press [ADD] by mistake just press the [*Cm] key again.
 
+Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed 
+from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
+as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
+Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end 
+characters, or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App 
+before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
+remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
+*command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
+the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
+to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] 
+config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
 -----------------------------------------------------------------------------------------------------------------------
 Layout 1 - M Keys - [M1]-[M24] - Cycle through Layout 1 to 4 press [L1-L4] or long-press [Vo] 
 -----------------------------------------------------------------------------------------------------------------------
@@ -814,7 +827,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     SDCard, set the Macro Editor Source and Destination brown. Then again when in the S keys layout send the string 
     and file name1 on the SDCard will be named name2. The reason for all this, is because the rename function use the 
     state of the Macro Editor's Source-Destination (brown or white), to determine which FS to use.
-(I) Use *cr*0-3 to filter i.e. remove, CR 0D \n and LF 0A \r during sending nKeys text files. 
+(I) Use *cr*0-3 to filter i.e. remove, CR 0D \n and LF 0A \r during sending nKeys or the S1-S24 keys SDCard text files. 
     0 Filter off 1 Filter CR 0x0D 2 Filter LF 0x0A 3 Filter both CR and LF. *cr*0 clear both CR and LF /n /r filters    
     Use *cx*XY where X and Y the two possible nKeys text filters. For example *cx*wW will filter i.e. remove all "w' 
     and 'W" chracters from the text sent. Reset to the default 0x0D and 0x0A with *cx*0 - note that using *cx*00 
@@ -891,7 +904,17 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
     filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
     between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null.
-        
+(W) Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed 
+    from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
+    as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
+    Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end 
+    characters, or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App 
+    before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
+    remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
+    *command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
+    the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
+    to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s
+            
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
