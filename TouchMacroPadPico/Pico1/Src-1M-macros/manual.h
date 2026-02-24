@@ -57,7 +57,7 @@ before syncing, and when changed on the PC App via <*1s,e*char> instead of using
 remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
 *command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
 the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
-to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] 
+to the default < and >. Otherwise use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] 
 config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
 -----------------------------------------------------------------------------------------------------------------------
 Layout 1 - M Keys - [M1]-[M24] - Cycle through Layout 1 to 4 press [L1-L4] or long-press [Vo] 
@@ -913,7 +913,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
     *command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
     the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
-    to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s
+    to the default < and >. Otherwise use the Macro editor on the Pico and enter *1s
             
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
