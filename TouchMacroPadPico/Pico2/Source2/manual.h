@@ -54,7 +54,8 @@ Serial Comms Start and End Markers can now be changed to a different ASCII chara
 from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
 as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the Start
 marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end characters,
-or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App before 
+or use *1s* or *1e* to reset both to the <> pair, or use *1s,e*000-255 to set to any value between 0 and 255 such as
+the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change it on the PC App before 
 syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, remember
 to keep on using < data >, as the translation to the new start char is done automatically when sending the *command 
 to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file, the values
@@ -919,17 +920,18 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
     filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
     between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null.
-(W) Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed 
-    from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
-    as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
-    Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end 
-    characters, or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App 
-    before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
-    remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
-    *command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
-    the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
-    to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] 
-    config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
+(W) Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 0-255 from the 
+    Pico and also on the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or 
+    enter < or > as text, in the textboxes in the new Change Start and End Marker section on the Config Tab.  Use 
+    *1s*char for the Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both
+    start and end characters, or use *1s* or *1e* to reset both to the <> pair, or use *1s,e*000-255 to set to any value 
+    between 0 and 255 such as the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change 
+    it on the PC App before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single 
+    <*1s*charchar> command, remember to keep on using < data >, as the translation to the new start char is done 
+    automatically when sending the *command to change the end character. Because the Pico Start and End marker settings 
+    are saved in the Config1 file, the values will be 0 after loading the new firmware - this condition where both are 
+    0x00 are handled by setting them to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* 
+    and save with the [Cfg]->[Sav] config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
