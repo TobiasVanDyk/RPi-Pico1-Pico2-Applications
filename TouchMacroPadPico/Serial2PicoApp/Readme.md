@@ -1,5 +1,12 @@
 
-##Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 with C#
+# Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 with C#
+
+<p align="left">
+<img src="win11-88.png" height="180" /> 
+<img src="Win10-88.png" height="180" /> 
+<img src="Win11-77.png" height="180" />  
+<img src="SelectandSendFiles.gif" height="180" /> 
+</p>
 
 A option to change the Start and End markers from the current < and > have been completed - see below. It is surprisingly more complex to add two endmarker characters so for the time being only one will be used. Suitable candidates are the 0x02/0x03 start/stop transmission pair or a seldom used character such as the back-tick \`. When using the PC App with a changed set of markers, keep on using the < > pair in all send-lists as function replaced the direct serialport.Write and it translates the <> to the new set of markers. Using <> brackets are visually easier to use than for example a 0x02/0x03 or \` ~ or # @ pair.
 
