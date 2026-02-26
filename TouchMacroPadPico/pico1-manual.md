@@ -51,15 +51,16 @@ CR using the *Macro Editor: Press Pad[k], then press [*Cm] until *cr* shows then
 
 Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed 
 from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
-as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
-Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end 
-characters, or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App 
-before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
-remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
-*command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
-the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
-to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] 
-config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
+as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the Start
+marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end characters,
+or use *1s* or *1e* to reset both to the <> pair, or use *1s,e*000-255 to set to any value between 0 and 255 such as
+the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change it on the PC App before 
+syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, remember
+to keep on using < data >, as the translation to the new start char is done automatically when sending the *command 
+to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file, the values
+ will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them to the 
+default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] config 
+button, before opening the PC App, or enter as *1s*< and *1e*> and save.
 
 -----------------------------------------------------------------------------------------------------------------------
 Layout 1 - M Keys - [M1]-[M24] - Cycle through Layout 1 to 4 press [L1-L4] or long-press [Vo] 
@@ -902,21 +903,18 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (U) *sf*filename send file contents of file filename over serial to PC App in filtered readable format.
     *sF*filename send file contents of file filename over serial to PC App in raw format - maximum size 6144 bytes. 
     Use A-D white = flash or brown = SDCard to choose media on PC App
-(V) *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber
-    to 1. One or many files can be copied from the PC App to the Pico Macropad using the [Select and Send Files] button
-    on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next
-    to the button is filled with the list of files sent. If one of these are selected, or a new file and its path typed
-    into the combobox, the button when pressed will not first open a dialog box to select files but will send the single
-    file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file
-    9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01> for example, or use the 
-    [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e.
-    A-D must be brown, these files should not be saved to Flash directly as they can be large. Use *sx* to reset the 
-    number count to 1. Use *sx*flename or *sx*/foldername/ to change the name used or path where files are saved - 
-    but these setting are not saved. The Pico is not a PC so when dragging more than ten or twenty files they should be 
-    small, or for larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal
-    for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
-    filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
-    between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null. 
+(W) Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 0-255 from the 
+    Pico and also on the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or 
+    enter < or > as text, in the textboxes in the new Change Start and End Marker section on the Config Tab.  Use 
+    *1s*char for the Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both
+    start and end characters, or use *1s* or *1e* to reset both to the <> pair, or use *1s,e*000-255 to set to any value 
+    between 0 and 255 such as the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change 
+    it on the PC App before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single 
+    <*1s*charchar> command, remember to keep on using < data >, as the translation to the new start char is done 
+    automatically when sending the *command to change the end character. Because the Pico Start and End marker settings 
+    are saved in the Config1 file, the values will be 0 after loading the new firmware - this condition where both are 
+    0x00 are handled by setting them to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* 
+    and save with the [Cfg]->[Sav] config button, before opening the PC App, or enter as *1s*< and *1e*> and save. 
       
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
@@ -1053,8 +1051,7 @@ section. Use <M data text > to display the sensor data.
 
 Date Time Display This is an alternative Date Time which is only displayed, and not used to set the Pico system 
 time-date. The procedure is explained in detail in the SetDateTime section. This uses <T > and the system time date 
-time-date. The procedure is explained in detail in the SetDateTime section. This uses <I > and the system time date 
-uses <T >. 
+time-date. 
 
 Key Controls:  Use <k list > Keys direct <kabc> a=key1--6 MST1-MST24 a=7-9,D,R other keys Cut Copy Paste Delete Return
 b=LayerAD 0-3 c=Layout 1-4. Use <n list > nKeys execute <npppkkk> ppp=Page number 001-833 kkk=key number 001-996
@@ -1081,3 +1078,4 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
+
