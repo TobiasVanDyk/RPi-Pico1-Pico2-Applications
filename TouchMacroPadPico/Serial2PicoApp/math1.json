@@ -1,0 +1,33 @@
+{
+  "GlyphLabel": [
+    ["FCP", "TTI", "NEM", "Load", "MDD", "SAR", "BSC", "Page1", "FPI", "TBD", "GSW", "Send"],
+    ["MMM", "SSC", "CCC", "Exit", "CCC", "CCS", "SSS", "Page2", "RLI", "XNN", "RDD", "Send"],
+    ["SDL", "RLR", "DDS", "Load", "SAE", "LUI", "TIB", "Page3", "RJL", "ZZZ", "PMM", "Send"],
+    ["IRZ", "AZZ", "TTD", "Exit", "DDS", "ABG", "DTT", "Page4", "RTT", "IHM", "MHH", "Send"]
+  ],
+ 
+  "GlyphNum": [    
+      ["2200", "2203", "2207", "0", "2213", "2216", "2219", "0", "221C", "2234", "223A", "0","2201", "2204", "220E", "0", "2214", "2217", "221A", "0", "221D", "2235", "223F", "0","2202", "2206", "2212", "0", "2215", "2218", "221B", "0", "221E", "2238", "2240", "0"],
+      ["228C", "2293", "2296", "0", "2299", "229C", "229F", "0", "22A2", "22BB", "22BE", "0","228D", "2294", "2297", "0", "229A", "229D", "22A0", "0", "22A3", "22BC", "22C4", "0","228E", "2295", "2298", "0", "229B", "229E", "22A1", "0", "22BA", "22BD", "22C5", "0"],
+      ["22C6", "22CA", "22D2", "0", "27CF", "27D3", "29DD", "0", "29F9", "2A1F", "2A39", "0","22C7", "22CB", "22D3", "0", "27D1", "27D4", "29DE", "0", "2A1D", "2A20", "2A3A", "0","22C9", "22CC", "27CE", "0", "27D2", "29DC", "29F8", "0", "2A1E", "2A21", "2A3B", "0"],
+      ["2A3C", "2A3F", "2AF6", "0", "2AFE", "2135", "2138", "0", "2143", "23AE", "2715", "0","2A3D", "2A64", "2AFC", "0", "2AFF", "2136", "2141", "0", "2144", "23AF", "2716", "0","2A3E", "2A65", "2AFD", "0", "2118", "2137", "2142", "0", "214B", "266F", "2795", "0"]
+    ],
+
+  "GlyphName": [    
+      ["For all", "There exists", "Nabla", "0", "Minus-or-plus", "Set minus", "Bullet", "0", "Fourth root", "Therefore", "Geometric proportion", "0",
+       "Complement", "There does not exist", "End of proof", "0", "Dot plus", "Asterisk", "Square root", "0", "Proportional to", "Because", "Sine wave", "0",
+       "Partial differential", "Increment", "Minus", "0", "Division slash", "Ring", "Cube root", "0", "Infinity", "Dot minus", "Wreath product", "0"],      
+              
+      ["Multiset", "Square cap", "Circled minus", "0", "Circled dot", "Circled equals", "Squared minus", "0", "Right tack", "Xor", "Right triangle", "0",
+       "Multiset multiply", "Square cup", "Circled times", "0", "Circled ring", "Circled dash", "Squared times", "0", "Left tack", "Nand", "Diamond operator", "0",
+       "Multiset union", "Circled plus", "Circled division", "0", "Circled asterisk", "Squared plus", "Squared dot", "0", "Intercalate", "Nor", "Dot operator", "0"],      
+             
+      ["Star operator", "Right n semidirect product", "Double intersection", "0", "Squared logic or", "Lower right corner with dot", "Tie over infinity", "0", "Reverse solidus", "Z schema composition", "Plus triangle", "0",
+      "Division times", "Left semidirect product", "Double union", "0", "And with dot", "Upper left corner with dot", "Infinity negated vertical bar", "0", "Join", "Z schema piping", "Minus triangle", "0",
+      "Left n semidirect product", "Right semidirect product", "Squared logic and", "0", "Element of opening upward", "Incomplete infinity", "Big solidus", "0", "Left triangle", "Z schema projection", "Multiply triangle", "0"],      
+             
+      ["Interior product", "Amalgamation - coproduct", "Triple colon operator", "0", "Dijkstra choice", "Alef symbol", "Dalet symbol", "0", "Reversed l", "Integral extension", "Multiplication x", "0",
+       "Right interior product", "Z domain antirestriction", "Triple vertical bar", "0", "Dijkstra n-ary choice", "Bet symbol", "Turned g", "0", "Turned y", "Horizontal line extension", "Heavy multiplication", "0",
+       "Z relational composition", "Z range antirestriction", "Double solidus", "0", "Script capital P", "Gimel symbol", "Turned l", "0", "Turned ampersand", "Music sharp", "Heavy plus sign", "0"]
+      ]
+}
