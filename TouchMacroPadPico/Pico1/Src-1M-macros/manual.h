@@ -50,15 +50,16 @@ need to press {ADD] before [EXE]. If you did press [ADD] by mistake just press t
 
 Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed 
 from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
-as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
-Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end 
-characters, or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App 
-before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
-remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
-*command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
-the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
-to the default < and >. Otherwise use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] 
-config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
+as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the Start
+marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end characters,
+or use *1s* or *1e* to reset both to the <> pair, or use *1s,e*000-255 to set to any value between 0 and 255 such as
+the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change it on the PC App before 
+syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, remember
+to keep on using < data >, as the translation to the new start char is done automatically when sending the *command 
+to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file, the values
+ will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them to the 
+default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] config 
+button, before opening the PC App, or enter as *1s*< and *1e*> and save.
 -----------------------------------------------------------------------------------------------------------------------
 Layout 1 - M Keys - [M1]-[M24] - Cycle through Layout 1 to 4 press [L1-L4] or long-press [Vo] 
 -----------------------------------------------------------------------------------------------------------------------
@@ -812,9 +813,9 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (E) *0R* Enable/Disable the resistor colour-coded number pad - plain colours used when off
 (F) *0x* Enable/Disable nKeys34 with nKeys count two characters numbers from n00-n99 and then three characters numbers 
     from n100-n996 if true, else nKeys count three characters numbers throughout n000-n996.
-(G) *0d*/dirname, or *0d*/ reset to no nKeys directory, *0d*// use nKeys directory based on first char of current
+(G) *0d* /dirname, or *0d* / reset to no nKeys directory, *0d* // use nKeys directory based on first char of current
     nKeys set such as /n/nKeyfilename. Add folder name that is added infront of the nKeys filename - for example 
-    *0d*/people will add the string /people/ in front of all nKey filenames for execution and saving. Pressing key n03
+    *0d* /people will add the string /people/ in front of all nKey filenames for execution and saving. Pressing key n03
     wil then run the contents of file n03 in the folder /people.
 (H) Rename *rn*oldname=newname. For example *rn*s02=a02[EXE] will rename file s02 (if it exists), to a02. Can also use 
     this to rename folders for example rename *Code/old=/new will rename folder old to folder new. Use [EXE] to
@@ -898,22 +899,25 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     9999. A filename sync will be implemented later, for the time being use <*rn*file1=a01> for example, or use the 
     [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e.
     A-D must be brown, these files should not be saved to Flash directly as they can be large. Use *sx* to reset the 
-    number count to 1. Use *sx*flename or *sx*/foldername/ to change the name used or path where files are saved - 
+    number count to 1. Use *sx*flename or *sx* /foldername/ to change the name used or path where files are saved - 
     but these setting are not saved. The Pico is not a PC so when dragging more than ten or twenty files they should be 
     small, or for larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal
     for uploading a set of nKeys - for example first upload a set of 9 keys where you used <*sx*n0> to set the base 
     filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset 
-    between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx*// to set foldername to null.
-(W) Serial Comms Start and End Markers can now be changed to a different ASCII character from the Pico and when changed 
-    from the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > 
-    as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. Use *1s*char for the 
-    Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end 
-    characters, or use *1s* or *1e* to reset both to the <> pair. When it is changed on the Pico change it on the PC App 
-    before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single <*1s*charchar> command, 
-    remember to keep on using < data >, as the translation to the new start char is done automatically when sending the
-    *command to change the end character. Because the Pico Start and End marker settings are saved in the Config1 file,
-    the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them 
-    to the default < and >. Otherwise use the Macro editor on the Pico and enter *1s
+    between uploads unless you use <*sx*>. To reset filename to null use *sx*** and use *sx* // to set foldername to 
+    null.
+(W) Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 0-255 from the 
+    Pico and also on the PC App also to any byte value between 0 and 255 such as using 0x02 and 0x03 for Hex values, or 
+    enter < or > as text, in the textboxes in the new Change Start and End Marker section on the Config Tab.  Use 
+    *1s*char for the Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both
+    start and end characters, or use *1s* or *1e* to reset both to the <> pair, or use *1s,e*000-255 to set to any value 
+    between 0 and 255 such as the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change 
+    it on the PC App before syncing, and when changed on the PC App via <*1s,e*char> instead of using the single 
+    <*1s*charchar> command, remember to keep on using < data >, as the translation to the new start char is done 
+    automatically when sending the *command to change the end character. Because the Pico Start and End marker settings 
+    are saved in the Config1 file, the values will be 0 after loading the new firmware - this condition where both are 
+    0x00 are handled by setting them to the default < and >. Otherwiae use the Macro editor on the Pico and enter *1s* 
+    and save with the [Cfg]->[Sav] config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
             
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
