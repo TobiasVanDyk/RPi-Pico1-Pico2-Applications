@@ -22,7 +22,7 @@ Added <f filecontent > to <F filecontent > when using the [Select and Send Files
 
 One or many files can be copied from the PC App to the Pico Macropad using the [Select and Send Files] button on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next to the button is filled with the list of files sent. If one of these are selected, or a new file and its path typed into the combobox, the button when pressed will not first open a dialog box to select files but will send the single file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file 9999. A filename sync will be implemented later, for the time being use <\*rn\*file1=a01> for example, or use the [Ren] function in the Pico Editor itself to rename the new files. Note that the SDCard must be the destination i.e. A-D must be brown, these files should not be saved to Flash directly as they can be large. Use \*sx\* to reset the number count to 1. Use \*sx\*flename or \*sx\*/foldername/ to change the name used or path where files are saved -but these setting are not saved. The Pico is not a PC so when dragging more than ten or twenty files they should be small, or for larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal for uploading a set of nKeys - for example first upload a set of 9 keys where you used <\*sx*\n0> to set the base filename, then upload the rest (up to about 980 more), with a base filename <\*sx\*n>. The filecount will not reset between uploads unless you use <\*sx\*>. To reset filename to null use \*sx\*\*\* and use \*sx\*// to set foldername to null. In summary: \*sx\*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber to 1.
 
-There is a screen video which illustrates this new function - SelectandSendFiles.gif.
+There is a screen video which illustrates this new function - [SelectandSendFiles](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/SelectandSendFiles.gif
 
 Older versions without this functionality are Serial2Pico42.zip or earlier, which should be used with VolumeMacroPad-Pico2-35IPS-327.zip, or VolumeMacroPad-Pico1-35IPS-422.zip.
 
@@ -32,7 +32,7 @@ Arduino Label Tools converts label.json files to Pico macropad label1,2,3 type A
 
 After generating a list files on the SDCard and Flash memory with the File List option from the Config Tab, a right-click on the selected filename gives the option to delete or view the file (in a readable format). If the file is in the SDCard list make sure the A-D indicator is brown, and similarly white A-D if in the Flash listing, before clicking on one of the two options. The other three options  (Clear, Copy, and  Select all), are text and not file operation options. NB: When selecting the file do not double-click the name - that adds a space at the filename end. Carefully select just the filename itself then right-click on it and choose Delete or View Content.
 
-Instructions for Serial2Pico with json Symbols Bank loader:
+**Instructions for Serial2Pico with json Symbols Bank loader:**
 1. Put your json math0.json to math9.json files in a folder such as C:\Temp, or any other folder.
 2. Open Serial2Pico - you may get two messages that the math bank file cannot be found - click OK on each message.
 3. Open the Config tab and press on the [...] button to select your default symbols bank file.
