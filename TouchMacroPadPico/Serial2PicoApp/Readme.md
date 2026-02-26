@@ -10,7 +10,7 @@
 
 A option to change the Start and End markers from the current < and > have been completed - see below. It is surprisingly more complex to add two endmarker characters so for the time being only one will be used. Suitable candidates are the 0x02/0x03 start/stop transmission pair or a seldom used character such as the back-tick \`. When using the PC App with a changed set of markers, keep on using the < > pair in all send-lists as function replaced the direct serialport.Write and it translates the <> to the new set of markers. Using <> brackets are visually easier to use than for example a 0x02/0x03 or \` ~ or # @ pair.
 
-To change the serial start/stop markers to 02hex/03hex type 0x02 and 0x03 into the Comms Tab of the PC App and press [Change] then close the app, reopen and check if the values shown are 02 and o3. Then change it on the Pico macropad using the macroEditor - enter \*1s\*002 [EXE], and also \*1e\*003, [EXE], exit the Editor and press [Cfg]->[Sav>].
+To change the serial start/stop markers to 02hex/03hex type 0x02 and 0x03 into the Comms Tab of the PC App and press [Change] then close the app, reopen and check if the values shown are 02 and o3. Then change it on the Pico macropad using the macroEditor - enter \*1s\*002 [EXE], and also \*1e\*003, [EXE], exit the Editor and press [Cfg]->[Sav>]. The obvious protocol to change it only on the PC App which then configures the Touchpad, and only after that implement it on the app, will be used at a later stage.
 
 Refer to [Win10-88.png](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Win10-88.png) for a layout of the Config tab.
 
