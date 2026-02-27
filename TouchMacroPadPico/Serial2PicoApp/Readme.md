@@ -3,7 +3,7 @@
 
 <p align="left">
 <img src="win11-88.png" height="180" /> 
-<img src="Win10-99.png" height="180" /> 
+<img src="Win11-99.png" height="180" /> 
 <img src="Win11-77.png" height="180" />  
 <img src="SelectandSendFiles.gif" height="180" /> 
 </p>
@@ -12,7 +12,7 @@ A option to change the Start and End markers from the current < and > have been 
 
 To change the serial start/stop markers to 02hex/03hex type 0x02 and 0x03 into the Comms Tab of the PC App and tick the checkbox named Pico if the changes should be sent to the Pico as well - with the checkbox marked the PC App had been tested with the 0x3C/0x3E pair and the 0x02/0x03 pair - enter the values in hex as 0x01-0x7E if the box is ticked. If the changes are made separately, press [Change] and then close the app, reopen it and check if the values shown are 02 and 03. Then only change it on the Pico macropad using the macroEditor - enter \*2s\*0203 [EXE], exit the Editor and press [Cfg]->[Sav>]. Note that Start/Stop pairs > 0x1E are not working currently, although pair values > 0x1F can be entered using for example \*2s\*D0D1 or as \*2s\*208209.
 
-Refer to [**Win10-99**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Win10-99.png) for a layout of the Config tab.
+Refer to [**Win11-99**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Win11-99.png) for a layout of the Config tab.
 
 As noted the Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 1-255 on the Pico and also to any hex value between 0x01 and 0xFF inthe PC App, such as using 0x02 and 0x03 as hex numbers, or enter < or > as text, in the textboxes in the Change Start and End Marker section on the Config Tab. For manual changes, use \*1s\*char for the Start marker and \*1e\*char for the End marker, or use \*2s\*charchar or \*2e\*charchar to change both start and end characters, or use \*1s* or \*1e* to reset both to the < > pair. When it is changed on the Pico change it on the PC App before syncing, and remember to keep on typing < data > in the PC App, as the translation to any different start and stop pair is done automatically. Because the Pico Start and End marker settings are saved in the Config1 file, their values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by resetting them to the default < and >. Otherwise use the Macro editor on the Pico and enter \*1s\* and save with the [Cfg]->[Sav] config button, before opening the PC App, or enter as \*1s\*< and \*1e\*> and save. To test this new function use Serial2Pico52.zip and VolumeMacroPad-Pico2-35IPS-332.zip, or VolumeMacroPad-Pico1-35IPS-424.zip .
 
