@@ -3627,7 +3627,7 @@ unsigned long GetT(byte knum)
 bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be = '*'
 /////////////////////////////////////////////////////////////////////////////////////// 
 { unsigned long T, z;    // t = timeclock struct
-  uint8_t a, b, c, d, h, n, m, i, k2, k4, k5, k6, k7, knum;
+  uint8_t a, b, c, d, h, n, m, i, k2, k4, k5, k6, k7, k8, k9, knum;
   bool UnLink = false, StarOk = false, Ok = true;  
   int nStrLen, e, d99 = 0, c99 = 0, c999 = 0, d999 = 0;   
   File f, f1;
@@ -3641,12 +3641,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
   k5 = KeyBrdByte[5];                      //  *xx* k5
   k6 = KeyBrdByte[6];                      //  *xx*  k6
   k7 = KeyBrdByte[7];                      //  *xx*   k7
+  k8 = KeyBrdByte[8];                      //  *xx*    k8
+  k9 = KeyBrdByte[9];                      //  *xx*     k9
   knum = KeyBrdByteNum;                    //  *xx* = 4 *xx*nnn = 7
   b =  k4-48;                              //  01234 = *  *b
   c99 =  b*10 + k5-48;                     //  00-99 and 
   c999 = b*100 + (k5-48)*10 + k6-48;       //  000-999
   d99 =  (k5-48)*10 + k6-48;               //  00-99
-  d999 = (k5-48)*100 + (k6-48)*10 + k7-48; //  000-999
+  d999 = (k5-48)*100 + (k6-48)*10 + k7-48; //  000-999  
 
   switch(c)
       { case 1: ///////////////////// KeyBrdByte[1]==0x61 *am*n *as*n *at*n
@@ -4050,20 +4052,50 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); }
                         if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  } } StarOk = true; break; } 
          case 82: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='s' *1s* or *1s*char or *1s*charchar or *1s*000-255 Serial Start Marker
-       { if (knum==4) { StartMarker = '<'; EndMarker = '>'; status("< > Serial Comms Markers"); } 
-         if (knum==5) { StartMarker = k4;  status("Serial Start Marker changed"); } 
-         if (knum==6) { StartMarker = k4;  EndMarker = k5; status("Serial Start + End Markers changed"); } 
-         if (knum==7) { StartMarker = c999; status("Serial Start Marker 0-255"); } WriteConfig1(1); StarOk = true; break; } 
+       { StarOk = GetStartEnd (0, 0, c999); break; } 
          case 83: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='e' *1e*char Serial End Marker
-       { if (knum==4) { StartMarker = '<'; EndMarker = '>'; status("< data > Serial Markers"); } 
-         if (knum==5) { EndMarker = k4; status("Serial End Marker changed"); } 
-         if (knum==6) { StartMarker = k4; EndMarker = k5; status("Comms Start + End Markers changed"); } 
-         if (knum==7) { EndMarker = c999; status("Serial End Marker 0-255"); } WriteConfig1(1); StarOk = true; break; }      
-         case 84: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='s' *1s*char Serial Start Marker
-       { if (knum==5) { StartMarker = k4; status("Serial Start Marker changed"); StarOk = true; } break; } 
-         case 85: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='e' *1e*char Serial End Marker
-       { if (knum==5) { EndMarker = k4; status("Serial End Marker changed"); StarOk = true; } break; }                                                                                                 
+       { StarOk = GetStartEnd (0, 1, c999); break; }   
+         case 84: ////////////////////// KeyBrdByte[1]=='2'&&KeyBrdByte[2]=='s' *2s*ssseee Serial Start Markers as sss = eee 0-255 or as ssee = 00-FF hex
+       { StarOk = GetStartEnd (1, 0, c999); break; } 
+         case 85: ////////////////////// KeyBrdByte[1]=='2'&&KeyBrdByte[2]=='e' *2e*ssseee Serial Start Markers as sss = eee 0-255 or as ssee = 00-FF hex
+       { StarOk = GetStartEnd (1, 1, c999); break; }                                                                                                 
       } return StarOk;                
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool GetStartEnd (bool OneTwo, bool SE, int c999)    // OneTwo 0 = *1 1 = *2  SE 0 = *1s *2s 1 = *1e *2e 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Tested with <*2s*0203> Start+End 02 03  <*2s*004005> Start+End 004 005  <*2s*@#> Start+End @ #
+//             <*1s*%> Start % <*1e*%> End % <*1s*3C> Start 3C  <*1s*3C> End 3E  <*1s*002> Start 002  <*1e*003> End 003  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+{ char SEStr[30] = ""; 
+  char SENum[10] = "       ";                 
+                                 
+  int i, n = KeyBrdByteNum-4; if (KeyBrdByteNum==10) { n--; for (i=0; i<7; i++) SENum[i+(1*i>2)] = KeyBrdByte[i+4]; } // n = 0-5 
+  int k4 = KeyBrdByte[4];
+  int e999 = (KeyBrdByte[7]-48)*100 + (KeyBrdByte[8]-48)*10 + KeyBrdByte[9]-48;    //  000-999 but 0-255 here
+  byte h = 0;
+
+  if (OneTwo) strcpy(SEStr, "Start + End Marker "); else if (SE) strcpy(SEStr, "End Marker "); else strcpy(SEStr, "Start Marker ");
+  
+  if (KeyBrdByteNum==4) { StartMarker = '<'; EndMarker = '>'; status("Start + End < >"); WriteConfig1(1); return true; }  // *1s* *1e* *2s* *2e* <> = Start End 
+  
+  if (OneTwo)  { if (KeyBrdByteNum==6)  { SENum[0] = StartMarker = k4;  SENum[2] = EndMarker = KeyBrdByte[5];  }  // *2s*se *2e*se Start = character s End = character e
+                 if (KeyBrdByteNum==10) { StartMarker = c999; EndMarker = e999;  }                                // *2s*ssseee *2e*ssseee Start = number sss End = number eee as 000-255 
+                 if (KeyBrdByteNum==8)  { SENum[0] = HexString[0] = k4; SENum[1] = HexString[1] = KeyBrdByte[5];  // *2s*ssee *2e*ssee Start = hexnumber ss End = hexnumber ee as 00-FF
+                                          StartMarker = HexStringToByte(HexString);       
+                                          SENum[3] = HexString[0] = KeyBrdByte[6]; SENum[4] = HexString[1] = KeyBrdByte[7]; 
+                                          EndMarker = HexStringToByte(HexString); }    }
+             
+  if (!OneTwo) { if (KeyBrdByteNum==5)  { if (SE) SENum[1] = EndMarker = k4; else SENum[0] = StartMarker = k4; }         // *1s*s Start = character s *1e*e End = character e 
+                 if (KeyBrdByteNum==6)  { SENum[0] = HexString[0] = k4; SENum[1] = HexString[1] = KeyBrdByte[5];         // *1s*ss *1e*ee Start = hexnumber ss End = hexnumber ee as 00-FF
+                                          h = HexStringToByte(HexString); if (SE) EndMarker = h; else StartMarker = h; }                                                   
+                 if (KeyBrdByteNum==7)  { if (SE) EndMarker = c999; else StartMarker = c999;                             // *1s*sss *1e*eee Start = number sss End = number eee as 000-255               
+                                          for (i=0; i<3; i++) SENum[i] = KeyBrdByte[i+4];}   }     
+           
+  strcat(SEStr, SENum); status(SEStr);  WriteConfig1(1); 
+  
+  if (KeyBrdByteNum<11 && StartMarker>0 && EndMarker>0) return true; else { StartMarker = '<'; EndMarker = '>'; return false; }
 }
 
 ////////////////////
