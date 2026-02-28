@@ -1943,7 +1943,7 @@ void DoPadsLayout2 (int Button)
                                                     if (SDCardArr[2]) { SDCardArr[1] = SDCardStatus[11] = SD2[SDNum]; } 
                                                                  else { SDCardArr[1] = SDCardStatus[11] = SD1[SDNum]; } 
                                                     if (SDNum>0) { SDCardSelectFiles(0); status(SDCardStatus); } else status("SDCard Disabled"); optionsindicators(0); }     
-                                   if (OptNum==9) { DoFileList(); } 
+                                   if (OptNum==9) { DoFileList(0); } // Else will SDCard list folder content with folder name in NameStr3
                                    if (OptNum>9)   { strcpy(NameStr3, " OFF"); strcpy(NameStr2, "LabelX"); }
                                    if (OptNum==10) { Config1[72] = MLabel = !MLabel; m = 1; NameStr2[5] = 'M'; if (MLabel) strcpy(NameStr3, " ON"); }
                                    if (OptNum==11) { Config1[73] = SLabel = !SLabel; m = 3; NameStr2[5] = 'S'; if (SLabel) strcpy(NameStr3, " ON"); }
@@ -3184,29 +3184,39 @@ void DoFileStrings(bool DoWrite, const char *STRf,  char *ChrPtr, bool SDCard)
 //                                              if (dir.fileSize()) { File f = dir.openFile("r"); 
 //                                                  Serial.println(f.size()); } }
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-void ListFiles()
+void ListFiles(int d)
 { int n = 1;
-  File root = LittleFS.open("/", "r");
+  File root;
+  
+  if (d==2) root = LittleFS.open(NameStr1, "r");
+       else root = LittleFS.open("/", "r");
+      
   File file = root.openNextFile();  
   while(file){
       Serial.print(n);
       SerPr1;
-      Serial.print(file.name());
+      if (d==2) { Serial.print(NameStr1); Serial.print(file.name()); }
+             else Serial.print(file.name()); 
       SerPr1;
       Serial.println(file.size());
       n++;
       file = root.openNextFile();
   }
 }
-void ListSDFiles(bool ClearFiles)
+
+void ListSDFiles(bool ClearFiles, int d)
 { int n = 1;
-  char NameStr[30] = { "" };
-  File root = SD.open("/", "r");
+  File root;
+  
+  if (d>0) root = SD.open(NameStr3, "r");
+      else root = SD.open("/", "r");
+      
   File file = root.openNextFile();
   while(file){
       Serial.print(n);
       SerPr1;
-      Serial.print(file.name());
+      if (d>0) { Serial.print(NameStr3); Serial.print(file.name()); }
+          else Serial.print(file.name());
       SerPr1;
       Serial.println(file.size());
       if (ClearFiles) SD.remove(file.name());
@@ -3300,10 +3310,10 @@ void GetSysInfo(int Action)
   Serial.println("\n");
   
   Serial.println("Flash Files (Number Name Size):");
-  ListFiles();
+  ListFiles(0);
   Serial.print("\n");
   Serial.println("SDCard Files (Number Name Size):");
-  ListSDFiles(0);
+  ListSDFiles(0, 0);
 
   Serial.print("SDCard Set: "); Serial.print(SDNum); SerPr1;   
   Serial.print("SDCard Element 0: "); n=0; while (SDName[0][n]!=0x00 && n<20) { Serial.print(SDName[0][n]); n++; }
@@ -3627,9 +3637,9 @@ unsigned long GetT(byte knum)
 bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be = '*'
 /////////////////////////////////////////////////////////////////////////////////////// 
 { unsigned long T, z;    // t = timeclock struct
-  uint8_t a, b, c, d, h, n, m, i, k2, k4, k5, k6, k7, k8, k9, knum;
+  uint8_t a, b, c, d, h, n, i, k2, k4, k5, k6, k7, k8, k9, knum;
   bool UnLink = false, StarOk = false, Ok = true;  
-  int nStrLen, e, d99 = 0, c99 = 0, c999 = 0, d999 = 0;   
+  int m, nStrLen, e, d99 = 0, c99 = 0, c999 = 0, d999 = 0;   
   File f, f1;
                                                                  
   a = FindStarNum(); c = StarCodeType[a];     // Position of *code in StarCode list                              
@@ -3727,7 +3737,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 16: //////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x64 *ld* List Data Links and Macros via serial port
       { showKeyData(); status("Links Data Sent"); StarOk = true; break; }
         case 17: //////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x66 "*df*" = delete all SDCard files
-      { status("SDCard Files deleted"); ListSDFiles(1); StarOk = true; break; }
+      { status("SDCard Files deleted"); ListSDFiles(1, 0); StarOk = true; break; }
         case 70: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]=='Z' *mZ*nn = Mouse 0,0 position 0=LB 1=LT 2=RT 3=RB Saved in Config1 MouseZ
       { if (knum==5) { MouseZ = b; status("Monitor Zero Position changed"); WriteConfig1(1); StarOk = true; } break; }  // b = 0-3 Zero position acreen corner              
         case 67: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x30 *m0*nn = Position cursor at 0,0 if no nn, or at nn,nn or n,n on Taskbar
@@ -3880,8 +3890,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          status("TO CANCEL PRESS HW RESET NOW . . ."); delay(10000); rp2040.rebootToBootloader(); break; }   
          case 41: ///////////////////// KeyBrdByte[1]==0x72&&KeyBrdByte[2]==0x33 *r3* Enable touble-press HW Reset for Reboot to UF2 Loader
        { status("Pico 2 NA Enable double-tap HW reset new UF2"); delay(3000); /*rp2040.enableDoubleResetBootloader();*/ StarOk = true; break; }  
-         case 42: ///////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x66 *lf* List Files on SDCard and Flash
-       { DoFileList(); StarOk = true; break; } 
+         case 42: ///////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x66 *lf* List Files on SDCard and Flash *lf*/sdcardfolder/ or *lf*/sdcardfolder/+/flashfolder/
+       { d = 0; m = -1; for (n=4; n<knum; n++) { if (KeyBrdByte[n]=='+') { m = n; break; }  }
+         if (knum>4)  { int len; if (m == -1) len = knum-4; else len = m-4; if (len>0) { for (n=0; n<len; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[len] = 0x00; d++; }  }
+         if (m!=-1)   { int len = knum - (m + 1); if (len>0) { for (n=0; n<len; n++) NameStr1[n] = KeyBrdByte[m+1+n]; NameStr1[len] = 0x00; d++; }  }
+         DoFileList(d); StarOk = true; break; } 
          case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* Upper/Lowercase macrokeys filenames
        { MacroUL = !MacroUL; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
          case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-9
@@ -4011,7 +4024,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
-            else for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
+            else for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
         if (LayerAxD)  f = SD.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
         if (nStrLen<nKeySize) { f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0; } 
         Serial.print(nFile); status(nFile); StarOk = true; break; }      
@@ -4030,7 +4043,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          RemoveMacro(); StarOk = true; break; }  // Test by *rm*filename then press [EXE] (not [Sav] or [Rmv])    
          case 78: ////////////////////// KeyBrdByte[1]=='s'&&KeyBrdByte[2]=='f' *sf*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
        { if (knum<5) { status("Use *sf*filename file or /folder/filename"); StarOk = true; break; }
-         for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+         for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
          if (LayerAxD)  f = SD.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
          if (nStrLen>=nKeySize) nStrLen = nKeySize-1; f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00;  
          if ( nFile[0]<128) { for (e = 0; e<nStrLen; e++) { if (nFile[e]<128 && nFile[e]!=0x00) Serial.write(nFile[e]); else Serial.print("."); } SerPr2; }
@@ -4038,7 +4051,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          strcat(NameStr3, " readable file sent"); status(NameStr3); StarOk = true; break; }     
          case 79: ////////////////////// KeyBrdByte[1]=='s'&&KeyBrdByte[2]=='F' *sF*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
        { if (knum<5) { status("Use *sF*filename file or /folder/filename"); StarOk = true; break; }
-         for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+         for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
          if (LayerAxD)  f = SD.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
          if (nStrLen>=nKeySize) { status("File too large > 6144 bytes"); StarOk = true; break; }
          f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00; for (e=0; e<nStrLen; e++) Serial.write(nFile[e]);         
@@ -4108,14 +4121,19 @@ bool TestXFiles()
   return isXFiles;
 }
  
-////////////////////
-void DoFileList()
-///////////////////
-{ 
+////////////////////////
+void DoFileList(int d)
+////////////////////////
+{ char s[50] = "SDCard Files (Number Name Size): ";
+  char f[50] = "Flash Files (Number Name Size): ";
   status("SDCard and Flash Filelist Sent"); 
-  Serial.println("Flash Files (Number Name Size):");  ListFiles(); 
+  if (d==2) strcat(f, NameStr1);
+  Serial.println(f);    
+  ListFiles(d); 
   Serial.print("\n"); 
-  Serial.println("SDCard Files (Number Name Size):"); ListSDFiles(0);
+  if (d>0) strcat(s, NameStr3); 
+  Serial.println(s);
+  ListSDFiles(0, d);
 }
 
 ////////////////////////////////////////////////////////
@@ -4286,7 +4304,9 @@ bool RenameMacro()
   if (KeyBrdByteNum==0) { DoMSTAName(Option1, MST1); strcpy(NameStr1, MSTAName); DoMSTAName(Option2, MST2); strcpy(NameStr2, MSTAName); }
 
   if (SrcDst==0||SrcDst==1) sdCard = false; if (SrcDst==2||SrcDst==3) sdCard = true;   // For Source 0,1=Flash 2,3=SDCard
-    
+  
+  // Serial.println(NameStr1); Serial.println(NameStr2); Serial.println(KeyBrdByteNum);  Serial.println(sdCard); 
+  
   if (!sdCard) RenOK = LittleFS.rename(NameStr1, NameStr2);    // FlasMem files: Rename 1 to 2 for m s t k files and a00-a99
           else RenOK = SD.rename(NameStr1, NameStr2);          // SDCard files:  Rename 1 to 2 for M S T K files and a00-a99
   
@@ -5140,4 +5160,4 @@ void showKeyData()
          
  }
 
-/************* EOF line 5087*****************/
+/************* EOF line 5163 *****************/
