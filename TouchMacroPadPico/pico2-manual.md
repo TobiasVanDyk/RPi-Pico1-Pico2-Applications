@@ -798,7 +798,15 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     these additional values are not persistant through the dimming period. 
 (v) Key Held Duration: *kr*num with num = 1-9 or 100-900 msec key press wait duration before repeat.
 (w) Key Held Enable: *ke* Enable/Disable Volume Mute Processing if [Vo][L1-L4] key is long-pressed
-(x) *lf* Send SDCard and FlashMemory Filelist to serial port.
+(x) *lf* Send SDCard and FlashMemory Filelist to serial port. Can list files in folders with *lf*/sdcardfolder/ or 
+    *lf*/sdcardfolder/+/flashfolder/. From the PC App use the two comboboxes in the Config tab to enter the folders or use 
+    / for the root. Can select the listed /folder/filename and Delete or View content from the Comms tab. 
+    Use for example
+    *lf* lists all flash files and all sdcard files 
+    *lf*/store/ lists all flash files and the sdcard files in folder /store.
+    *lf*/store/+/new/ lists all flash files in the folder /new and the sdcard files in folder /store.
+    *lf*/+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
+    *lf*/+/ lists all flash files and all the sdcard files (the folder for both is now root /).
 (y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names.
 (z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-d. Can add less
     than 12 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
