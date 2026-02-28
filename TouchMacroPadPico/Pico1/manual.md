@@ -794,7 +794,15 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     these additional values are not persistant through the dimming period.    
 (v) Key Held Duration: *kr*num with num = 1-9 or 100-900 msec key press wait duration before repeat.
 (w) Key Held Enable: *ke* Enable/Disable Volume Mute Processing if [Vo][L1-L4] key is long-pressed
-(x) *lf* Send SDCard and FlashMemory Filelist to serial port.
+(x) *lf* Send SDCard and FlashMemory Filelist to serial port. Can list files in folders with *lf* /sdcardfolder/ or 
+    *lf* /sdcardfolder/+/flashfolder/. From the PC App use the two comboboxes in the Config tab to enter the folders or use 
+    / for the root. Can select the listed /folder/filename and Delete or View content from the Comms tab. 
+    Use for example
+    *lf* lists all flash files and all sdcard files 
+    *lf* /store/ lists all flash files and the sdcard files in folder /store.
+    *lf* /store/+/new/ lists all flash files in the folder /new and the sdcard files in folder /store.
+    *lf* /+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
+    *lf* /+/ lists all flash files and all the sdcard files (the folder for both is now root /).
 (y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names.
 (z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-d. Can add less
     than 12 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
@@ -819,9 +827,9 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (E) *0R* Enable/Disable the resistor colour-coded number pad - plain colours used when off
 (F) *0x* Enable/Disable nKeys34 with nKeys count two characters numbers from n00-n99 and then three characters numbers 
     from n100-n996 if true, else nKeys count three characters numbers throughout n000-n996.
-(G) *0d*/dirname, *0d* or *0d*/ reset to no nKeys directory, *0d*// use nKeys directory based on first char of current
+(G) *0d* /dirname, *0d* or *0d* / reset to no nKeys directory, *0d* // use nKeys directory based on first char of current
     nKeys set such as /n/nKeyfilename. Add folder name that is added infront of the nKeys filename - for example 
-    *0d*/people will add the string /people/ in front of all nKey filenames for execution and saving. Pressing key n03
+    *0d* /people will add the string /people/ in front of all nKey filenames for execution and saving. Pressing key n03
     wil then run the contents of file n03 in the folder /people.
 (H) Rename *rn*oldname=newname. For example *rn*s02=a02[EXE] will rename file s02 (if it exists), to a02. Can also use 
     this to rename folders for example rename *Code/old=/new will rename folder old to folder new. Use [EXE] to
