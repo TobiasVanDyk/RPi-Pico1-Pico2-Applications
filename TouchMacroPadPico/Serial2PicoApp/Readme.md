@@ -10,8 +10,8 @@
 
 Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 C# .NET8
 
-It can list files in folders with \*lf\*sdcardfolder or \*lf\*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
-root. Can select the listed /folder/filename and Delete or View content from the Comms tab. Use for example from the PC App Send List: 
+It can also list, delete, and view, files and folders in the SDCard and Flash memory folders using \*lf\*sdcardfolder or \*lf\*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the root. It can select the listed /folder/filename and delete or view the file content from the Comms tab. 
+<br>Use for example from the PC App Send List: 
 <br><\*lf\*> lists all flash files and all sdcard files 
 <br><\*lf\*/store/> lists all flash files and the sdcard files in folder /store.
 <br><\*lf\*/store/+/new/> lists all flash files in the folder /new and the sdcard files in folder /store.
