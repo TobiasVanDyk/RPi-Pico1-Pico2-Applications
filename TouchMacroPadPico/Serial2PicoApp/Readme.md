@@ -1,5 +1,5 @@
 
-# Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 C# .NET8
+# Serial2Pico is a configuration and control app for the PicoTouchLCD
 
 <p align="left">
 <img src="Win10-55.png" height="180" /> 
@@ -8,13 +8,15 @@
 <img src="SelectandSendFiles.gif" height="180" /> 
 </p>
 
-Can list files in folders with \*lf\*sdcardfolder or \*lf\*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
+Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 C# .NET8
+
+It can list files in folders with \*lf\*sdcardfolder or \*lf\*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
 root. Can select the listed /folder/filename and Delete or View content from the Comms tab. Use for example from the PC App Send List: 
-<\*lf\*> lists all flash files and all sdcard files 
-<\*lf\*/store/> lists all flash files and the sdcard files in folder /store.
-<\*lf\*/store/+/new/> lists all flash files in the folder /new and the sdcard files in folder /store.
-<\*lf\*/+/new/> lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
-<\*lf\*/+/> lists all flash files and all the sdcard files (the folder for both is now root /).
+<br><\*lf\*> lists all flash files and all sdcard files 
+<br><\*lf\*/store/> lists all flash files and the sdcard files in folder /store.
+<br><\*lf\*/store/+/new/> lists all flash files in the folder /new and the sdcard files in folder /store.
+<br><\*lf\*/+/new/> lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
+<br><\*lf\*/+/> lists all flash files and all the sdcard files (the folder for both is now root /).
 
 Refer to [**Win11-99**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Win11-55.png) for a layout of the Config tab.
 
