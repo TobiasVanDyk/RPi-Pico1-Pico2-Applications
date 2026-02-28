@@ -2,7 +2,7 @@
 # Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 C# .NET8
 
 <p align="left">
-<img src="win11-88.png" height="180" /> 
+<img src="win10-55.png" height="180" /> 
 <img src="Win11-55.png" height="180" /> 
 <img src="Win11-77.png" height="180" />  
 <img src="SelectandSendFiles.gif" height="180" /> 
