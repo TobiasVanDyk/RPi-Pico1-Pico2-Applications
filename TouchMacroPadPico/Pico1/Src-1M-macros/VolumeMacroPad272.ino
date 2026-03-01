@@ -12,7 +12,7 @@
 // shares a similar layout approach to what is used here - their design dates back to early 2021. 
 // https://learn.adafruit.com/touch-deck-diy-tft-customized-control-pad?view=all
 //
-// Adapted by Tobias van Dyk August 2022 - February 2026 for Pi Pico 1 RP2040 and ILI9488 480x320 LCD
+// Adapted by Tobias van Dyk August 2022 - March 2026 for Pi Pico 1 RP2040 and ILI9488 480x320 LCD
 // Uses the Waveshare 3.5inch Touch Display Module for Raspberry Pi Pico included SDCard module:
 // https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 //
@@ -4096,8 +4096,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { if (knum==4) { fnum = 1; status("fnum reset"); StarOk = true; break; }
          if (k4=='/' && k5=='/') { strcpy(fdir, "");  status("fdir reset");  StarOk = true; break; }
          if (k4=='*' && k5=='*') { strcpy(fname, ""); status("fname reset"); StarOk = true; break; }
-         if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); }
-                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  } } StarOk = true; break; }   
+         if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum-4; n++) fname[n] = KeyBrdByte[n+4]; fname[n] = 0x00; status(fname); }
+                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum-4; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[n]  = 0x00; status(fdir);  } } StarOk = true; break; }   
          case 82: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='s' *1s* or *1s*char or *1s*charchar or *1s*000-255 Serial Start Marker
        { StarOk = GetStartEnd (0, 0, c999); break; } 
          case 83: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='e' *1e*char Serial End Marker
