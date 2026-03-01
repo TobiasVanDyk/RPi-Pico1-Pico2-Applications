@@ -4063,7 +4063,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         status("Text Data sent to PC"); StarOk = true; break; } } 
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
-            else for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
+            else for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
         if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
         if (nStrLen<nKeySize) { f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0; } 
         Serial.print(nFile); status(nFile); StarOk = true; break; }      
@@ -4082,7 +4082,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          RemoveMacro(); StarOk = true; break; }  // Test by *rm*filename then press [EXE] (not [Sav] or [Rmv])    
          case 78: ////////////////////// KeyBrdByte[1]=='s'&&KeyBrdByte[2]=='f' *sf*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
        { if (knum<6) { status("Use *sf*filename file or /folder/filename"); StarOk = true; break; }
-         for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+         for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
          if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
          if (nStrLen>=nKeySize) nStrLen = nKeySize-1; f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00;  
          if ( nFile[0]<128) { for (e = 0; e<nStrLen; e++) { if (nFile[e]<128 && nFile[e]!=0x00) Serial.write(nFile[e]); else Serial.print("."); } SerPr2; }
@@ -4090,7 +4090,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          strcat(NameStr3, " readable file sent"); status(NameStr3); StarOk = true; break; }     
          case 79: ////////////////////// KeyBrdByte[1]=='s'&&KeyBrdByte[2]=='F' *sF*filename - will use currentLayerAxD to determine if file on SDcard or Flash  
        { if (knum<6) { status("Use *sF*filename file or /folder/filename"); StarOk = true; break; }
-         for (n=0; n<knum; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
+         for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00; 
          if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");  nStrLen = f.size(); 
          if (nStrLen>=nKeySize) { status("File too large > 6144 bytes"); StarOk = true; break; }
          f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0x00; for (e=0; e<nStrLen; e++) Serial.write(nFile[e]);         
