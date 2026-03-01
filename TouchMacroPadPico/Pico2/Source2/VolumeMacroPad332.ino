@@ -4058,12 +4058,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          strcat(NameStr3, " raw file sent"); status(NameStr3); StarOk = true; break; }      
          case 80: ///////////////////// KeyBrdByte[1]=='w'&&KeyBrdByte[2]=='a' *wa* wake up dimmed LCD - does not trigger false M5 S5 T5 like *nd*00
       { LastMillis = millis(); DoWakeUp(); StarOk = true; break; }    
-         case 81: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]=='x' *sx* Drag n Drop file list save 
+         case 81: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]=='x' *sx* file list save 
        { if (knum==4) { fnum = 1; status("fnum reset"); StarOk = true; break; }
          if (k4=='/' && k5=='/') { strcpy(fdir, "");  status("fdir reset");  StarOk = true; break; }
          if (k4=='*' && k5=='*') { strcpy(fname, ""); status("fname reset"); StarOk = true; break; }
-         if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum; n++) fname[n] = KeyBrdByte[n+4]; fname[knum] = 0x00; status(fname); }
-                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[knum]  = 0x00; status(fdir);  } } StarOk = true; break; } 
+         if (knum<44) { if (KeyBrdByte[4]!='/') { for (n=0; n<knum-4; n++) fname[n] = KeyBrdByte[n+4]; fname[n] = 0x00; status(fname); }
+                        if (KeyBrdByte[4]=='/') { for (n=0; n<knum-4; n++) fdir[n]  = KeyBrdByte[n+4]; fdir[n]  = 0x00; status(fdir);  } } StarOk = true; break; } 
          case 82: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='s' *1s* or *1s*char or *1s*charchar or *1s*000-255 Serial Start Marker
        { StarOk = GetStartEnd (0, 0, c999); break; } 
          case 83: ////////////////////// KeyBrdByte[1]=='1'&&KeyBrdByte[2]=='e' *1e*char Serial End Marker
