@@ -2,7 +2,7 @@
 # Serial2Pico is a configuration and control app for the PicoTouchLCD
 
 <p align="left">
-<img src="Win10-55.png" height="180" /> 
+<img src="Win10-333.png" height="180" /> 
 <img src="Win10-44.png" height="180" /> 
 <img src="Win11-77.png" height="180" />  
 <img src="SelectandSendFiles.gif" height="180" /> 
