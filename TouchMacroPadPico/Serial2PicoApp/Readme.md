@@ -3,7 +3,7 @@
 
 <p align="left">
 <img src="Win10-55.png" height="180" /> 
-<img src="Win11-55.png" height="180" /> 
+<img src="Win10-44.png" height="180" /> 
 <img src="Win11-77.png" height="180" />  
 <img src="SelectandSendFiles.gif" height="180" /> 
 </p>
@@ -18,7 +18,7 @@ It can also list, delete, and view, files and folders in the SDCard and Flash me
 <br><\*lf\*/+/new/> lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
 <br><\*lf\*/+/> lists all flash files and all the sdcard files (the folder for both is now root /).
 
-Refer to [**Win11-99**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Win11-55.png) for a layout of the Config tab.
+Refer to [**Win10-44**](https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/blob/main/TouchMacroPadPico/Serial2PicoApp/Win10-44.png) for a layout of the Config tab. The Upload checkbox is used by the Select and Send button on the Comms tab to copy one or more files to either the root folder of the SDCard or Flash, or to the folder typed in the two comboboxes in the Config tab.
 
 A option to change the Start and End markers from the current < and > have been completed as described below. Suitable candidates are the 0x02/0x03 start/stop transmission pair or a seldom used character such as the back-tick \`. When using the PC App with a changed set of markers, keep on using the < > as framing characters in all typed send-lists in the PC App as a function replaced the C# serialport.Write which translates < > to the new set of markers. Using a paired set of < > brackets are also visually easier to recognise as bookends than for example a 0x02/0x03 or \` ~ or a # @ pair. 
 
