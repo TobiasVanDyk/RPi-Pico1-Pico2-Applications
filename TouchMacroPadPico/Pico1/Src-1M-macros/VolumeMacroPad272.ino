@@ -573,7 +573,7 @@ bool LinkOk = false;             // Used in DoKeyMST() DoKey16() DoLinkStr() tes
 char MSTAName[40]  = "xnn";      // 26 if nDir added to MSTA filename usually a01-a99 m01-m24 s01-s24 t01-t24 from Option1 = 0-23 Option2 = 0-23                             
 char MSTName[40]   = "xnn";      // 26 if nDir added to MST filename usually m01-m24 s01-s24 t01-t24 from Layout = 1-4 
 char MSTLinkName[] = "XnnLink";  // Filenames M01Link, S24Link T09Link, K01-K24Link  Layout = 1-4 and 5 for K
-char NameStr1[40]  = { "" };     // Used in: DoNKey() ListMacro() RemoveMacro() DoLinkStr() DoKeyMST() DoKey16() - NameStr1
+char NameStr1[60]  = { "" };     // Used in: DoNKey() ListMacro() RemoveMacro() DoLinkStr() DoKeyMST() DoKey16() - NameStr1
 char NameStr2[40]  = { "" };     // Used in: CopyMacro() RenameMacro() - NameStr1 + NameStr2
 char NameStr3[240] = { "" };     // Used in: DoNKeys must handle nDir + NKeys filename = 20 + 200
 
@@ -3223,6 +3223,8 @@ void ListFiles(int d)
   
   if (d==2) root = LittleFS.open(NameStr1, "r");
        else root = LittleFS.open("/", "r");
+
+  if (!root || !root.isDirectory()) return; // Folder not exist     
       
   File file = root.openNextFile();  
   while(file){
@@ -3243,6 +3245,8 @@ void ListSDFiles(bool ClearFiles, int d)
   
   if (d>0) root = SDFS.open(NameStr3, "r");
       else root = SDFS.open("/", "r");
+
+  if (!root || !root.isDirectory()) return; // Folder not exist
       
   File file = root.openNextFile();
   while(file){
@@ -3252,7 +3256,8 @@ void ListSDFiles(bool ClearFiles, int d)
           else Serial.print(file.name());
       SerPr1;
       Serial.println(file.size());
-      if (ClearFiles) SDFS.remove(file.name());
+      if (ClearFiles) if (d==0) SDFS.remove(file.name()); 
+                      else { strcpy(NameStr1, NameStr3); strcat(NameStr1, file.name()); SDFS.remove(NameStr1); }
       n++;
       file = root.openNextFile();
   }
