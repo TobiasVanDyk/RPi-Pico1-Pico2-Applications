@@ -521,10 +521,17 @@ char HexString[2] = { '0', '0' };
                         
 bool Rotate180 = false;          // Rotate screen 180 degrees so that USB cable is on other side
 
+const int  StrSize =  250;       // Check if not byte used if made larger 200 * 24 * 4 = 19.2 kbytes
+const int  ByteSize = 250;       // 
+const byte MaxBytes = StrSize;   // 
+const int  MaxRec = 6144;        // Big enough for MathBanks
+byte StartMarker  = 0x3C;        // <  Change with *1s*char Start of Text (STX - ASCII 2 / 0x02) 
+byte EndMarker    = 0x3E;        // >  Change with *1e*char End of Text   (ETX - ASCII 3 / 0x03)
+
 bool Math = false;               // Layer for Math KeyBrd
 int  MathX = 0;                  // values 0 1 2 3 4 - 4 adds non-printing chars as numbers to KeyBrdByte
-byte MathByte[200]= ""; // ={};  // Hold values to be sent
-byte MathCode[200];              // Parallel keycodes
+byte MathByte[ByteSize ]= "";    // Hold values to be sent
+byte MathCode[ByteSize ];        // Parallel keycodes
 int  Math123 = 0;                // Such as Key [abc] = a or b or c - values 0,1,2
 int  MathByteNum = 0;            // Size Math KeyBrdByte
 char MathChr[38];                // Current Math description = mathhexnumber + description
@@ -538,11 +545,11 @@ bool MKBrdSave = true;           // Pad [s] ppressed in Macro Editor - replace H
 bool HexMode = false;            // Enter values in MacroEditor as hex values 00-FF or 00-ff
 bool Kbrd = false;               // Layer for KeyBrd
 int  KeyBrdX = 2;                // values 0 1 2 3 4 - Should start on Page 3 or KeyBrdX = 2 = *Cm Page
-byte KeyBrdByte[200]= ""; // ={};// Hold values to be sent
-byte KbrdHistory[200]= "";       // Previous values or values sent with serial <c...>
+byte KeyBrdByte[ByteSize ]= "";  // Hold values to be sent
+byte KbrdHistory[ByteSize ]= ""; // Previous values or values sent with serial <c...>
 int  HistoryNum = 0;             // History string characters Count
-byte DelType[200]=" ";           // 1 or 3 if 1 or 3 chars in KBDisp
-byte KeyCode[200];               // Parallel keycodes
+byte DelType[ByteSize ]=" ";     // 1 or 3 if 1 or 3 chars in KBDisp
+byte KeyCode[ByteSize ];         // Parallel keycodes
 int  KeyBrd123 = 0;              // Such as Key [abc] = a or b or c - values 0,1,2
 int  KeyBrdF1F24 = 0;            // Single key cycles through all 24 Fnn keys
 int  FxyNum = 0;                 // Single key cycles through 0xF0 to 0xF9 used by Fxy and FxyChr
@@ -553,9 +560,9 @@ int  KeyPadNum = 0;              // Single key cycles through all 17 KeyPad keys
 int  StarNum = 0;                // Single key cycles through all Starcodes such as *ca*
 int  PrevButton = 0;             // Used in case-button to check for double key press
 int  Numkeys123 = 0;             // Numkeys1 to Numkeys3 - 3 chars for each key such as 3 4 5
-char KBDisp[200]= "";   //  ={}; // Keybrd display macro buffer in status line
+char KBDisp[ByteSize ]= "";      // Keybrd display macro buffer in status line
 int  KBDispPos = 0;              // nect char position
-char KBDispHistory[200]= "";     // Previous Keybrd display macro buffer in status line
+char KBDispHistory[ByteSize]=""; // Previous Keybrd display macro buffer in status line
 int  KBDispPosHistory = 0;       // Previous KBDisp position
 bool KBType = false;             // If 1st byte>0x7F use keycode[0-5] else use keyPress
 bool KBrdActive = false;         // Let [ADD] know any char key has been pressed at least once before
@@ -568,7 +575,7 @@ char MSTAName[40]  = "xnn";      // 26 if nDir added to MSTA filename usually a0
 char MSTName[40]   = "xnn";      // 26 if nDir added to MST filename usually m01-m24 s01-s24 t01-t24 from Layout = 1-4 
 char MSTLinkName[] = "XnnLink";  // Filenames M01Link, S24Link T09Link, K01-K24Link  Layout = 1-4 and 5 for K
 char NameStr1[80]  = { "" };     // Used in: DoNKey() ListMacro() RemoveMacro() DoLinkStr() DoKeyMST() DoKey16() ListFiles() ListSDFiles() CopyFlashFiles2SDCard() - NameStr1
-char NameStr2[40]  = { "" };     // Used in: CopyMacro() RenameMacro() - NameStr1 + NameStr2
+char NameStr2[80]  = { "" };     // Used in: CopyMacro() RenameMacro() - NameStr1 + NameStr2
 char NameStr3[240] = { "" };     // Used in: DoNKeys must handle nDir + NKeys filename = 20 + 200
 
 bool PadKeys = false;            // 5 Small Config Buttons on RH side Red Blue Green
@@ -643,12 +650,7 @@ char * str1to12[] = {str1, str2, str3, str4, str5, str6, str7, str8, str9, str10
 char * ttr1to12[] = {ttr1, ttr2, ttr3, ttr4, ttr5, ttr6, ttr7, ttr8, ttr9, ttr10,ttr11,ttr12,
                      ttr13,ttr14,ttr15,ttr16,ttr17,ttr18,ttr19,ttr20,ttr21,ttr22,ttr23,ttr24} ; // T keys
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const int  StrSize =  200;        // Check if not byte used if made larger 200 * 24 * 4 = 19.2 kbytes
-const int  ByteSize = 200;        // 
-const byte MaxBytes = StrSize;    // 
-const int  MaxRec = 6144;         // Big enough for MathBanks
-byte StartMarker  = 0x3C;         // <  Change with *1s*char Start of Text (STX - ASCII 2 / 0x02) 
-byte EndMarker    = 0x3E;         // >  Change with *1e*char End of Text   (ETX - ASCII 3 / 0x03)
+ 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 byte Str1[ByteSize],   Str2[ByteSize],   Str3[ByteSize],   Str4[ByteSize],   Str5[ByteSize],   Str6[ByteSize];
 byte Str7[ByteSize],   Str8[ByteSize],   Str9[ByteSize],   Str10[ByteSize],  Str11[ByteSize],  Str12[ByteSize];
@@ -1102,7 +1104,7 @@ bool GetMatch(byte a)
 }
 
 /////////////////////////////////////////////////////////////////////
-// Check and save 200 byte max new character strings or macros
+// Check and save 250 byte max new character strings or macros
 // Filenames from DoMST() 0mcst0MCST0 fromLayout and UpLowerCase flag
 /////////////////////////////////////////////////////////////////////
 void DoNewData()
@@ -1116,7 +1118,7 @@ void DoNewData()
   a =  RecBytes[0];                                            // <a a=1-6,mst,Ff,tT etc
   if (CheckStarCode(a)) return;                                // Do *code and return        
   Found = GetMatch(a); if (!Found) return;                     // a not 1-6 but mst,fF,tT etc 
-  if (NumBytes>MaxBytes) { status("File too large"); return; } // Max 200 bytes here else use SDCard   
+  if (NumBytes>MaxBytes) { status("File too large"); return; } // Max 250 bytes here else use SDCard   
   a = a - 48;                                                  // a=1-6
     
   if (Found) { if (a>0) c = a + (LayerAD)*6 - 1;    // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23
@@ -1717,7 +1719,7 @@ void DoNKeys(int Button)
   if (Button==20) { nStrLen = MacroBuffSize; goto NotnKey; }      // nFile already has indirected i.e. 2nd filename
 
   strcpy(NameStr3, nDir); if (nDir[2]=='/') NameStr3[1] = nChar;  // Default is "/" and "//" use /nChar as folder name such as /n/nKeysfiles 
-  strcat(NameStr3, NKeysX[Button]);                               // nDir = /dirname/ ezxcept if default just one / - maximum size 200 char
+  strcat(NameStr3, NKeysX[Button]);                               // nDir = /dirname/ ezxcept if default just one / - maximum size 250 char
    
   ///////////////////////////////////////////////////////////////////// Test if 1sr char is m,s,t,a,k or M,S,T,A,K then handle as macro/text file
   // For example with Source m01 construct GUIx in the KeyBrd Editor and press [EXE] then [Up] key to save. A file m01 will be saved 
@@ -2381,9 +2383,9 @@ void buttonpress(int Button)
       if (Kbrd) {if (KeyBrdX<4) KeyBrdX++; else KeyBrdX=0; // [NXT] Changes 5 KeyBrds from abc - ABC - 012 - *^% - SHFT
           KeyBrd123=0; ConfigButtons(1); break;}           // For new page start at first of 3 char group per key  
 
-      if (MouseK) {usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);  delay(dt50);             // ***Mouse
-                   usb_hid.mouseButtonRelease(RID_MOUSE);                   delay(200); 
-                   usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);  delay(dt50);        // ***Mouse
+      if (MouseK) {usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);  delay(dt50);             
+                   usb_hid.mouseButtonRelease(RID_MOUSE);                   delay(dt200); 
+                   usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);  delay(dt50);        
                    usb_hid.mouseButtonRelease(RID_MOUSE);                   delay(dt50);
                    break; }
     
@@ -3105,7 +3107,7 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint16_t DoFileBytes(byte DoWrite, const char *STRf,  byte *BytePtr, uint16_t ByteArrayLen, bool SDCard)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Returns 0 + LargeFile true if > 200 bytes filesize else return filesize < 200 byte LargeFile false
+// Returns 0 + LargeFile true if > 250 bytes filesize else return filesize < 250 byte LargeFile false
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 { uint16_t ByteLen = 0;
   int n;
@@ -3143,7 +3145,7 @@ uint16_t DoFileBytes(byte DoWrite, const char *STRf,  byte *BytePtr, uint16_t By
 ////////////////////////////////////////////////////////////////////////////////////////
 void DoFileStrings(bool DoWrite, const char *STRf,  char *ChrPtr, bool SDCard)
 ////////////////////////////////////////////////////////////////////////////////////////
-// Returns LargeFile true if > StrSize = 200 bytes filesize else return LargeFile false
+// Returns LargeFile true if > StrSize = 250 bytes filesize else return LargeFile false
 // Adds 0x00 to file if last byte not 0x00  then filesize + 1
 ////////////////////////////////////////////////////////////////////////////////////////
 { uint16_t StrLen;
@@ -4295,7 +4297,7 @@ bool RenameMacro()
 // Source (or entered name) -> Destination must be both on same SDCard or Flash
 //                    Oldname=Newname or /OldFolder=/NewFolder 
 //                    *Code and Serial: Use *rn*old=new[EXE] or <*rn*old=new> or *rn*/olddir=/newdir
-//                    Can be small or large files > 200 bytes
+//                    Can be small or large files > 250 bytes
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 { bool RenOK = false;
   bool sdCard = false;
@@ -4374,7 +4376,7 @@ byte GetModNum(byte b, byte m)
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 bool SendMacro()  // Source
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// Different from [EXE] - no [Up]key save option - already saved to a file <200 bytes size
+// Different from [EXE] - no [Up]key save option - already saved to a file <250 bytes size
 // Cannot list macros here without a file - for example those loaded using *fm,s,t*
 // Because DoFileBytes(0, NameStr will not find file NameStr
 // Works on macros loaded using serial port - they are saved to a file such as <3This is Key S3>
@@ -4438,7 +4440,7 @@ void CopyLabelFiles(byte Option)
 // via MST1, MST2, Option1, Option2
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 void CopyMacro(byte Option)  
-// Only use for files < 200 char/bytes not large files because its use MacroBuff to copy
+// Only use for files < 250 char/bytes not large files because its use MacroBuff to copy
 // Use SourceFile=DestinationFile can be any combination of SDCard and Flash - or use description below:  
 // Source -> Destination where Source Macro M S T A K N must already be saved to a file
 // Destination Macro can be M S T or A K N (or use *cm*nnXmm )
@@ -4488,7 +4490,7 @@ void CopyMacro(byte Option)
   if (SrcDst==0||SrcDst==1) sdCard = false; if (SrcDst==2||SrcDst==3) sdCard = true;   // For Source 0,1=Flash 2,3=SDCard 
   
   BPtr = MacroBuff; MacroBuffSize = DoFileBytes(0, NameStr1, BPtr, ByteSize, sdCard);  // Read source macro from Flash or SDCard  
-  if (MacroBuffSize==0)          { status("Source Macro not found");   return; }   
+  if (MacroBuffSize==0)          { if (LargeFile==false) status("Source Macro not found"); else status("Source Macro too large");   return; }   
   // if (MacroBuffSize>3&&MST2==4)  { status("Knn maximum 3 byte macro"); return; }    // Knn macros are BsDCode1-BsDCode3 -> max 3 bytes
 
   DoMSTAName(Option2, MST2);  // Destination Filename in MSTAName
@@ -4658,7 +4660,7 @@ void ListMacro()    // Source
 // Cannot list macros here without a file - for example those loaded using *fm,s,t*
 // Because DoFileBytes(NameStr) will not find file NameStr
 // Works on macros loaded using serial port - they are saved to a file such as <3This is Key S3>
-// For files/macros > 200 bytes size will list the first 10 bytes and show " LF" for Large File before the filename
+// For files/macros > 250 bytes size will list the first 10 bytes and show " LF" for Large File before the filename
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 { int i, value;
   byte *BPtr;
