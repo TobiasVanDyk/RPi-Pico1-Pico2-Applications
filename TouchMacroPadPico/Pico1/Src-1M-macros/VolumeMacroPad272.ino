@@ -90,8 +90,8 @@ Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROT
 
 uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const int  StrSize =  200;        // Check if not byte used if made larger 200 * 24 * 4 = 19.2 kbytes
-const int  ByteSize = 200;        // 
+const int  StrSize =  250;        // Check if not byte used if made larger 200 * 24 * 4 = 24 kbytes
+const int  ByteSize = 250;        // 
 const byte MaxBytes = StrSize;    // 
 const int  MaxRec = 6144;         // Big enough for MathBanks
 byte StartMarker  = 0x3C;         // <  Change with *1s*char Start of Text (STX - ASCII 2 / 0x02) 
@@ -1099,7 +1099,7 @@ bool GetMatch(byte a)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // Check and save new SDCard file strings SDFilename is in sdcard.h select with *sd*n
-// These are limited size Bytesize = 200 - sensible here because wait until written
+// These are limited size Bytesize = 250 - sensible here because wait until written
 // Directly written to SDCard files with PC only limited by SDCard capacity
 ///////////////////////////////////////////////////////////////////////////////////////
 void DoNewSDCard()
@@ -1129,7 +1129,7 @@ void DoNewSDCard()
 }
 
 /////////////////////////////////////////////////////////////////////
-// Check and save 200 byte max new character strings or macros
+// Check and save 250 byte max new character strings or macros
 // Filenames from DoMST() 0mcst0MCST0 fromLayout and UpLowerCase flag
 /////////////////////////////////////////////////////////////////////
 void DoNewData()
@@ -1143,7 +1143,7 @@ void DoNewData()
   a =  RecBytes[0];                                            // <a a=1-6,mst,Ff,tT etc
   if (CheckStarCode(a)) return;                                // Do *code and return        
   Found = GetMatch(a); if (!Found) return;                     // a not 1-6 but mst,fF,tT etc 
-  if (NumBytes>MaxBytes) { status("File too large"); return; } // Max 200 bytes here else use SDCard   
+  if (NumBytes>MaxBytes) { status("File too large"); return; } // Max 250 bytes here else use SDCard   
   a = a - 48;                                                  // a=1-6
     
   if (Found) { if (a>0) c = a + (LayerAD)*6 - 1;    // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23
@@ -1188,23 +1188,24 @@ static void timer_callback(void)
 void RecSerial() // https://forum.arduino.cc/t/serial-input-basics-updated/382007/3
 ////////////////////////////////////////////////////////////////////////////////////
 {   static boolean InProgress = false;
-    static int n = 0, a = 1;
+    static int n = 0;
     byte b;
 
-    while ( Serial.available()>0 && !NewData) 
+    while ((Serial.available()>0) && (!NewData)) 
           { b = Serial.read();
             if (InProgress) { if (b!=EndMarker) { RecBytes[n] = b;
                                                   n++;
-                                                  if (n >= MaxRec) { n = MaxRec - 1; } 
-                                                }
-                              else { if (RecBytes[n-1]!=0x00) { RecBytes[n] = '\0'; a--; } 
+                                                  if (n >= MaxRec) { n = MaxRec - 1; } }
+                              else { RecBytes[n] = '\0'; // terminate the string
                                      InProgress = false;
-                                     NumBytes = n - a;
+                                     NumBytes = n;   
+                                     n = 0;
                                      NewData = true;
                                    }
                              }
-            else if (b == StartMarker) { InProgress = true; }  // Ok if restart after first start
+            else if (b == StartMarker) { InProgress = true; }
           }
+           
 }
 
 ////////////////////////
@@ -1755,7 +1756,7 @@ void DoNKeys(int Button)
   if (Button==20) { nStrLen = MacroBuffSize; goto NotnKey; }      // nFile already has indirected i.e. 2nd filename
 
   strcpy(NameStr3, nDir); if (nDir[2]=='/') NameStr3[1] = nChar;  // Default is "/" and "//" use /nChar as folder name such as /n/nKeysfiles 
-  strcat(NameStr3, NKeysX[Button]);                               // nDir = /dirname/ ezxcept if default just one / - maximum size 200 char
+  strcat(NameStr3, NKeysX[Button]);                               // nDir = /dirname/ ezxcept if default just one / - maximum size 250 char
   
   ///////////////////////////////////////////////////////////////////// Test if 1sr char is m,s,t,a,k or M,S,T,A,K then handle as macro/text file
   // For example with Source m01 construct GUIx in the KeyBrd Editor and press [EXE] then [Up] key to save. A file m01 will be saved 
@@ -3138,7 +3139,7 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint16_t DoFileBytes(byte DoWrite, const char *STRf,  byte *BytePtr, uint16_t ByteArrayLen, bool SDCard)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Returns 0 + LargeFile true if > 200 bytes filesize else return filesize < 200 byte LargeFile false
+// Returns 0 + LargeFile true if > 250 bytes filesize else return filesize < 250 byte LargeFile false
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 { uint16_t ByteLen = 0;
   int n;
@@ -3176,7 +3177,7 @@ uint16_t DoFileBytes(byte DoWrite, const char *STRf,  byte *BytePtr, uint16_t By
 ////////////////////////////////////////////////////////////////////////////////////////
 void DoFileStrings(bool DoWrite, const char *STRf,  char *ChrPtr, bool SDCard)
 ////////////////////////////////////////////////////////////////////////////////////////
-// Returns LargeFile true if > StrSize = 200 bytes filesize else return LargeFile false
+// Returns LargeFile true if > StrSize = 250 bytes filesize else return LargeFile false
 // Adds 0x00 to file if last byte not 0x00  then filesize + 1
 ////////////////////////////////////////////////////////////////////////////////////////
 { uint16_t StrLen;
@@ -4333,7 +4334,7 @@ bool RenameMacro()
 // Source (or entered name) -> Destination must be both on same SDCard or Flash
 //                    Oldname=Newname or /OldFolder=/NewFolder 
 //                    *Code and Serial: Use *rn*old=new[EXE] or <*rn*old=new> or *rn*/olddir=/newdir
-//                    Can be small or large files > 200 bytes
+//                    Can be small or large files > 250 bytes
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 { bool RenOK = false;
   bool sdCard = false;
@@ -4476,7 +4477,7 @@ void CopyLabelFiles(byte Option)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 void CopyMacro(byte Option)  // Option=0 ignore 1-100 from *cf*n or *cf*nn special copy operations
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Only use for files < 200 char/bytes not large files because its use MacroBuff to copy
+// Only use for files < 250 char/bytes not large files because its use MacroBuff to copy
 // Use SourceFile=DestinationFile can be any combination of SDCard and Flash - or use description below:  
 // Source -> Destination where Source Macro M S T A K N must already be saved to a file
 // Destination Macro can be M S T or A K N (or use *cm*nnXmm )
@@ -4525,7 +4526,7 @@ void CopyMacro(byte Option)  // Option=0 ignore 1-100 from *cf*n or *cf*nn speci
   if (SrcDst==0||SrcDst==1) sdCard = false; if (SrcDst==2||SrcDst==3) sdCard = true;   // For Source 0,1=Flash 2,3=SDCard 
   
   BPtr = MacroBuff; MacroBuffSize = DoFileBytes(0, NameStr1, BPtr, ByteSize, sdCard);  // Read source macro from Flash or SDCard  
-  if (MacroBuffSize==0)          { status("Source Macro not found");   return; }   
+  if (MacroBuffSize==0)          { if (LargeFile==false) status("Source Macro not found"); else status("Source Macro too large");   return; }   
   // if (MacroBuffSize>3&&MST2==4)  { status("Knn maximum 3 byte macro"); return; }    // Knn macros are BsDCode1-BsDCode3 -> max 3 bytes
 
   DoMSTAName(Option2, MST2);  // Destination Filename in MSTAName
@@ -4694,7 +4695,7 @@ void ListMacro()    // Source
 // Cannot list macros here without a file - for example those loaded using *fm,s,t*
 // Because DoFileBytes(NameStr) will not find file NameStr
 // Works on macros loaded using serial port - they are saved to a file such as <3This is Key S3>
-// For files/macros > 200 bytes size will list the first 10 bytes and show " LF" for Large File before the filename
+// For files/macros > 250 bytes size will list the first 10 bytes and show " LF" for Large File before the filename
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 { int i, value;
   byte *BPtr;
