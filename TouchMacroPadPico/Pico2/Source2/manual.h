@@ -672,6 +672,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     If the Power Menu is active then only the [Stp], [Cfg] and the [Black] keys are useful.
 (6) Power Keys time: Restart:  *rt*nnn(s) or *rT*nnn(s) i.e. 30 sec = *rt*030s  10 min = *rT*10m  1 hour = *rT*01h
                      Poweroff: *ot*nnn(s) or *oT*nnn(s) i.e. 30 sec = *ot*030   10 min = *oT*10m  1 min  = *oT*1 
+                     Clock Restart and Clock PowerOff: *ct*hhmmR,O *ct*16:42R Restart when time is 16h42
     Examples: (1) *xx*nnn s 000-999 sec (2) *xx*nn h/m/s 00-99 hrs/min/sec (3) *xx*n h/m/s 0-9 hrs/min/sec
     (4) *xx*n=0-9 minutes with xx = rt, rT, ot, oT and n=0-9. Use [*cm],[ADD],[EXE] in Macro Editor to enter the time 
     values, and refer to GetT() in the main source code for furher details.
@@ -707,6 +708,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     re-calibrate needed on restart. Use *ca* to set/clear re-calibration on start. Remove individual macro files 
     with the [Rmv] or rename with [Ren] keys.
 (i) *ct* display four time clocks with a 1 second delay - Time, Macro[R-C][O-C], Macro[Rct][OcT] Power[R-C][O-C].
+    *ct*hhmmR,O Clock Restart and Clock PowerOff: *ct*16:42R Restart when time is 16h42
 (j) *br* = toggle brightness controls up/down replace volume up/dwn for Layouts 1, 3, 4 (not in Layout 2 Cfg). The
     brightness slider usually only has an effect when used in notebook computers not desktops.
 (k) *tt* *ta* *tp* *tw* Use *tx*yymmddwhhmm -> *tx*22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w

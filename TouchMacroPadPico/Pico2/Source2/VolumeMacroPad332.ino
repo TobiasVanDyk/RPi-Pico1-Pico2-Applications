@@ -716,10 +716,10 @@ char wTimeDateArr[mPlaySize]  = { "w             " };
 char aTimeDateArr[mPlaySize]  = { "a             " };
 char pTimeDateArr[mPlaySize]  = { "p             " }; 
 // Wday day of week, sunday is day 1  Year offset from 1970; 
-tmElements_t t     = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 5, .Day = 17, .Month = 04, .Year = 55  };  // Clock Date and Time
-tmElements_t alarm = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 5, .Day = 17, .Month = 04, .Year = 55  };  // Macro Clock Time Repeat+Oneshot
-tmElements_t power = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 5, .Day = 17, .Month = 04, .Year = 55  };  // Restart-Off Clock Timer
-tmElements_t timer = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 5, .Day = 17, .Month = 04, .Year = 55  };  // Macro Clock Timer Repeat+Oneshot
+tmElements_t t     = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 3, .Day = 17, .Month = 03, .Year = 56  };  // Clock Date and Time
+tmElements_t alarm = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 3, .Day = 17, .Month = 03, .Year = 56  };  // Macro Clock Time Repeat+Oneshot
+tmElements_t power = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 3, .Day = 17, .Month = 03, .Year = 56  };  // Restart-Off Clock Timer
+tmElements_t timer = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 3, .Day = 17, .Month = 03, .Year = 56  };  // Macro Clock Timer Repeat+Oneshot
 static volatile bool alarm_fired = false;  // Set in callback triggers Macro Send xOne xMany based on Clock Time
 static volatile bool power_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Time
 static volatile bool timer_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Timer
@@ -802,10 +802,10 @@ void loop()
 { if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
                    else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
   
-  NowT = now();                           // Time now from Timelib
+  // NowT = now();                           // Time now from Timelib
   if (MacroTimer18) CheckMacroTimers();   // Check Macro Timers 1-8 Oneshot Repeating Clocktime 
                            
-  if (powerEnable && NowT>=makeTime(power)) power_fired = true;   // Compare now() with alarm or timer                              
+  if (powerEnable) if (hour() == power.Hour && minute() == power.Minute) power_fired = true;   // Compare with timer then restart or switch off                             
   if (alarmEnable && NowT>=makeTime(alarm)) alarm_fired = true;   // Macro Timers 5 and 6
   if (timerEnable && NowT>=makeTime(timer)) timer_fired = true;   // Macro Timers 7 and 8 
 
@@ -1216,7 +1216,7 @@ void DoPowerKeys (char Cmd, bool Menu, int s)
   long int PVal;
   byte xLate1[] = { 4,0,2,0,  3,0,1,0,  0,0,0,0,  0,0,0,0};  // [] only: Key s 0-11 matched DimData[value-in-here] 0 = DimData not needed
   
-  if (s==3||s==7) {PowerKeys = false; powerEnable = true; ConfigButtons(1); return;} // s 3 PowerClock=1 s 7 PowerClock=2
+  if (s==3||s==7) {PowerKeys = false; powerEnable = true; ConfigButtons(1); return;} // Pressed Grey Powerkeys 3 PowerClock=1 s 7 PowerClock=2
    
   if ((s>7)||(s==1)) { PowerKeys = false; // If immediate action Must do this before the actions below
                        status(" ");  ConfigButtons(1);  }
@@ -1290,15 +1290,15 @@ void DoPowerKeys (char Cmd, bool Menu, int s)
                      
    if (OptionOS==0) { keycode[0] = GuiL;             // or use HID_KEY_GUI_RIGHT
                       keycode[1] = HID_KEY_R;        // 'R' or 'r' not the same here
-                      usb_hid.keyboardReport(HIDKbrd, 0, keycode);   delay(dt50); // GUI + R
-                      usb_hid.keyboardRelease(HIDKbrd);              delay(dt500);
+                      usb_hid.keyboardReport(HIDKbrd, 0, keycode);   delay(dt100); // GUI + R
+                      usb_hid.keyboardRelease(HIDKbrd);              delay(1000);
 
                       b = xLate1[s]; PVal = DimData[b]/1000;  
                       if (b>0)  { Timer2Str(TimerArr, 2, PVal); // Serial.println(TimerArr);
                                   strcpy(ShutDwn0, ShutDwnWin1); strcat(ShutDwn0, ShutDwnWin2[s]); strcat(ShutDwn0, TimerArr); } 
                       if (b==0) { strcpy(ShutDwn0, ShutDwnWin1); strcat(ShutDwn0, ShutDwnWin2[s]);  }
-                      for (n=0;  n<strlen(ShutDwn0); n++) { usb_hid.keyboardPress(HIDKbrd, ShutDwn0[n]); delay(dt50);
-                                                            usb_hid.keyboardRelease(HIDKbrd);            delay(dt50); }
+                      for (n=0;  n<strlen(ShutDwn0); n++) { usb_hid.keyboardPress(HIDKbrd, ShutDwn0[n]); delay(dt100);
+                                                            usb_hid.keyboardRelease(HIDKbrd);            delay(dt100); }
                     }
                     
   delay(dt200);                             
@@ -3703,8 +3703,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                 StarOk = true; break; }
         case 7: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x6D *cm* or *cmnnXnn = copy macros MSTA -> MSTA + K
       { CopyMacro(0); SendBytesEnd(0); StarOk = true; break; }
-        case 8: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x74 "*ct*" = display clocks 4x 1 second delay
-      { DisplayClocks(true); StarOk = true; break; }
+        case 8: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x74 "*ct*" display clocks 4x 1 second delay *ct*hhmmR,O restart or Off on clock = hh:mm
+      { if (knum==4) { DisplayClocks(true); StarOk = true; break; }
+        if (knum==9) { NowT = now(); power.Hour = 10*b+(k5-48); power.Minute = 10*(k6-48)+(k7-48); if (power.Hour>23||power.Minute>59) { status("Enter *ct*hhmmR,O"); break; }
+                       // Serial.println(hour(NowT)); Serial.println(minute(NowT)); Serial.println(power.Hour); Serial.println(power.Minute); 
+                       if (k8=='R') { PowerClock=1; status("Restart Clock ON");  StarOk = true; }                // Enable by pressing Grey [C-R] will set powerEnable=true;
+                       if (k8=='O') { PowerClock=2; status("PowerOff Clock ON"); StarOk = true; } } break; }     // Enable by pressing Grey [C-O] will set powerEnable=true;
         case 9: ///////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x65 "*de*" = delete config and macro files
       { status("Files deleted"); DeleteFiles(1); ConfigButtons(1); SendBytesEnd(1); StarOk = true; break; }
         case 10: //////////////////// KeyBrdByte[1]==0x65  *e0* to *e6*  Media keys Activated   
