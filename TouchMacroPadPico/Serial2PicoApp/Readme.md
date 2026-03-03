@@ -10,6 +10,8 @@
 
 Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 C# .NET8
 
+Power Off and Restart configuration is complete L2->[Cfg]->[ROf], but because the Pico 2 does not have the Pico 1's RTC adding the two clock functions to that panel will be done at a later stage after the Pico 1 code has been updated.
+
 It can also list, copy, delete, rename, and view, files and folders in the SDCard and Flash memory folders using \*lf\*sdcardfolder or \*lf\*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the root. It can select the listed /folder/filename and delete or view the file content from the Comms tab. 
 <br>Use for example from the PC App Send List: 
 <br><\*lf\*> lists all flash files and all sdcard files 
