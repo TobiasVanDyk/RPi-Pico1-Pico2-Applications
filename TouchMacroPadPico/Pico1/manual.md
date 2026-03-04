@@ -220,7 +220,7 @@ Macro: Source Num      Target Num                                               
 -----------------------------------------------------------------------------------------------------------------------
 Layout 2B - 996 nKeys n01 to n996 - These keys and files they use, named by default [n01] to [n996] are not macros, 
 textstrings, or linkfiles. They redirect or point to another file(name) optionally via its path - i.e. folder(s) and 
-name, of any length less than 200 characters, on the same storage (Flash or SDCard), to be executed. For example if 
+name, of any length less than 250 characters, on the same storage (Flash or SDCard), to be executed. For example if 
 file n01 contains the text /passwords/BoA.txt then pressing key n01 will send the text from the file BoA.txt in folder
 /passwords to the current focussed, opened application such as Chrome or notepad. Press Red Pads (+) (-) to Page Up or
 Down.
@@ -263,12 +263,12 @@ Layout 2 (Config) has five additional small pad-buttons on the right side (from 
 [k] Macro Composition Keypad on/off.
 [m] Mouse Keypad on/off.
 [n] n-Key mode: nxx files (such as n01, n34 etc, on both Flash and SDCard), contains the name of a file to be executed
-with a filename length < 200. The filename can include / char => /paintmacro/paint001.txt will execute file paint001.txt
+with a filename length < 250. The filename can include / char => /paintmacro/paint001.txt will execute file paint001.txt
 in the folder /paintmacro. If the file name stored in file nxx ends with 'Link' it is processed as a linkfile (list of 
 files, repeats, delays etc.) Use the Option Pad [o] to change to the next page - 83 pages with n01-n12, n13-n24, up to
 n985-n996 are available. They can be stored on both the Flash memory or the SDCard. Switch between the n-Key Mode and 
 the Number-Pad mode by using *09*. The n01-n996 files are therefore neither macros, textstrings, or linkfiles. They only
-point to another file which has a a path - i.e. folder and name, of any length less than 200 characters, on the same 
+point to another file which has a a path - i.e. folder and name, of any length less than 250 characters, on the same 
 storage (Flash or SDCard), to be executed.
 [n] Green Number Pad:  Number-Keypad on/off - then use red Pad [o] to scroll through NumberPad pages.
                        Macro Mode - Pressing grey Pad 4 [n] toggles KeyBoard Direct to PC Mode On/Off - show "d" in  
@@ -412,8 +412,8 @@ will be executed. For example file a01 has Ctrl+Shft+Esc, file m07 has filename 
 content 0xF2 0x61 0x30 0x 31 when key [M7] pressed TaskManager opens. Construct m07 in macroeditor set source to 
 M07 white, press [F+N]3x[ADD] then a01 via [ADD] then [Sav]. File a01 is already saved in flash content 0xE0 0xE1 0x20 
 
-Note F: Rename and Remove Macro works for large files > 200 bytes, List will show the first 10 bytes and "LF" for the
-large file size, but Copy and Send Macro only works on files < 200 bytes.
+Note F: Rename and Remove Macro works for large files > 250 bytes, List will show the first 10 bytes and "LF" for the
+large file size, but Copy and Send Macro only works on files < 250 bytes.
 
 Note G: m,s,t macros with numbers 25-99 can be entered and saved as well - set the source or target to a, then press 
 [Num] to increase the displayed number to any number between 25-99, then press either ] or [Dst] for m, s, or t, and 
@@ -702,6 +702,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     re-calibrate needed on restart. Use *ca* to set/clear re-calibration on start. Remove individual macro files 
     with the [Rmv] or rename with [Ren] keys.
 (i) *ct* display four time clocks with a 1 second delay - Time, Macro[R-C][O-C], Macro[Rct][OcT] Power[R-C][O-C].
+    *ct*hhmmR,O Clock Restart and Clock PowerOff: *ct*16:42R Restart when time is 16h42
 (j) *br* = toggle brightness controls up/down replace volume up/dwn for Layouts 1, 3, 4 (not in Layout 2 Cfg). The
     brightness slider usually only has an effect when used in notebook computers not desktops.
 (k) *tt* *ta* *tp* *tw* Use *tx*yymmddwhhmm -> *tx*22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w
@@ -1029,12 +1030,12 @@ The Repeat-only mode (i.e send macro fixed number of times with a delay or no de
 Text Strings: 
 Large Text file processing for nKeys: Can handle very large text strings strings, preferably stored on SDCard using 
 nKeys n,o,p,q,r. If nKeys = m,s,t then large strings also enabled for M S T keys 01 - 96. Large strings tested up to
-64kB. Keys MST 01-24 are best used for text < 200 char and MST 25-96 for large text or use all NKeys NOPQR etc 01-96 
+64kB. Keys MST 01-24 are best used for text < 250 char and MST 25-96 for large text or use all NKeys NOPQR etc 01-96 
 for large text. For example copy two large (>10kB) files L1 and S12 on SDCard. Then program nKey n01 with content L1.
 Use KeyBrd editor with n01 as source (in brown not white), and add L1[Sav]. Test by pressing key nKey [n01]. Change 
 nKey letter to S with [Cfg][Opt]PadKey[o] then press nKey [S12] - tested both keys both with notepad as the focus.
 
-Send new text strings up to 200 characters to keys S1/T1 - S12/T24 via USB serial. Start string with <1 to <6 
+Send new text strings up to 250 characters to keys S1/T1 - S12/T24 via USB serial. Start string with <1 to <6 
 followed by the string assigned to S1/T1-S24/T24 - end string with > If current Layout is L3 then S1 to S6 
 changed, Layout L4 T1 to T6 changed, Layout L1 then M1 to M6 changed If current Layer is A then M1/S1/T1-M6/S6/T6 
 changed, if Layer B M7/S7/T7-M12/S12/T12 changed etc. To store the string sent on SDCard rather than Flash make sure
@@ -1090,4 +1091,3 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
-
