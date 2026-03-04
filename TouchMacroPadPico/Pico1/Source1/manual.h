@@ -703,6 +703,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     re-calibrate needed on restart. Use *ca* to set/clear re-calibration on start. Remove individual macro files 
     with the [Rmv] or rename with [Ren] keys.
 (i) *ct* display four time clocks with a 1 second delay - Time, Macro[R-C][O-C], Macro[Rct][OcT] Power[R-C][O-C].
+    *ct*hhmmR,O Clock Restart and Clock PowerOff: *ct*16:42R Restart when time is 16h42
 (j) *br* = toggle brightness controls up/down replace volume up/dwn for Layouts 1, 3, 4 (not in Layout 2 Cfg). The
     brightness slider usually only has an effect when used in notebook computers not desktops.
 (k) *tt* *ta* *tp* *tw* Use *tx*yymmddwhhmm -> *tx*22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w

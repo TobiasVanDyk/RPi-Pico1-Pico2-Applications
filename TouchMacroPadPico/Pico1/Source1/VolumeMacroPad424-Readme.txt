@@ -1,20 +1,20 @@
-Compiled with Pico SDK 2.21-develop, Arduino Pico 5.5.5 and included Adafruit_TinyUSB_Arduino 3.7.2, and TFTeSPI 2.5.43
+Compiled with Pico SDK 2.21-develop, Arduino Pico 5.5.1 and included Adafruit_TinyUSB_Arduino 3.7.2, and TFTeSPI 2.5.43
 Pico 1 RP2040 and 3.5inch Touch Display Module for 200MHz Raspberry Pi Pico included SDCard module https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 -------------------------------------------------------------------------------------------------------------------------------------------------
-Using library Adafruit_TinyUSB_Arduino at version 3.7.2 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\Adafruit_TinyUSB_Arduino 
-Using library SPI at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SPI 
+Using library Adafruit_TinyUSB_Arduino at version 3.7.2 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\Adafruit_TinyUSB_Arduino 
+Using library SPI at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SPI 
 Using library TFT_eSPI at version 2.5.43 in folder: C:\Users\Tobias\Documents\Arduino\libraries\TFT_eSPI 
-Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\LittleFS 
-Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SDFS 
-Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.0\libraries\SdFat 
+Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\LittleFS 
+Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
+Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad424.ino.elf"
-Sketch uses 255964 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 62652 bytes (23%) of dynamic memory, leaving 199492 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 256260 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 62700 bytes (23%) of dynamic memory, leaving 199444 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
-Converting to uf2, output size: 584192, start address: 0x2000
+Converting to uf2, output size: 585216, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RPI-RP2)
-Wrote 584192 bytes to D:/NEW.UF2
+Wrote 585216 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -27,7 +27,12 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
                                                           #define SPI_READ_FREQUENCY 15000000  // 20 MHz also ok
 
 New changes:
-1. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
+1. Changed Time and Clock handlers for Pico 1 (removed RTC callback) and 2, which lacks an RTC. Power Timers Clock-Restart and Clock-PowerOff functional with new config options
+hours and minutes (i.e. ignore day + date) using *ct*hhmmR,O and full date + time <Pyymmddwhhmm> also functional (*tw*yymmddwhhmm not working as yet). To test set time using PC App
+then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and Other Keys are 
+checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. After the first enter the LCD will display "Restart Clock ON" and after [R-C] pressed it
+will display "Restart on Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command.
+2. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
 root. Can select the listed /folder/filename and Delete or View content from the Comms tab. Use for example from the PC App Send List: 
 <*lf*> lists all flash files and all sdcard files 
 <*lf*/store/> lists all flash files and the sdcard files in folder /store.
@@ -36,8 +41,8 @@ root. Can select the listed /folder/filename and Delete or View content from the
 <*lf*/+/> lists all flash files and all the sdcard files (the folder for both is now root /).
 To change the serial start/stop markers to 02hex/03hex type 0x02 and 0x03 into the Comms Tab of the PC App and press [Change] then close the app, reopen and check if the values
 shown are 02 and o3. Then change it on the Pico macropad using the macroEditor - enter *1s*002 [EXE], and also *1e*003, [EXE], exit the Editor and press [Cfg]->[Sav>].
-2. Added S1-S24 keys double-spacing printng filter - use *cr*0-3 to filter i.e. remove, CR 0D \n and LF 0A \r during sending nKeys or the S1-S24 keys large SDCard text files.
-3. Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 0-255 from the Pico and also on the PC App also to any byte value 
+3. Added S1-S24 keys double-spacing printng filter - use *cr*0-3 to filter i.e. remove, CR 0D \n and LF 0A \r during sending nKeys or the S1-S24 keys large SDCard text files.
+4. Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 0-255 from the Pico and also on the PC App also to any byte value 
 between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. 
 Use *1s*char for the Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end characters, or use *1s* or *1e* to reset 
 both to the <> pair, or use *1s,e*000-255 to set to any value between 0 and 255 such as the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change
@@ -45,10 +50,10 @@ it on the PC App before syncing, and when changed on the PC App via <*1s,e*char>
 the translation to the new start char is done automatically when sending the *command to change the end character. Because the Pico Start and End marker settings are saved in 
 the Config1 file, the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them to the default < and >. Otherwiae use the 
 Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
-4. Added <f filecontent > to <F filecontent > from using the [Select and Send Files] multi-file select button on the bKeys tab with nKeys checked - this then saves as nChar+0+1-9 if<10 or 
+5. Added <f filecontent > to <F filecontent > from using the [Select and Send Files] multi-file select button on the bKeys tab with nKeys checked - this then saves as nChar+0+1-9 if<10 or 
 nChar+10-999. Sending MST files using <1-6 data > to the SDCard is now limited to 6144 bytes instead of 200 bytes.
-5. Fixed *sx*filename and *sx*folder code.
-6. *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber to 1. One or many files can be copied from the PC App to the 
+6. Fixed *sx*filename and *sx*folder code.
+7. *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber to 1. One or many files can be copied from the PC App to the 
 Pico Macropad using the [Select and Send Files] button on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next to the 
 button is filled with the list of files sent. If one of these are selected, or a new file and its path typed into the combobox, the button when pressed will not first open a dialog 
 box to select files but will send the single file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file 9999. A filename sync 
@@ -58,7 +63,7 @@ to change the name used or path where files are saved - but these setting are no
 larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal for uploading a set of nKeys - for example first upload a set of 9 keys where you used 
 <*sx*n0> to set the base filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset between uploads unless you use <*sx*>. To reset 
 filename to null use *sx*** and use *sx*// to set foldername to null.
-7. *wa* Wakeup dimmed LCD. 
+8. *wa* Wakeup dimmed LCD.  
 
 
 
