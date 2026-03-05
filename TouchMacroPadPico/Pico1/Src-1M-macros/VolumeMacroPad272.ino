@@ -741,6 +741,7 @@ bool TimeSet = false;                      // true if Clock Time has been set fo
 bool timerEnable = false;                  // Set in GUI then clock activates
 bool alarmEnable = false;                  // Set in GUI then clock activates
 bool powerEnable = false;                  // Set in GUI then clock activates
+int setPower = 0;                          // 1 used short hhmm to set time or 2 used full yymmddwhhmm 0 not set as yet could use intead of powerEnable
 
 ///////////////////////////////////////
 // Setup
@@ -831,8 +832,8 @@ void loop()
   
   if (MacroTimer18) CheckMacroTimers();   // Check Macro Timers 1-8 Oneshot Repeating Clocktime
   
-  if (powerEnable) { rtc_get_datetime(&t); if (t.hour==power.hour && t.min==power.min) { powerEnable = false; power_fired = true; } }  // Compare with timer then restart or switch off                  
-
+  if (powerEnable) { if (setPower==1) { rtc_get_datetime(&t); if (t.hour==power.hour && t.min==power.min) { powerEnable = false; power_fired = true; } } } // hhmm Compare with timer                      
+                                         
   if (power_fired) { if (PowerClock==1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
                      if (PowerClock==2) { DoPowerKeys('u', PowerKeysMenu, 10); } powerEnable = false; PowerClock = 0; power_fired = false; }
                     
@@ -1094,7 +1095,7 @@ bool GetMatch(byte a)
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   if (aTime) { GetTimeData(&alarm); status("Macro Timer set [R-C][O-C]"); return Found; }
   if (wTime) { GetTimeData(&timer); status("Macro Timer set [RcT][OcT]"); return Found; }
-  if (pTime) { GetTimeData(&power); status("Power Timer set [O-C][R-C]"); return Found; } 
+  if (pTime) { GetTimeData(&power); status("Power Timer set [O-C][R-C]"); setPower = 2; return Found; } 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // These are currently the same type of alarm timer as aTime
   // Can be changed to Clock Time countdown timer: add_alarm_in_ms(2000, alarm_callback, NULL, false);
@@ -1183,7 +1184,7 @@ static void power_callback(void) // Enable in DoPowerKeys() for this the functio
 ///////////////////////////////////
 { 
   power_fired = true;  // Powerkeys R-C and O-C
-  Serial.println("Power fired");
+  // Serial.println("Power fired");
 }
 /////////////////////////////////////
 static void timer_callback(void)  
@@ -1272,7 +1273,7 @@ void DoPowerKeys (char Cmd, bool Menu, int s)
   long int PVal;
   byte xLate1[] = { 4,0,2,0,  3,0,1,0,  0,0,0,0,  0,0,0,0};  // [] only: Key s 0-11 matched DimData[value-in-here] 0 = DimData not needed
   
-  if (s==3||s==7) {PowerKeys = false; powerEnable = true; /*rtc_set_alarm(&power, &power_callback);*/ ConfigButtons(1); return;} // s 3 PowerClock=1 s 7 PowerClock=2
+ if (s==3||s==7) {PowerKeys = false; powerEnable = true; if (setPower==2) rtc_set_alarm(&power, &power_callback); ConfigButtons(1); return;} // s 3 PowerClock=1 s 7 PowerClock=2
    
   if ((s>7)||(s==1)) { PowerKeys = false; // If immediate action Must do this before the actions below
                        status(" ");  ConfigButtons(1);  }
@@ -3745,8 +3746,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { if (knum==4) { DisplayClocks(true); StarOk = true; break; }
         if (knum==9) { power.hour = 10*b+(k5-48); power.min = 10*(k6-48)+(k7-48); if (power.hour>23||power.min>59) { status("Enter *ct*hhmmR,O"); break; }
                        // Serial.println(hour(NowT)); Serial.println(minute(NowT)); Serial.println(power.Hour); Serial.println(power.Minute); 
-                       if (k8=='R') { PowerClock=1; status("Restart Clock ON");  StarOk = true; }                // Enable by pressing Grey [C-R] will set powerEnable=true;
-                       if (k8=='O') { PowerClock=2; status("PowerOff Clock ON"); StarOk = true; } } break; }     // Enable by pressing Grey [C-O] will set powerEnable=true;
+                       if (k8=='R') { PowerClock=1; status("Restart Clock ON");  StarOk = true; setPower=1; }            // Enable by pressing Grey [C-R] will set powerEnable=true;
+                       if (k8=='O') { PowerClock=2; status("PowerOff Clock ON"); StarOk = true; setPower=1; } } break; } // Enable by pressing Grey [C-O] will set powerEnable=true;
         case 9: ///////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x65 "*de*" = delete config and macro files
       { status("Files deleted"); DeleteFiles(1); ConfigButtons(1); SendBytesEnd(1); StarOk = true; break; }
         case 10: //////////////////// KeyBrdByte[1]==0x65  *e0* to *e6*  Media keys Activated   

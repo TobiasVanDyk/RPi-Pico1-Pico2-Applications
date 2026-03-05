@@ -8,8 +8,8 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad272.ino.elf"
-Sketch uses 256492 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 62684 bytes (23%) of dynamic memory, leaving 199460 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 256556 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 62688 bytes (23%) of dynamic memory, leaving 199456 bytes for local variables. Maximum is 262144 bytes.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -33,9 +33,9 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
 
 
 New changes:
-1. Changed Time and Clock handlers for Pico 1 (removed RTC callback) and 2, which lacks an RTC. Power Timers Clock-Restart and Clock-PowerOff functional with new config options
-hours and minutes (i.e. ignore day + date) using *ct*hhmmR,O and full date + time <Pyymmddwhhmm> also functional (*tw*yymmddwhhmm not working as yet). To test set time using PC App
-then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and Other Keys are 
+1. Changed Time and Clock handlers for Pico 1 (using its RTC where Sunday=0), and Pico 2 (using TimeLib.h where Sunday=1). Power Timers Clock-Restart and Clock-PowerOff functional with a 
+choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hours max time-span) by using *ct*hhmmR,O, or using a full date + time <Pyymmddwhhmm>. To test set time using 
+PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and Other Keys are 
 checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. After the first enter the LCD will display "Restart Clock ON" and after [R-C] pressed it
 will display "Restart on Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command.
 2. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
