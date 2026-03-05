@@ -47,14 +47,9 @@
 #include "sdcard.h"       // 20 Sets of 24 files stored on SDCard + 96 n-keys aA01-xX96 001-996
 #include <TimeLib.h>      // Replacement fpr Pico 1 RTC functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SDFS.h - Case preserving not case sensitive - Up to 255 char filenames - includes <SPI.h> "FS.h" <SdFat.h> in SD.h
-// See https://github.com/earlephilhower/arduino-pico/blob/master/libraries/SD/examples/ReadWrite/ReadWrite.ino
-const int pinSdCs = 22;  
-const int pinSdClk = 10;
-const int pinSdMosi = 11;
-const int pinSdMiso = 12; // MISO = 8,12 -> SPI1 = 0,4,16 -> SPI0
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+ 
+volatile bool Change = false;          // Indicators changed at any time
+volatile bool BusyCNS = false;         // Lock changes when in CNS callback
 bool ResetOnce = true;
 bool ResetOnceEnable = false;
 
@@ -66,6 +61,15 @@ bool SaveOptionOS = false; // OS changed can save with [Sav]
 #define HIDCons RID_CONSUMER_CONTROL 
 #define HIDKbrd RID_KEYBOARD  
 #define HIDMouse RID_MOUSE       
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SDFS.h - Case preserving not case sensitive - Up to 255 char filenames - includes <SPI.h> "FS.h" <SdFat.h> in SD.h
+// See https://github.com/earlephilhower/arduino-pico/blob/master/libraries/SD/examples/ReadWrite/ReadWrite.ino
+const int pinSdCs = 22;  
+const int pinSdClk = 10;
+const int pinSdMosi = 11;
+const int pinSdMiso = 12; // MISO = 8,12 -> SPI1 = 0,4,16 -> SPI0
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Report ID
 enum
@@ -179,8 +183,6 @@ char rTArr[]         = "Repeat Time                ";
 bool CapsLock = false;        // Green "C"
 bool NumLock = false;         // Green "N"
 bool ScrollLock = false;      // Green "S" 
-bool Change = false;          // Indicators changed
-bool BusyCNS = false;         // Lock display until changes complete
 
 bool MacroUL = false;                  // Upper/Lower case Macrokeys M S T N filenames (Only matters on Flash not SDCard)
 byte ConfigKeyCount = 0;               // Start with Layout 2 Cfg key not pressed 
@@ -707,6 +709,7 @@ char mPlayArr[mPlaySize]  = { " " };
 bool TimeSet = false;                      // true if Clock Time has been set for example <tyymmddwhhmm> through serial port
 bool tTimeDate = false;                    // Show Date and Time
 static const int tTimeDateSize = 48;       // Must check this Tuesday, May 16, 2023 11:27:51 AM
+int setPower = 0;                          // 1 used short hhmm to set time or 2 used full yymmddwhhmm 0 not set as yet could use intead of powerEnable
 time_t NowT;
 bool timerEnable = false;                  // Set in GUI then clock activates
 bool alarmEnable = false;                  // Set in GUI then clock activates
@@ -802,12 +805,13 @@ void loop()
 { if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
                    else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
   
-  // NowT = now();                           // Time now from Timelib
+  NowT = now();                           // Time now from Timelib
   if (MacroTimer18) CheckMacroTimers();   // Check Macro Timers 1-8 Oneshot Repeating Clocktime 
                            
-  if (powerEnable) if (hour() == power.Hour && minute() == power.Minute) power_fired = true;   // Compare with timer then restart or switch off                             
-  if (alarmEnable && NowT>=makeTime(alarm)) alarm_fired = true;   // Macro Timers 5 and 6
-  if (timerEnable && NowT>=makeTime(timer)) timer_fired = true;   // Macro Timers 7 and 8 
+  if (powerEnable) { if (setPower==1) if (hour() == power.Hour && minute() == power.Minute) power_fired = true;   // Compare with timer then restart or switch off 
+                     if (setPower==2) if (NowT>=makeTime(power)) power_fired = true;  }                                                      
+  if (alarmEnable && NowT>=makeTime(alarm)) alarm_fired = true;    // Macro Timers 5 and 6
+  if (timerEnable && NowT>=makeTime(timer)) timer_fired = true;    // Macro Timers 7 and 8 
 
   if (power_fired) { if (PowerClock==1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
                      if (PowerClock==2) { DoPowerKeys('u', PowerKeysMenu, 10); } powerEnable = false; PowerClock = 0; power_fired = false; }
@@ -962,7 +966,7 @@ void WriteMusicPlayingData()              // PC music Playing from Foobar2000
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-void WriteDateTime()              // Alternative Date Time - only displayed not set a sytem time-date
+void WriteDateTime()              // Alternative Date Time - only displayed not set a sytsem time-date
                                   // Make sure A-D is white not brown
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Date Time <TTuesday, May 16, 2023 11:27:51 AM>   max = 48 chararacters 
@@ -1089,7 +1093,7 @@ bool GetMatch(byte a)
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   if (aTime) { GetTimeData(&alarm, aTimeDateArr); status("Macro Timer set [R-C][O-C]"); return Found; }
   if (wTime) { GetTimeData(&timer, wTimeDateArr); status("Macro Timer set [RcT][OcT]"); return Found; }
-  if (pTime) { GetTimeData(&power, pTimeDateArr); status("Power Timer set [O-C][R-C]"); return Found; } 
+  if (pTime) { GetTimeData(&power, pTimeDateArr); status("Power Timer set [O-C][R-C]"); setPower = 2; return Found; } 
   
   if (Label) { for (n=0; n<40; n++) LabelFile[n] = 0x00; if (NumBytes!=145) { strcpy(LabelFile, "LabelX"); LabelFile[5]=RecBytes[0]-32; }
                else { strcpy(LabelFile, "label1"); if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; }     
@@ -1220,6 +1224,7 @@ void DoPowerKeys (char Cmd, bool Menu, int s)
    
   if ((s>7)||(s==1)) { PowerKeys = false; // If immediate action Must do this before the actions below
                        status(" ");  ConfigButtons(1);  }
+                       
   ///////////////////////////////////////////////////////////////
   // Windows Restart Shutdown Logout via Menu
   /////////////////////////////////////////////////////////////// 
@@ -3707,8 +3712,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { if (knum==4) { DisplayClocks(true); StarOk = true; break; }
         if (knum==9) { NowT = now(); power.Hour = 10*b+(k5-48); power.Minute = 10*(k6-48)+(k7-48); if (power.Hour>23||power.Minute>59) { status("Enter *ct*hhmmR,O"); break; }
                        // Serial.println(hour(NowT)); Serial.println(minute(NowT)); Serial.println(power.Hour); Serial.println(power.Minute); 
-                       if (k8=='R') { PowerClock=1; status("Restart Clock ON");  StarOk = true; }                // Enable by pressing Grey [C-R] will set powerEnable=true;
-                       if (k8=='O') { PowerClock=2; status("PowerOff Clock ON"); StarOk = true; } } break; }     // Enable by pressing Grey [C-O] will set powerEnable=true;
+                       if (k8=='R') { PowerClock=1; status("Restart Clock ON");  StarOk = true; setPower = 1; }             // Enable by pressing Grey [C-R] will set powerEnable=true;
+                       if (k8=='O') { PowerClock=2; status("PowerOff Clock ON"); StarOk = true; setPower = 1; } } break; }  // Enable by pressing Grey [C-O] will set powerEnable=true;
         case 9: ///////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x65 "*de*" = delete config and macro files
       { status("Files deleted"); DeleteFiles(1); ConfigButtons(1); SendBytesEnd(1); StarOk = true; break; }
         case 10: //////////////////// KeyBrdByte[1]==0x65  *e0* to *e6*  Media keys Activated   
