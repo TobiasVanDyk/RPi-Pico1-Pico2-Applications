@@ -1044,6 +1044,15 @@ the Pico 2 does not have a HW RTC.
 
 The Repeat-only mode (i.e send macro fixed number of times with a delay or no delay, is not implemented as yet.
 
+For the Restart-Shutdown Timer page there are Time and Clock handlers for Pico 1 (using its RTC where Sunday=0), and 
+Pico 2 (using TimeLib.h where Sunday=1). Power Timers Clock-Restart and Clock-PowerOff functional with a choice of 
+using shorter time-set options hours and minutes as hhmm (i.e. 24 hours max time-span) by using *ct*hhmmR,O, or 
+using a full date + time <Pyymmddwhhmm>. To test set time using PC App then [Cfg]->[ROf] type in top grey box below 
+[R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both 
+MST and Other Keys are checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. 
+After the first enter the LCD will display "Restart Clock ON" and after [R-C] pressed it will display "Restart on 
+Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command.
+
 Text Strings: 
 Large Text file processing for nKeys: Can handle very large text strings strings, preferably stored on SDCard using 
 nKeys n,o,p,q,r. If nKeys = m,s,t then large strings also enabled for M S T keys 01 - 96. Large strings tested up to
