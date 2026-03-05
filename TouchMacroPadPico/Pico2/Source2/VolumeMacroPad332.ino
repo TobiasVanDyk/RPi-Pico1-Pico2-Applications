@@ -714,9 +714,9 @@ time_t NowT;
 bool timerEnable = false;                  // Set in GUI then clock activates
 bool alarmEnable = false;                  // Set in GUI then clock activates
 bool powerEnable = false;                  // Set in GUI then clock activates
-char tTimeDateArr[mPlaySize]  = { "t             " };  
-char wTimeDateArr[mPlaySize]  = { "w             " };
-char aTimeDateArr[mPlaySize]  = { "a             " };
+char tTimeDateArr[mPlaySize]  = { "t             " };  // First char replaced by yymmddwhhmm in GetTimeData(,<-this) and in WriteDateTime() is not FS write
+char wTimeDateArr[mPlaySize]  = { "w             " };  // Ok because it shows that timer have not been set if 1st is NAN
+char aTimeDateArr[mPlaySize]  = { "a             " };  // Size = 96 ok because also sometimes holds date and time words format see WriteDateTime() 
 char pTimeDateArr[mPlaySize]  = { "p             " }; 
 // Wday day of week, sunday is day 1  Year offset from 1970; 
 tmElements_t t     = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 3, .Day = 17, .Month = 03, .Year = 56  };  // Clock Date and Time
@@ -910,7 +910,7 @@ void CheckMacroTimers()
 void GetTimeData(tmElements_t *a, char *tArr)
 ///////////////////////////////////////////////////////////////////////////////
 { bool SetT = false;
-  if (tArr[0]=='t') SetT = true;
+  if (RecBytes[0]=='t'||RecBytes[0]=='T') SetT = true;  // Enters with once with tArr[0] = char then after that yymmddwhhmm
   
   if (RecBytes[1]!=0x2d)  { a->Year   = (2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48)) - 1970;  }
   if (RecBytes[3]!=0x2d)  { a->Month  = (RecBytes[3]-48)*10 + (RecBytes[4]-48); }
@@ -922,11 +922,12 @@ void GetTimeData(tmElements_t *a, char *tArr)
   
   if (SetT) { setTime(a->Hour,a->Minute,0,a->Day,a->Month,a->Year+1970); 
               if (timeStatus()==timeNotSet) TimeSet = false; else TimeSet = true; optionsindicators(0); }
-  
-  for (int n=0; n<12; n++) { if (RecBytes[n+1]!=0x2d) tArr[n] = RecBytes[n+1]; else tArr[n] = ' '; }  // Improve later
 
-  if (tArr[0]=='a') { alarmEnable = true; optionsindicators(0); }
-  if (tArr[0]=='w') { timerEnable = true; optionsindicators(0); } 
+  // status((char *)tArr); Serial.println(tArr);
+  if (RecBytes[0]=='a'||RecBytes[0]=='A') { alarmEnable = true; optionsindicators(0); }
+  if (RecBytes[0]=='w'||RecBytes[0]=='W') { timerEnable = true; optionsindicators(0); }             
+  
+  for (int n=0; n<12; n++) { if (RecBytes[n+1]!=0x2d) tArr[n] = RecBytes[n+1]; else tArr[n] = ' '; }  // Removes 1st char = t,w,a, etc copies up to minutes not sec 
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1041,9 +1042,9 @@ void DoNewSDCard()
                               f.close();    }                                        
 }
 
-///////////////////
+///////////////////////
 bool GetMatch(byte a)
-///////////////////
+///////////////////////
 { int ASize, i, n = 0;  
   byte *BytePtr;
   bool L = true, GlyphBank = false, Label = false, Found = false, mEdt = false, tTime = false, aTime = false, pTime = false, wTime = false;
@@ -3423,7 +3424,7 @@ bool WriteTimers(unsigned long PVal, byte Option, byte b)
   
   if (Option>0) { Timer2Str(TimerArr, 0, PVal); // Serial.println(TimerArr);
                   strcpy(TimerVal[Option-1], TimerArr);
-                  if (timeU=='m'||timeU=='h') Timer2Str(TimerArr, 1, PVal); // Serial.println(TimerArr);
+                  if (timeU=='m'||timeU=='h') Timer2Str(TimerArr, 1, PVal);      // Serial.println(TimerArr);
                   
                   n=0; while ( TimerArr[n]!=0x00) { RPArr[Option-1][n+12] = TimerArr[n]; n++; }
                   RPArr[Option-1][19] = timeU;  // s,m,h
@@ -3850,8 +3851,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          // t = Main Time/Clock a  = Macro Clock Repeat-Oneshot [R-C][O-C] p = Macro Clock Countdown [RcT][OcT] w = Power Clock [O-C][R-C]
          // datetime_t t = { .year  = 2022, .month = 11, .day   = 03, .dotw  = 4, .hour  = 14,  .min   = 00, .sec   = 00 };
          //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-         case 31: ////////////////////// KeyBrdByte[1]==0x74)  *t Time 
-      {  for (n=1;n<12;n++) RecBytes[n] = KeyBrdByte[n+3];
+         case 31: ////////////////////// KeyBrdByte[1]==0x74)                       *tt*yymmddwhhmm Time 
+      {  for (n=1; n<knum; n++) RecBytes[n] = KeyBrdByte[n+3]; RecBytes[0] = k2; // 012345678901234 
          if (k2==0x74) {GetTimeData(&t, tTimeDateArr); TimeSet = true; StarOk = true; break;} // *tt* Main TimeClock Set          
          if (k2==0x61) {GetTimeData(&alarm, aTimeDateArr); StarOk = true; break;}             // *ta* [R-C][O-C]
          if (k2==0x70) {GetTimeData(&timer, wTimeDateArr); StarOk = true; break;}             // *tp* [RcT][OcT]
