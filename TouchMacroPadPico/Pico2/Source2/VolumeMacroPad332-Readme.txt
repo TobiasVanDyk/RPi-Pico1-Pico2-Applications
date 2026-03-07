@@ -14,15 +14,15 @@ Using library SD at version 2.0.0 in folder: C:\Users\Tobias\AppData\Local\Ardui
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
-"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad332.ino.elf"
-Sketch uses 246908 bytes (11%) of program storage space. Maximum is 2088960 bytes.
-Global variables use 63472 bytes (12%) of dynamic memory, leaving 460816 bytes for local variables. Maximum is 524288 bytes.
-C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad332.ino.uf2 
+"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10LTSC\\Arduino/VolumeMacroPad332.ino.elf"
+Sketch uses 248132 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+Global variables use 63344 bytes (12%) of dynamic memory, leaving 460944 bytes for local variables. Maximum is 524288 bytes.
+C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10LTSC\Arduino/VolumeMacroPad332.ino.uf2 
 Resetting COM3
-Converting to uf2, output size: 572416, start address: 0x2000
+Converting to uf2, output size: 574464, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 572416 bytes to D:/NEW.UF2
+Wrote 574464 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -51,6 +51,16 @@ choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hour
 PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and Other Keys are 
 checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. After the first enter the LCD will display "Restart Clock ON" and after [R-C] pressed it
 will display "Restart on Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command.
+For Pico 2 only the set of Macro Timers have been completed.  Use <*mc*t*mnnn> or <*mc*t*mnnn> to program the timer-macro link where t = timer 1-8 m 0-5 with mstakn i.e m = macro M1-M24, 
+same for s and t, a = macrofiles a01-a99, k = Linkfiles Knnlink, n = nKeys 01-999 The start * is for a Link file, replace it with a space if a Link file is not used. NB: This runs files 
+not macrokeys i.e. to run macro S01 there must be a file s01 either on the SDCard or Flash. After sending *mc*values press [Cfg]->[mCT] and then press the timer that corresponds to the 
+number t=1-8. NB: Because the same code is used in the macroeditor enter nn or nnn as one less than the key value i.e. enter nn-00 for key M01. For example run oneshot timer [O-t] with
+K11Link which is on the SDCard and all the files linked in K11zLink are also on the SDCard. Send <*mc*4*410> then press [O-t]. Sending <*mc*2 100> will run the repeat timer 2 [R-t] on 
+macro S01. <*mc*2 000> will run the oneshot timer 2 [O-t] on macro M01 provided there is a file named m01 on the SDCard or Flash. <*mc*2 100> will do the same with macrofile s01.
+To set to macro Clocktime timers first link a macro with the timesr 5-8 for example <*mc*5 100> will link macrofile S01 to Timer 5 [R-C]. Then send <A26030771410> which will set alarm 
+timers 5 and 6 [r-C] and [O-C] to 14h10 and press [R-C]. At 14h10 macrofile S01 will start to trigger repeatedly. Use <*mc*8 100> then <W26030771435> and press [OcT] then at 14h35 S01 
+will trigger one. Note that is Timer 7's time had been set, but its key [RcT] had not been pressed as well, it should not trigger repeatedly when Timer 8 triggers. Using the button 
+[Data] in the Confif tab of the  PC App will show the state of the 8 timers.
 2. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
 root. Can select the listed /folder/filename and Delete or View content from the Comms tab. Use for example from the PC App Send List: 
 <*lf*> lists all flash files and all sdcard files 
