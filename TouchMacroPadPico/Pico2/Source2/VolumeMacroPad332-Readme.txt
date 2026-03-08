@@ -14,10 +14,10 @@ Using library SD at version 2.0.0 in folder: C:\Users\Tobias\AppData\Local\Ardui
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
-"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10LTSC\\Arduino/VolumeMacroPad332.ino.elf"
-Sketch uses 248132 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad332.ino.elf"
+Sketch uses 248228 bytes (11%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 63344 bytes (12%) of dynamic memory, leaving 460944 bytes for local variables. Maximum is 524288 bytes.
-C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10LTSC\Arduino/VolumeMacroPad332.ino.uf2 
+C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad332.ino.uf2 
 Resetting COM3
 Converting to uf2, output size: 574464, start address: 0x2000
 Scanning for RP2040 devices
@@ -51,7 +51,6 @@ choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hour
 using PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and
 Other Keys are checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. After the first enter the LCD will display "Restart Clock ON" and after [R-
 C] pressed it will display "Restart on Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command. 
-
 The set of Macro Timers have been completed only for the Pico 2 - see the last sentence in this paragraph. Use <*mc*t*mnnn> or <*mc*t*mnnn> to program the timer-macro link where t =
 timer 1-8 m 0-5 with mstakn i.e m = macro M1-M24, same for s and t, a = macrofiles a01-a99, k = Linkfiles Knnlink, n = nKeys 01-999 The start * is for a Link file, replace it with a
 space if a Link file is not used. NB: This runs files not macro keys i.e. to run macro S01 there must be a file s01 either on the SDCard or Flash. After sending *mc*values press [Cfg]-
@@ -61,10 +60,9 @@ nn-00 for key M01. For example, run one-shot timer [O-t] with K11Link which is o
 Card or Flash. <*mc*2 100> will do the same with macro file s01. To set to macro Clock time timers first link a macro with the timers 5-8 for example <*mc*5 100> will link macro file
 S01 to Timer 5 [R-C]. Then send <A26030771410> which will set alarm timers 5 and 6 [r-C] and [O-C] to 14h10 and press [R-C]. At 14h10 macro file S01 will start to trigger repeatedly.
 Use <*mc*8 100> then <W26030771435> and press [OcT] then at 14h35 S01 will trigger one. Note that is Timer 7's time had been set, but its key [RcT] had not been pressed as well, it
-should not trigger repeatedly when Timer 8 triggers. Using the button [Data] in the Config tab of the PC App will show the state of the 8 timers. 
-
-Because the Pico 1's RTC HW only allows for setting one alarm callback the existing code will have to be modified cater for that, or, more likely the TimeLib.h library used in the Pico
-2 code will be used in the Pico 1 instead of the Pico 1's HW RTC.
+should not trigger repeatedly when Timer 8 triggers. Using the button [Data] in the Config tab of the PC App will show the state of the 8 timers. When using the shorter format 
+hours + minutes time setting first send <*mc*5 100> as before to link S01 with Timer 5 [R-C] then send <*ta*0853R> and then press key [R-C], to trigger S01 at 08h54 in repeat mode. 
+The Pico 1's RTC HW only allows for setting one alarm callback at a time.
 2. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
 root. Can select the listed /folder/filename and Delete or View content from the Comms tab. Use for example from the PC App Send List: 
 <*lf*> lists all flash files and all sdcard files 

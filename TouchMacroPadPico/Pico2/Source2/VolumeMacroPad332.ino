@@ -807,8 +807,11 @@ void loop()
   if (MacroTimer18) CheckMacroTimers();   // Check Macro Timers 1-8 Oneshot Repeating Clocktime 
                            
   if (powerEnable) { if (setPower==1) if (hour() == power.Hour && minute() == power.Minute) power_fired = true;   // Compare with timer then restart or switch off 
-                     if (setPower==2) if (NowT>=makeTime(power)) power_fired = true;  }                                                      
-  if (alarmEnable && NowT>=makeTime(alarm)) alarm_fired = true;    // Macro Timers 5 and 6 R-C and O-C  Clock Time This is 1st set of Repeat and Oneshot Timers
+                     if (setPower==2) if (NowT>=makeTime(power)) power_fired = true;  }   
+
+  if (alarmEnable) { if (setAlarm==1) if (hour() == alarm.Hour && minute() == alarm.Minute) alarm_fired = true;   // Compare with timer then restart or switch off 
+                     if (setAlarm==2) if (NowT>=makeTime(alarm)) alarm_fired = true;  }  // Macro Timers 5 and 6 R-C and O-C Clock Time  
+
   if (timerEnable && NowT>=makeTime(timer)) timer_fired = true;    // Macro Timers 7 and 8 RcT and OcT  Clock Time This is 2nd set of Repeat and Oneshot Timers
 
   if (power_fired) { if (PowerClock==1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
@@ -1100,8 +1103,8 @@ bool GetMatch(byte a)
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   if (tTime) { GetTimeData(&t, tTimeDateArr,0,0,0); TimeSet = true; status(tTimeDateArr); return Found; }              
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  if (aTime) { GetTimeData(&alarm, aTimeDateArr,0,0,0); status("Macro Timer set [R-C][O-C]"); return Found; }
-  if (wTime) { GetTimeData(&timer, wTimeDateArr,0,0,0); status("Macro Timer set [RcT][OcT]"); return Found; }
+  if (aTime) { GetTimeData(&alarm, aTimeDateArr,0,0,0); status("Macro Alarm set [R-C][O-C]"); setAlarm = 2; return Found; }
+  if (wTime) { GetTimeData(&timer, wTimeDateArr,0,0,0); status("Macro Timer set [RcT][OcT]"); setTimer = 2; return Found; }
   if (pTime) { GetTimeData(&power, pTimeDateArr,0,0,0); status("Power Timer set [O-C][R-C]"); setPower = 2; return Found; } 
   
   if (Label) { for (n=0; n<40; n++) LabelFile[n] = 0x00; if (NumBytes!=145) { strcpy(LabelFile, "LabelX"); LabelFile[5]=RecBytes[0]-32; }
