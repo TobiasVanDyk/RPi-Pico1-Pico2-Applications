@@ -8,8 +8,13 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad272.ino.elf"
-Sketch uses 256556 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 62688 bytes (23%) of dynamic memory, leaving 199456 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 257756 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 62568 bytes (23%) of dynamic memory, leaving 199576 bytes for local variables. Maximum is 262144 bytes.
+Resetting COM9
+Converting to uf2, output size: 588288, start address: 0x2000
+Scanning for RP2040 devices
+Flashing D: (RPI-RP2)
+Wrote 588288 bytes to D:/NEW.UF2
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -33,11 +38,23 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
 
 
 New changes:
-1. Changed Time and Clock handlers for Pico 1 (using its RTC where Sunday=0), and Pico 2 (using TimeLib.h where Sunday=1). Power Timers Clock-Restart and Clock-PowerOff functional with a 
-choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hours max time-span) by using *ct*hhmmR,O, or using a full date + time <Pyymmddwhhmm>. To test set time using 
-PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and Other Keys are 
-checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. After the first enter the LCD will display "Restart Clock ON" and after [R-C] pressed it
-will display "Restart on Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command.
+1. Changed Time and Clock handlers for Pico 1 (using its RTC where Sunday=0), and Pico 2 (using TimeLib.h where Sunday=1). Power Timers Clock-Restart and Clock-PowerOff functional with a
+choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hours max time-span) by using *ct*hhmmR,O, or using a full date + time <Pyymmddwhhmm>. To test set time
+using PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and
+Other Keys are checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. After the first enter the LCD will display "Restart Clock ON" and after [R-
+C] pressed it will display "Restart on Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command. 
+The set of Macro Timers have been completed only for the Pico 2 - see the last sentence in this paragraph. Use <*mc*t*mnnn> or <*mc*t*mnnn> to program the timer-macro link where t =
+timer 1-8 m 0-5 with mstakn i.e m = macro M1-M24, same for s and t, a = macrofiles a01-a99, k = Linkfiles Knnlink, n = nKeys 01-999 The start * is for a Link file, replace it with a
+space if a Link file is not used. NB: This runs files not macro keys i.e. to run macro S01 there must be a file s01 either on the SDCard or Flash. After sending *mc*values press [Cfg]-
+>[mCT] and then press the timer that corresponds to the number t=1-8. NB: Because the same code is used in the macro editor enter nn or nnn as one less than the key value i.e. enters
+nn-00 for key M01. For example, run one-shot timer [O-t] with K11Link which is on the SD Card and all the files linked in K11zLink are also on the SDCard. Send <*mc*4*410> then press
+[O-t]. Sending <*mc*2 100> will run the repeat timer 2 [R-t] on macro S01. <*mc*2 000> will run the one-shot timer 2 [O-t] on macro M01 provided there is a file named m01 on the SD
+Card or Flash. <*mc*2 100> will do the same with macro file s01. To set to macro Clock time timers first link a macro with the timers 5-8 for example <*mc*5 100> will link macro file
+S01 to Timer 5 [R-C]. Then send <A26030771410> which will set alarm timers 5 and 6 [r-C] and [O-C] to 14h10 and press [R-C]. At 14h10 macro file S01 will start to trigger repeatedly.
+Use <*mc*8 100> then <W26030771435> and press [OcT] then at 14h35 S01 will trigger one. Note that is Timer 7's time had been set, but its key [RcT] had not been pressed as well, it
+should not trigger repeatedly when Timer 8 triggers. Using the button [Data] in the Config tab of the PC App will show the state of the 8 timers. When using the shorter format 
+hours + minutes time setting first send <*mc*5 100> as before to link S01 with Timer 5 [R-C] then send <*ta*0853R> and then press key [R-C], to trigger S01 at 08h54 in repeat mode. 
+The Pico 1's RTC HW only allows for setting one alarm callback at a time.
 2. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
 root. Can select the listed /folder/filename and Delete or View content from the Comms tab. Use for example from the PC App Send List: 
 <*lf*> lists all flash files and all sdcard files 
@@ -69,4 +86,4 @@ to change the name used or path where files are saved - but these setting are no
 larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal for uploading a set of nKeys - for example first upload a set of 9 keys where you used 
 <*sx*n0> to set the base filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset between uploads unless you use <*sx*>. To reset 
 filename to null use *sx*** and use *sx*// to set foldername to null.
-8. *wa* Wakeup dimmed LCD.  
+8. *wa* Wakeup dimmed LCD.   
