@@ -3396,7 +3396,7 @@ void GetSysInfo(int Action)
   
   SerPr2;
   ReadTimers(1);
-  Serial.printf("LCD Blank Timeout: %d seconds\n\r", TimePeriod/1000);     // make sure this is never 0 
+  Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
 
   b = (DimVal*100)/255;
   Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
@@ -3406,6 +3406,9 @@ void GetSysInfo(int Action)
       
   Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
   Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
+
+  Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
+  Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
 
   Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
   Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
@@ -5197,6 +5200,22 @@ void showKeyData()
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr7[m]); SerPr1; } Serial.print(TimerName[6]); SerPr2;
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr8[m]); SerPr1; } Serial.print(TimerName[7]); SerPr2;
     SerPr2;
+
+    SerPr2;
+    ReadTimers(1);
+    Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
+
+    b = (DimVal*100)/255;
+    Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
+
+    b = (NormVal*100)/255; if (b==0) b = 100;
+    Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
+      
+    Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
+    Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
+
+    Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
+    Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
 
     SerPr2;
     for ( m = 0; m<24; m++ ) 
