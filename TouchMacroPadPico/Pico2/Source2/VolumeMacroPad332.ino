@@ -3383,6 +3383,7 @@ void GetSysInfo(int Action)
    
   //showKeyData();   
 }
+
 ////////////////////
 void ResetTimers(byte Option)
 ////////////////////
@@ -3392,10 +3393,10 @@ void ResetTimers(byte Option)
                    DimData[4] = TimeRestart  = 3000000;
                    return; }
                    
-  if (Option==2) { DimData[5] = timeRepeat   = 9000000;                          
-                   DimData[6] = TimeRepeat   = 90000000;
-                   DimData[7] = timeOnceof   = 9000000;                          
-                   DimData[8] = TimeOnceof   = 90000000; 
+  if (Option==2) { DimData[5] = timeOnceof   = 9000000;                          
+                   DimData[6] = TimeOnceof   = 90000000;
+                   DimData[7] = timeRepeat   = 9000000;                          
+                   DimData[8] = TimeRepeat   = 90000000; 
                    return; }
                    
   DimData[0] = TimePeriod = 30000;      // *tb* = 30 seconds   
@@ -3419,10 +3420,10 @@ void ReadTimers(byte Option)
                    TimePowerOff = DimData[2];  // 3000    
                    timeRestart  = DimData[3];  // 30                         
                    TimeRestart  = DimData[4];  // 3000   
-                   timeRepeat = DimData[5];    // 9000                          
-                   TimeRepeat = DimData[6];    // 90000
-                   timeOnceof = DimData[7];    // 9000                          
-                   TimeOnceof = DimData[8]; }  // 90000  
+                   timeOnceof = DimData[5];    // 9000                          
+                   TimeOnceof = DimData[6];    // 90000
+                   timeRepeat = DimData[7];    // 9000                          
+                   TimeRepeat = DimData[8]; }  // 90000  
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -3441,7 +3442,7 @@ bool WriteTimers(unsigned long PVal, byte Option, byte b)
   
   if (Option>0) { Timer2Str(TimerArr, 0, PVal); // Serial.println(TimerArr);
                   strcpy(TimerVal[Option-1], TimerArr);
-                  if (timeU=='m'||timeU=='h') Timer2Str(TimerArr, 1, PVal);   // Serial.println(TimerArr);
+                  if (timeU=='m'||timeU=='h') Timer2Str(TimerArr, 1, PVal); // Serial.println(TimerArr);
                   
                   n=0; while ( TimerArr[n]!=0x00) { RPArr[Option-1][n+12] = TimerArr[n]; n++; }
                   RPArr[Option-1][19] = timeU;  // s,m,h
