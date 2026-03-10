@@ -875,20 +875,22 @@ void loop()
   if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                             
 } // main Loop
-/////////////////////////////////////////////////////////////////
-void DoCMTimers(byte TimerArr[], byte Num)
-/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+void DoCMTimers(byte TimerArr[], byte Num) // Num = 0-7 Timers = 1-8
+/////////////////////////////////////////////////////////////////////
 { char N = nChar; int L = Layout; int A = LayerAxD; // Save state
+  
   LayerAxD = TimerArr[2]; 
+  if (TimerArr[0]==0 || TimerArr[0]==5) Layout = 2; else Layout = TimerArr[0]; // Klink = 0  A = 2  n = 5 MST = 134
   
-  if (TimerArr[0]==5) { nChar=TimerName[Num][0]; Numkeys123 = TimerArr[1]/12; DoNKeys(TimerArr[1] % 12); nChar=N; return; } // Tested ok <*mc*2 504> + R-t and <*mc*4 503> + O-t
-  
-  if (TimerArr[0]>0) Layout = TimerArr[0]; else Layout = 2;                                   // K link = 0 A = 2
-  if (TimerArr[3]==0) { strcpy(MSTAName,    TimerName[Num]); MacroKeys(TimerArr[1], 3); }     // M S T A
-                else  { strcpy(MSTLinkName, TimerName[Num]); DoKeyMST(TimerArr[1], 1);     }  // M S T A K Link
-  Layout = L; LayerAxD = A;   // Restore           
+  if (TimerArr[0]==5) { strcpy(NameStr3, TimerName[Num]); nChar=TimerName[Num][0]; DoNKeys(30); }     // Tested ok <*mc*5b524> + R-C and <*mc*6b524> + O-C
+  else { if (TimerArr[3]==0) { strcpy(MSTAName,    TimerName[Num]); MacroKeys(TimerArr[1], 3);  }     // M S T A
+                       else  { strcpy(MSTLinkName, TimerName[Num]); DoKeyMST(TimerArr[1], 1);   }  }  // M S T A K Link
+                
+  Layout = L; LayerAxD = A; nChar=N;  // Restore           
   optionsindicators(0);
 }
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Check Macro Timers // TimerName[0-8] = Timer type Repeat T Repeat t Once T Once t
 // Timers 1 - 4 are incremented by millis() count Timers 5 - 8 are 0/1 Off/On=Active
@@ -1784,6 +1786,7 @@ void DoNKeys(int Button)
   MacroBuff[0] = 0x00;
 
   if (Button==20) { nStrLen = MacroBuffSize; goto NotnKey; }      // nFile already has indirected i.e. 2nd filename
+  if (Button==30) { goto FromTimers1to8; }                        // Timers1-8 is caller 
 
   strcpy(NameStr3, nDir); if (nDir[2]=='/') NameStr3[1] = nChar;  // Default is "/" and "//" use /nChar as folder name such as /n/nKeysfiles 
   strcat(NameStr3, NKeysX[Button]);                               // nDir = /dirname/ ezxcept if default just one / - maximum size 250 char
@@ -1802,7 +1805,9 @@ void DoNKeys(int Button)
   if (!nKeysShow) { a = NKeysX[Button][0];  strcpy(MSTAName, NameStr3);  // Note this handles m-keys > m99 if via DoMSTA then <99
                     for (n=0; n<10; n++) if (a==MacroChar[n]) { isMacro = true; if (MacroKeys(c, 3)) return; } }  
 
-
+  ///////////////
+  FromTimers1to8:
+  ///////////////
   if (LayerAxD)  f = SDFS.open(NameStr3, "r"); else f = LittleFS.open(NameStr3, "r");
   nStrLen = f.size();
   if (nStrLen<nKeySize) { f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0; } // Valid Filename     
@@ -3427,10 +3432,10 @@ void ResetTimers(byte Option)
                    DimData[4] = TimeRestart  = 3000000;
                    return; }
                    
-  if (Option==2) { DimData[5] = timeOnceof   = 9000000;                          
-                   DimData[6] = TimeOnceof   = 90000000;
-                   DimData[7] = timeRepeat   = 9000000;                          
-                   DimData[8] = TimeRepeat   = 90000000; 
+  if (Option==2) { DimData[5] = timeRepeat   = 9000000;                          
+                   DimData[6] = TimeRepeat   = 90000000;
+                   DimData[7] = timeOnceof   = 9000000;                          
+                   DimData[8] = TimeOnceof   = 90000000; 
                    return; }
                    
   DimData[0] = TimePeriod = 30000;      // *tb* = 30 seconds   
@@ -3454,10 +3459,10 @@ void ReadTimers(byte Option)
                    TimePowerOff = DimData[2];  // 3000    
                    timeRestart  = DimData[3];  // 30                         
                    TimeRestart  = DimData[4];  // 3000   
-                   timeOnceof = DimData[5];    // 9000                          
-                   TimeOnceof = DimData[6];    // 90000
-                   timeRepeat = DimData[7];    // 9000                          
-                   TimeRepeat = DimData[8]; }  // 90000  
+                   timeRepeat = DimData[5];    // 9000                          
+                   TimeRepeat = DimData[6];    // 90000
+                   timeOnceof = DimData[7];    // 9000                          
+                   TimeOnceof = DimData[8]; }  // 90000  
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -3476,7 +3481,7 @@ bool WriteTimers(unsigned long PVal, byte Option, byte b)
   
   if (Option>0) { Timer2Str(TimerArr, 0, PVal); // Serial.println(TimerArr);
                   strcpy(TimerVal[Option-1], TimerArr);
-                  if (timeU=='m'||timeU=='h') Timer2Str(TimerArr, 1, PVal); // Serial.println(TimerArr);
+                  if (timeU=='m'||timeU=='h') Timer2Str(TimerArr, 1, PVal);   // Serial.println(TimerArr);
                   
                   n=0; while ( TimerArr[n]!=0x00) { RPArr[Option-1][n+12] = TimerArr[n]; n++; }
                   RPArr[Option-1][19] = timeU;  // s,m,h
@@ -3519,33 +3524,7 @@ void FillKeysStr(int SelectLayout)
   if (SelectLayout==1||SelectLayout==0)   // Keys M1-M24
   { MacroM1M12[n] = 2; for (m=0; m<=strlen(str1to12[n]); m++) Mtr1to12[n][m] = str1to12[n][m]; MacroSizeM1M12[n] = m; } }
 }
-/////////////////////////////////////////
-unsigned long ReadMacroTimers(int Option)
-/////////////////////////////////////////
-{ long unsigned int current = 0; 
-  char TArray[4][10] = {"tRepeat", "TRepeat", "tOnce", "TOnce"};
-  File f = LittleFS.open(TArray[Option], "r"); 
-  while (f.available()) { long unsigned int c = f.read(); if ('0' <= c && c <= '9') { current = current * 10 + (c - '0'); }   } f.close(); 
-  return current; 
-}
-//////////////////////////////////////////////////////////////
-void WriteMacroTimers(unsigned long TVal, int Option, byte b) 
-//////////////////////////////////////////////////////////////
-{ int n;
-  byte a;
-  char TArray[4][10] = {"tRepeat", "TRepeat", "tOnce", "TOnce"};
-  //                      01234567890123456789    0123456789012345689
-  char TPArr[4][21]  = { "Repeat  t           ", "Repeat  T          ",
-                         "Onceof  t           ", "Onceof  T          " };                          
-     
-  File f = LittleFS.open(TArray[Option], "w"); 
-  if (f) {f.print(TVal); f.close(); }
-  a = 1;
-  if (Option==1||Option==3) { n = 12; while (a!=0x00) { a = mTArrayStr[b][n-12]; TPArr[Option][n] = a;  n++; } }  
-  if (Option==2||Option==4) { n = 12; while (a!=0x00) { a = mtArrayStr[b][n-12]; TPArr[Option][n] = a;  n++; } }
-  //status((char *)mTArrayStr[b]); 
-  status(TPArr[Option]); SendBytesEnd(1); 
-}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 byte FindSDNum(byte C)
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -3847,13 +3826,13 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { if (k2=='c') { KeyBrdByte[0] = k4; if (k5=='*') KeyBrdByte[1] = k5; else k5 = ' '; MST1 = k6-48;   // *mc*n*12
                        if (knum==10) Option1 = e999; else Option1 = e99; MacroTimerOK = StarOk = GetTimerMacro(1); break;  } 
         T = GetT(knum);                                              // "tOnce", "TOnce"
-        if (k2==0x74) { timeOnceof = T; WriteMacroTimers(T, 5, b); } // *mt*num timeOnceof
-        if (k2==0x54) { TimeOnceof = T; WriteMacroTimers(T, 6, b); } // *mT*num TimeOnceof
+        if (k2==0x74) { timeOnceof = T; WriteTimers(T, 5, b); } // *mt*num timeOnceof
+        if (k2==0x54) { TimeOnceof = T; WriteTimers(T, 6, b); } // *mT*num TimeOnceof
         StarOk = true; break; }
         case 21: //////////////////// KeyBrdByte[1]==0x6e) *nt or *nT = macro repeat timers
       { T = GetT(knum);                                              // "tRepeat", "TRepeat"
-        if (k2==0x74) { timeRepeat = T; WriteMacroTimers(T, 7, b); } // *nt*num timeRepeat
-        if (k2==0x54) { TimeRepeat = T; WriteMacroTimers(T, 8, b); } // *nT*num TimeRepeat
+        if (k2==0x74) { timeRepeat = T; WriteTimers(T, 7, b); } // *nt*num timeRepeat
+        if (k2==0x54) { TimeRepeat = T; WriteTimers(T, 8, b); } // *nT*num TimeRepeat
         StarOk = true; break;  }        
         case 22: //////////////////// KeyBrdByte[1]==0x6F&&KeyBrdByte[2]==0x73 *os* operating system toggle Windows/Linux/PiOS on/off
       { OptionOS++; if (OptionOS>2) OptionOS=0; status(OSName[OptionOS]); optionsindicators(0); SaveOptionOS = true; StarOk = true; break; }
@@ -4667,14 +4646,14 @@ void DoNumMacro()
  optionsindicators(0);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool GetTimerMacro (bool Option)  // Use Source Enter with MST1=0-5 Option1=1-24(MST1=0-2)1-99(MST1=3-4)1-996(MST1=5)
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// char TimerName[8][10] = {"Xnn    ","XnnLink","Macro00","Macro00","Macro00","Macro00","Macro00","Macro00"}; 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// char TimerName[8][10] = {"Xnn    ","XnnLink","a76","m01","s22","n901","d88","Macro00"}; 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 { byte a, b, c, n;
   bool isLink = false;  // If >1 character added then will use XnnLink not Xnn for macroname
-  bool sdCard = false;
+  bool sdCard = false;  
   //                     0123456789012345678
   char TimerDisp[32] = {"Timer   "};  
   char XLat1[6]      = {'K','M','A','S','T','n'};
@@ -4687,12 +4666,16 @@ bool GetTimerMacro (bool Option)  // Use Source Enter with MST1=0-5 Option1=1-24
   if (KeyBrdByteNum>0) { a = KeyBrdByte[0]; b = a - 48; }  // add 1-8 and a ='1'-'8' b=1-8
   if (b>8||b==0||KeyBrdByteNum==0) { status("Add 1-8 timer option"); return false; } 
   
-  if (KeyBrdByte[1]==0x2A) { isLink = true;  DoMSTALinkName(Option1, MST1); strcpy(TimerName[b-1],  MSTLinkName); }  // XnnLink if 1*-8* XOption1Link -> XOption1+1Link    
-                      else { isLink = false; DoMSTAName(Option1, MST1);     strcpy(TimerName[b-1],  MSTAName); }     // Xnn if 1-8 added XOption1 -> XOption1+1                       
+  char nC = nChar;
+  if (!Option) XLat1[5] = nChar; else if (isAlphaNumeric(KeyBrdByte[1])) nChar = XLat1[5] = KeyBrdByte[1];              // Test a-z A-Z 0-9 
+   
+  if (KeyBrdByte[1]==0x2A) { isLink = true;  DoMSTALinkName(Option1, MST1); strcpy(TimerName[b-1],  MSTLinkName); }     // XnnLink if 1*-8* XOption1Link -> XOption1+1Link    
+                     else  { isLink = false; DoMSTAName(Option1, MST1);     strcpy(TimerName[b-1],  MSTAName);    }     // Xnn if 1-8 added XOption1 -> XOption1+1                       
+  nChar = nC;
   
   //for (n=0; n<8; n++) TimerName[n][0] = 0x00;  
   if (SrcDst==0||SrcDst==1) sdCard = false; if (SrcDst==2||SrcDst==3) sdCard = true;   // For Source 0,1=Flash 2,3=SDCard 
-  if (Option) sdCard = LayerAxD;
+  if (Option) sdCard = LayerAxD;                                                       // Caller is *Code not Macroeditor
   c = XLat[MST1];                                                                      // c = Layout 1 3 4 (2 0 0 = A K N)
 
   switch(b) 
@@ -4703,11 +4686,9 @@ bool GetTimerMacro (bool Option)  // Use Source Enter with MST1=0-5 Option1=1-24
     case 5: MacroTimerArr5[0] = c; MacroTimerArr5[1] = Option1; MacroTimerArr5[2] = sdCard; MacroTimerArr5[3] = isLink; break;
     case 6: MacroTimerArr6[0] = c; MacroTimerArr6[1] = Option1; MacroTimerArr6[2] = sdCard; MacroTimerArr6[3] = isLink; break;
     case 7: MacroTimerArr7[0] = c; MacroTimerArr7[1] = Option1; MacroTimerArr7[2] = sdCard; MacroTimerArr7[3] = isLink; break;
-    case 8: MacroTimerArr8[0] = c; MacroTimerArr8[1] = Option1; MacroTimerArr8[2] = sdCard; MacroTimerArr8[3] = isLink; break; } 
-    
-  XLat1[5] = nChar;
-  TimerDisp[6]  = a; strcat(TimerDisp, XLat3[b-1]); strcat(TimerDisp, "  "); strcat(TimerDisp, TimerName[b-1]);  // Macro01 = Option1=00
-   // Timer type R-C etc
+    case 8: MacroTimerArr8[0] = c; MacroTimerArr8[1] = Option1; MacroTimerArr8[2] = sdCard; MacroTimerArr8[3] = isLink; break; }     
+  
+  TimerDisp[6]  = a; strcat(TimerDisp, XLat3[b-1]); strcat(TimerDisp, "  "); strcat(TimerDisp, TimerName[b-1]);  // Macro01 = Option1=00  
   status((char *)TimerDisp);
   
   return true;
