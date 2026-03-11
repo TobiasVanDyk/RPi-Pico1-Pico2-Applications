@@ -15,7 +15,7 @@ Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Ard
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad332.ino.elf"
-Sketch uses 248228 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 248092 bytes (11%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 63344 bytes (12%) of dynamic memory, leaving 460944 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad332.ino.uf2 
 Resetting COM3
@@ -46,7 +46,8 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 
 New changes:
-1. Fixed mistake in using old function WriteMacroTimers() instead of new WriteTimers().
+1. Fixed Pico 2 hhmm format it now triggers when using Macro Timers [R-C] and [O-C] using both long format and short format
+   Fixed mistake in using old function WriteMacroTimers() instead of new WriteTimers().
 Changed Time and Clock handlers for Pico 1 (using its RTC where Sunday=0), and Pico 2 (using TimeLib.h where Sunday=1). Power Timers Clock-Restart and Clock-PowerOff functional with a
 choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hours max time-span) by using *ct*hhmmR,O, or using a full date + time <Pyymmddwhhmm>. To test set time
 using PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and
@@ -95,7 +96,7 @@ to change the name used or path where files are saved - but these setting are no
 larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal for uploading a set of nKeys - for example first upload a set of 9 keys where you used 
 <*sx*n0> to set the base filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset between uploads unless you use <*sx*>. To reset 
 filename to null use *sx*** and use *sx*// to set foldername to null.
-8. *wa* Wakeup dimmed LCD.   
+8. *wa* Wakeup dimmed LCD.  
 
 
 

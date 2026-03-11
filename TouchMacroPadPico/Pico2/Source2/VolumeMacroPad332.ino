@@ -45,7 +45,7 @@
 #include "mathKeys.h"     // Special symbols, Greek characters , and Math Symbols 
 #include "macroBanks.h"   // 5 Sets of 24 macro keys
 #include "sdcard.h"       // 20 Sets of 24 files stored on SDCard + 96 n-keys aA01-xX96 001-996
-#include <TimeLib.h>      // Replacement fpr Pico 1 RTC functions
+#include <TimeLib.h>      // Replacement for Pico 1 HW RTC functions but Sunday is day 1 not day 0
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
  
 volatile bool Change = false;          // Indicators changed at any time
@@ -809,8 +809,8 @@ void loop()
   if (powerEnable) { if (setPower==1) if (hour() == power.Hour && minute() == power.Minute) power_fired = true;   // Compare with timer then restart or switch off 
                      if (setPower==2) if (NowT>=makeTime(power)) power_fired = true;  }   
 
-  if (alarmEnable) { if (setAlarm==1) if (hour() == alarm.Hour && minute() == alarm.Minute) alarm_fired = true;   // Compare with timer then restart or switch off 
-                     if (setAlarm==2) if (NowT>=makeTime(alarm)) alarm_fired = true;  }  // Macro Timers 5 and 6 R-C and O-C Clock Time  
+  if (alarmEnable) { if (setAlarm==1) if (hour() == alarm.Hour && minute() == alarm.Minute) { alarm_fired = true; } // Compare with timer then restart or switch off 
+                     if (setAlarm==2) if (NowT>=makeTime(alarm)) { alarm_fired = true;  }  }                        // Macro Timers 5 and 6 R-C and O-C Clock Time  
 
   if (timerEnable && NowT>=makeTime(timer)) timer_fired = true;    // Macro Timers 7 and 8 RcT and OcT  Clock Time This is 2nd set of Repeat and Oneshot Timers
 
@@ -902,12 +902,10 @@ void CheckMacroTimers()
                         { Macrotimer4 = false; DoCMTimers(MacroTimerArr4, 3); } }
 
   if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4);    }                  // Repeating Clock MacroTimer5 ON - Oneshot Clock MacroTimer6 OFF
-                     if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5); }
-                     alarm_fired = false; }    
+                     if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5); alarm_fired = false; }   }    
                      
   if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6);     }                // Repeating Clock MacroTimer7 ON - Oneshot Clock MacroTimer8 OFF
-                     if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); }
-                     timer_fired = false; }   
+                     if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); timer_fired = false; }  }   
                                
   MacroTimer18 = MacroTimer8 || MacroTimer7 || MacroTimer6 || MacroTimer5 || Macrotimer4 || MacroTimer3 || Macrotimer2 || MacroTimer1; 
   
@@ -922,7 +920,7 @@ void GetTimeData(tmElements_t *a, char *tArr, bool hm, int h, int m)
 // From Serial Rec: 'P'  [O-C][R-C] 'W'  [RcT][OcT] 'A'  [R-C][O-C] 'T'  tTime &t tTimeDateArr 
 //////////////////////////////////////////////////////////////////////////////////////////////
 { bool SetT = false;
-  if (hm) { a->Hour = h; a->Minute = m; }
+ if (hm) { a->Hour = h; a->Minute = m; a->Second = 0; } 
      else { if (RecBytes[0]=='t'||RecBytes[0]=='T') SetT = true;  // Enters with once with tArr[0] = char then after that yymmddwhhmm
             if (RecBytes[1]!=0x2d)  { a->Year   = (2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48)) - 1970; }
             if (RecBytes[3]!=0x2d)  { a->Month  = (RecBytes[3]-48)*10 + (RecBytes[4]-48); }
@@ -939,7 +937,7 @@ void GetTimeData(tmElements_t *a, char *tArr, bool hm, int h, int m)
   if (RecBytes[0]=='p'||RecBytes[0]=='P') { powerEnable = true; optionsindicators(0); setPower = 2-hm; }   
   if (RecBytes[0]=='w'||RecBytes[0]=='W') { timerEnable = true; optionsindicators(0); setTimer = 2-hm; }           
   
-  for (int n=0; n<12; n++) { if (RecBytes[n+1]!=0x2d) tArr[n] = RecBytes[n+1]; else tArr[n] = ' '; }  // Removes t,w,a,p copies up to minutes not sec 
+  for (int n=0; n<12; n++) { if (RecBytes[n+1]!=0x2d) tArr[n] = RecBytes[n+1]; else tArr[n] = ' '; tArr[12] = '\0'; }  // Removes t,w,a,p copies up to minutes not sec 
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1461,7 +1459,7 @@ void DoKey16(byte Num)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-void DoKeyMST(byte Num, bool Timers)        // Currently the same as DoKey16() but will change in future
+void DoKeyMST(byte Num, bool Timers)        
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Keys M1-M24 read content of files M01Link-M24Link on SDCard/FlashMem which contains: 
 // 3-letter filesname on flash memory such as a01-a99 (read in groups of 3 bytes = filename)
@@ -1483,7 +1481,7 @@ void DoKeyMST(byte Num, bool Timers)        // Currently the same as DoKey16() b
   
   LayerAxDSave = LayerAxD;
   if (!Timers) DoMSTLinkName(Num, Layout);      // Layout -> M S T filename such as M01Link
-  strcpy(NameStr1, MSTLinkName);   // MxxLink + 0x00 length = 8 
+  strcpy(NameStr1, MSTLinkName);                // MxxLink + 0x00 length = 8 
   
   do { if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
@@ -3733,11 +3731,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 7: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x6D *cm* or *cmnnXnn = copy macros MSTA -> MSTA + K
       { CopyMacro(0); SendBytesEnd(0); StarOk = true; break; }
         case 8: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x74 "*ct*" display clocks 4x 1 second delay *ct*hhmmR,O restart or Off on clock = hh:mm
-      { if (knum==4) { DisplayClocks(true); StarOk = true; break; }
-        if (knum==9) { NowT = now(); power.Hour = 10*b+(k5-48); power.Minute = 10*(k6-48)+(k7-48); if (power.Hour>23||power.Minute>59) { status("Enter *ct*hhmmR,O"); break; }
-                       // Serial.println(hour(NowT)); Serial.println(minute(NowT)); Serial.println(power.Hour); Serial.println(power.Minute); 
-                       if (k8=='R') { PowerClock=1; status("Restart Clock ON");  StarOk = true; setPower = 1; }             // Enable by pressing Grey [C-R] will set powerEnable=true;
-                       if (k8=='O') { PowerClock=2; status("PowerOff Clock ON"); StarOk = true; setPower = 1; } } break; }  // Enable by pressing Grey [C-O] will set powerEnable=true;
+      { if (knum == 4) { DisplayClocks(true); StarOk = true; break; }
+        if (knum == 9) { power.Hour   = (k4-'0')*10 + (k5-'0'); power.Minute = (k6-'0')*10 + (k7-'0'); if (power.Hour > 23 || power.Minute > 59) { status("Enter *ct*hhmmR,O"); break; }
+                         if (k8 == 'R') { PowerClock = 1; status("Restart Clock ON"); StarOk = true; setPower = 1; }
+                         if (k8 == 'O') { PowerClock = 2; status("PowerOff Clock ON"); StarOk = true; setPower = 1; } } break; }
         case 9: ///////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x65 "*de*" = delete config and macro files
       { status("Files deleted"); DeleteFiles(1); ConfigButtons(1); SendBytesEnd(1); StarOk = true; break; }
         case 10: //////////////////// KeyBrdByte[1]==0x65  *e0* to *e6*  Media keys Activated   
@@ -3877,12 +3874,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          // datetime_t t = { .year  = 2022, .month = 11, .day   = 03, .dotw  = 4, .hour  = 14,  .min   = 00, .sec   = 00 };
          //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
          case 31: ////////////////////// KeyBrdByte[1]==0x74)  *t Time                           *tt*yymmddwhhmm Time      *tt*hhmmR,O
-      {  for (n=1; n<knum-3; n++) RecBytes[n] = KeyBrdByte[n+3]; RecBytes[0] = k2; e = m = 0; // 012345678901234 knum=15   012345678 knum=9
-         if (knum==9) { e = 10*b+(k5-48); m = 10*(k6-48)+(k7-48); if (e>23||m>59) { status("Enter *ta,w,p*hhmmR,O"); break; } }
-         if (k2==0x74) {GetTimeData(&t, tTimeDateArr, 0, 0, 0); TimeSet = StarOk = true; break; }       // *tt* Main TimeClock Set          
-         if (k2==0x61) {GetTimeData(&alarm, aTimeDateArr, knum==9, e, m); StarOk = true; break; }       // *ta* [R-C][O-C]
-         if (k2==0x77) {GetTimeData(&timer, wTimeDateArr, knum==9, e, m); StarOk = true; break; }       // *tw* [RcT][OcT]
-         if (k2==0x70) {GetTimeData(&power, pTimeDateArr, knum==9, e, m); StarOk = true; break; }   }   // *tp* [O-C][R-C]         
+       { for (n=1; n<knum-3; n++) RecBytes[n] = KeyBrdByte[n+3]; RecBytes[0] = k2; RecBytes[n] = '\0'; e = m = 0;
+         if (knum == 9) { e = (k4-'0')*10 + (k5-'0'); m = (k6-'0')*10 + (k7-'0'); if (e > 23 || m > 59) { status("Enter *ta,w,p*hhmmR,O"); break; } }
+         if (k2 == 0x74) { GetTimeData(&t,     tTimeDateArr, 0,        0, 0); TimeSet = StarOk = true; break; }  // *tt* Main TimeClock Set 
+         if (k2 == 0x61) { GetTimeData(&alarm, aTimeDateArr, knum==9,  e, m); StarOk = true; break; }            // *ta* [R-C][O-C]
+         if (k2 == 0x77) { GetTimeData(&timer, wTimeDateArr, knum==9,  e, m); StarOk = true; break; }            // *tw* [RcT][OcT]
+         if (k2 == 0x70) { GetTimeData(&power, pTimeDateArr, knum==9,  e, m); StarOk = true; break; }  }         // *tp* [O-C][R-C]       
          case 32: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x6c *ul* = unlink current Source Key Num
        { UnLink = UnlinkKeyMST(0); if (UnLink) status("Macro MSTLink removed"); else status("No MSTLink found"); StarOk = true; break; }
          case 33: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x61 *ua* = unlink all macros
@@ -5232,4 +5229,4 @@ void showKeyData()
          
  }
 
-/************* EOF line 5163 *****************/
+/************* EOF line 5235 *****************/
