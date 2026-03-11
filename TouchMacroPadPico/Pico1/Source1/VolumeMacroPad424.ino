@@ -939,7 +939,7 @@ void GetTimeData(datetime_t *a, bool hm, int h, int m)
 // Note min is an Arduino reserved key word uses it as min() (macro) function  
 // Pico SDK rtc.h use it as minutes .min
 ///////////////////////////////////////////////////////////////////////////////
-{ if (hm) { a->hour = h; a->min = m; }
+{ if (hm) { a->hour = h; a->min = m; a->sec = 0; }
      else { if (RecBytes[1]==0x2d)  a->year  = -1; else { a->year  = 2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48);  }
             if (RecBytes[3]==0x2d)  a->month = -1; else { a->month = (RecBytes[3]-48)*10 + (RecBytes[4]-48); }
             if (RecBytes[5]==0x2d)  a->day   = -1; else { a->day   = (RecBytes[5]-48)*10 + (RecBytes[6]-48); }
@@ -3746,7 +3746,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { CopyMacro(0); SendBytesEnd(0); StarOk = true; break; }
         case 8: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x74 "*ct*" display clocks 4x 1 second delay *ct*hhmmR,O restart or Off on clock = hh:mm
       { if (knum==4) { DisplayClocks(true); StarOk = true; break; }
-        if (knum==9) { power.hour = 10*b+(k5-48); power.min = 10*(k6-48)+(k7-48); if (power.hour>23||power.min>59) { status("Enter *ct*hhmmR,O"); break; }  
+        if (knum==9) { power.hour = (k4-'0')*10 + (k5-'0'); power.min = (k6-'0')*10 + (k7-'0'); if (power.hour>23||power.min>59) { status("Enter *ct*hhmmR,O"); break; }  
                        if (k8=='R') { PowerClock=1; status("Restart Clock ON");  StarOk = true; setPower=1; }            // Enable by pressing Grey [C-R] will set powerEnable=true;
                        if (k8=='O') { PowerClock=2; status("PowerOff Clock ON"); StarOk = true; setPower=1; } } break; } // Enable by pressing Grey [C-O] will set powerEnable=true;
         case 9: ///////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x65 "*de*" = delete config and macro files
@@ -3888,8 +3888,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          // datetime_t t = { .year  = 2022, .month = 11, .day   = 03, .dotw  = 4, .hour  = 14,  .min   = 00, .sec   = 00 };
          //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
          case 31: ////////////////////// KeyBrdByte[1]==0x74)  *t Time                           *tt*yymmddwhhmm Time      *tt*hhmmR,O
-      {  for (n=1; n<knum-3; n++) RecBytes[n] = KeyBrdByte[n+3]; RecBytes[0] = k2; e = m = 0; // 012345678901234 knum=15   012345678 knum=9
-         if (knum==9) { e = 10*b+(k5-48); m = 10*(k6-48)+(k7-48); if (e>23||m>59) { status("Enter *ta,w,p*hhmmR,O"); break; } }
+       { for (n=1; n<knum-3; n++) RecBytes[n] = KeyBrdByte[n+3]; RecBytes[0] = k2; RecBytes[n] = '\0'; e = m = 0;
+         if (knum == 9) { e = (k4-'0')*10 + (k5-'0'); m = (k6-'0')*10 + (k7-'0'); if (e > 23 || m > 59) { status("Enter *ta,w,p*hhmmR,O"); break; } }
          if (k2==0x74) {GetTimeData(&t, 0, 0, 0); rtc_set_datetime(&t); {TimeSet = StarOk = true;} break; } // *tt* Main TimeClock Set          
          if (k2==0x61) {GetTimeData(&alarm, knum==9, e, m); StarOk = true; break; }                         // *ta* [R-C][O-C]
          if (k2==0x77) {GetTimeData(&timer, knum==9, e, m); StarOk = true; break; }                         // *tw* [RcT][OcT]
