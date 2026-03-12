@@ -3410,7 +3410,7 @@ void ReadTimers(byte Option)
 /////////////////////////////////////
 { unsigned long int current = 0;   // https://stackoverflow.com/questions/62816850/arduino-read-integer-from-txt
  
- if (DimData[1]==0&&DimData[3]==0&&DimData[2]==0&&DimData[4]==0) { ResetTimers(1); Option==2; } // Use default values if all 4 are 0
+ if (DimData[1]==0&&DimData[3]==0&&DimData[2]==0&&DimData[4]==0) { ResetTimers(1); Option=2; } // Use default values if all 4 are 0
  
  if (Option==2) { File s = LittleFS.open("TimersData", "w");   // Will create file if not exist
                   s.write((const unsigned char *)DimData, 36); // Store 9 long unsigned int
@@ -3789,11 +3789,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                         if (b=='d' || b=='D') { for (int n=0; n<d; n++) { usb_hid.mouseScroll(RID_MOUSE, -1*d99, 0); delay(5); } } }
         StarOk = true; break; } 
         case 20: //////////////////// KeyBrdByte[1]==0x6d *mt or *mT = macro onceof timers *mc*n*xyyy n=1-8 *=Link MST1=x (mstakn) Option1=yyy (1-24,1-99,1-255)
-      { if (k2=='c') { KeyBrdByte[0] = k4; KeyBrdByte[1] = k5; MST1 = k6-48;             // *mc*n* or *mc*xn n=Char or *mc*xn' ' = space
+      { if (k2=='c') { KeyBrdByte[0] = KeyBrdByte[1] = 0; KeyBrdByte[0] = k4; if (k5=='*') KeyBrdByte[1] = k5; else k5 = ' '; MST1 = k6-48;   // *mc*n*12
                        if (knum==10) Option1 = e999; else Option1 = e99; MacroTimerOK = StarOk = GetTimerMacro(1); break;  } 
-        T = GetT(knum);                                             // "tOnce", "TOnce"
-        if (k2=='t') { timeOnceof = T; WriteTimers(T, 5, b); } // *mt*num timeOnceof
-        if (k2=='T') { TimeOnceof = T; WriteTimers(T, 6, b); } // *mT*num TimeOnceof
+        T = GetT(knum);                                              // "tOnce", "TOnce"
+        if (k2==0x74) { timeOnceof = T; WriteTimers(T, 5, b); } // *mt*num timeOnceof
+        if (k2==0x54) { TimeOnceof = T; WriteTimers(T, 6, b); } // *mT*num TimeOnceof
         StarOk = true; break; }
         case 21: //////////////////// KeyBrdByte[1]==0x6e) *nt or *nT = macro repeat timers
       { T = GetT(knum);                                              // "tRepeat", "TRepeat"
