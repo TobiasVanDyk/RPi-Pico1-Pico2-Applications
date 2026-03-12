@@ -10,7 +10,7 @@
 <img src="SelectandSendFiles.gif" height="120" /> 
 </p>
 
-Serial2Pico is a configuration and control app for the PicoTouchLCD developed in Visual Studio 2022 C# .NET8
+Serial2Pico is a configuration and control app for the Pico Touch LCD developed in Visual Studio 2022 C# .NET8, which is a mimic of the Pico macropad, with additional controls below the mimic, and navigation tabs above it.
 
 A start has been made with the auto-app-switch function. Each of the three Layouts M, S, T will have an auto-app-switch enable/disable and the PC App will have a list of these apps which can be enabled/disabled. When enabled a Layout and its 4 layers, will switch all of its macros to the app-specific macros, and change its labels to app-specific labels. It will be 24 keys per app at first but can easily be doubled to 48 keys per app (SDCard + Flash = 24 + 24 keys). If required the nKeys can be adapted to be app-aware as well which will yield 996 labels and macros per app for 72 different apps.
 
