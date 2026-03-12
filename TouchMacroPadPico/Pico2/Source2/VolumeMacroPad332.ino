@@ -117,22 +117,7 @@ cSt byte Config1Reset[Config1Size] = {1,0,1,1,0,0,0,1,'n',8,'n','o','p','q','r',
                                      'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-static const unsigned long int tHr  = 60*60*1000; // hour
-static const unsigned long int tMin = 60*1000;    // minute
-unsigned long int WiggleTime = 0;                 // *mW*nn MouseWiggler blocking unsigned for -1000 steps
-unsigned long int wiggleTime = 0;                 // *mw*nn MouseWiggler non-blocking
-unsigned long int wiggleCheck = 0;                // Do this every 250mS
-unsigned long int wiggleLast = 0;                 // wiggleCheck - wiggleLast
-byte wiggle = 1;                                  // wiggle 1-4, cursor UDLR 
-byte wiggleSize = 5;                              // Pixels moved each direction 
-int wigglePeriod = 1000;                          // Time in mS for the cycle of 4 cursor moves DLUR or ULDR
-byte MouseZ = 0;                                  // 0-3 Screen 0,0 position corner LB LT RT RB   
 
-unsigned long NowMillis = 0;           // LCD Backlight Saver
-unsigned long LastMillis = 0;          // LCD Backlight Saver
-unsigned long RepTimePeriod = 600;     // Change with Keyrepeat 200 - 900 milleseconds After this key repeat is active
-unsigned long RepLast = 0;             // Time when key first pressed
-unsigned long RepNow = 0;              // Time when key still pressed
 byte Layout = 1;                       // Layout 1 2 3 4 = M Config+KeyBrds S T
 byte SaveLayout = 0;                   // 5 possible Values are 0 to 4 for 0=default=layout2(Cfg) or else layout 1 to 4
 byte LayoutPrev = 1;                   // Save Layout temporarily while using Macro functions
@@ -506,12 +491,13 @@ const static char MacroTimerLabel[12][4] =   {"R-T",  "Stp",  "O-T", "RcT",
 
 char TimerDisp[23] = {"Macro X nn Timer   R-T"};
 bool MacroTimerOK = false;                                          
-                                                                                    
-const static long unsigned int mtArray[10] = {10800000,  30000,   60000,    90000,   120000, 180000, 300000, 600000, 1800000, 3600000 };
-const static char mtArrayStr[10][10]       = {"3 hrs",  "30 sec","60 sec","90 sec", "2 min","3 min","5 min","10 min","30 min","1 hrs" };
-const static long unsigned int mTArray[10] = {10800000,  7200000, 10800000, 18000000, 21600000, 36000000, 43200000, 86400000, 172800000, 604800000 };
-const static char mTArrayStr[10][10]       = {"300 hrs", "2 hrs", "3 hrs",   "5 hrs",  "6 hrs", "10 hrs", "12 hrs",  "24 hrs", "48 hrs",  "1 week" };                     
-                         
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// const static long unsigned int mtArray[10] = {10800000,  30000,   60000,    90000,   120000, 180000, 300000, 600000, 1800000, 3600000 };
+// const static char mtArrayStr[10][10]       = {"3 hrs",  "30 sec","60 sec","90 sec", "2 min","3 min","5 min","10 min","30 min","1 hrs" };
+// const static long unsigned int mTArray[10] = {10800000,  7200000, 10800000, 18000000, 21600000, 36000000, 43200000, 86400000, 172800000, 604800000 };
+// const static char mTArrayStr[10][10]       = {"300 hrs", "2 hrs", "3 hrs",   "5 hrs",  "6 hrs", "10 hrs", "12 hrs",  "24 hrs", "48 hrs",  "1 week" };                     
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                         
 // const static char hex16[16][2] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};  // Unused 
 static const char* digits = "0123456789ABCDEF";                                                         // dec 2 hex digits positional map used in [Lst] list file contents
 char Int2HexStr[64] = "  ";
@@ -700,8 +686,27 @@ char sSArr[2][21]  = { "CPU    C Fan     rpm", "Sys    C Fan     rpm" };
 bool mPlay = false;                    // PC Playing Music
 static const int mPlaySize = 96;       // Must check this
 char mPlayArr[mPlaySize]  = { " " };    
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static const unsigned long int tHr  = 60*60*1000; // hour
+static const unsigned long int tMin = 60*1000;    // minute
+unsigned long int WiggleTime = 0;                 // *mW*nn MouseWiggler blocking unsigned for -1000 steps
+unsigned long int wiggleTime = 0;                 // *mw*nn MouseWiggler non-blocking
+unsigned long int wiggleCheck = 0;                // Do this every 250mS
+unsigned long int wiggleLast = 0;                 // wiggleCheck - wiggleLast
+byte wiggle = 1;                                  // wiggle 1-4, cursor UDLR 
+byte wiggleSize = 5;                              // Pixels moved each direction 
+int wigglePeriod = 1000;                          // Time in mS for the cycle of 4 cursor moves DLUR or ULDR
+byte MouseZ = 0;                                  // 0-3 Screen 0,0 position corner LB LT RT RB   
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned long NowMillis = 0;           // LCD Backlight Saver
+unsigned long LastMillis = 0;          // LCD Backlight Saver
+unsigned long RepTimePeriod = 600;     // Change with Keyrepeat 200 - 900 milleseconds After this key repeat is active
+unsigned long RepLast = 0;             // Time when key first pressed
+unsigned long RepNow = 0;              // Time when key still pressed
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned long aMinute = 0;                 // Times 1 minute to stop repeating a clock timers firing for a minute before waiting for next 24 cycle
+unsigned long tMinute = 0;                 // Times 1 minute to stop repeating t clock timers firing for a minute before waiting for next 24 cycle
+unsigned long wMinute = 0;                 // Times 1 minute to stop repeating w clock timers firing for a minute before waiting for next 24 cycle
 bool TimeSet = false;                      // true if Clock Time has been set for example <tyymmddwhhmm> through serial port
 bool tTimeDate = false;                    // Show Date and Time
 static const int tTimeDateSize = 48;       // Must check this Tuesday, May 16, 2023 11:27:51 AM
@@ -805,14 +810,6 @@ void loop()
   
   NowT = now();                           // Time now from Timelib
   if (MacroTimer18) CheckMacroTimers();   // Check Macro Timers 1-8 Oneshot Repeating Clocktime 
-                           
-  if (powerEnable) { if (setPower==1) if (hour() == power.Hour && minute() == power.Minute) power_fired = true;   // Compare with timer then restart or switch off 
-                     if (setPower==2) if (NowT>=makeTime(power)) power_fired = true;  }   
-
-  if (alarmEnable) { if (setAlarm==1) if (hour() == alarm.Hour && minute() == alarm.Minute) { alarm_fired = true; } // Compare with timer then restart or switch off 
-                     if (setAlarm==2) if (NowT>=makeTime(alarm)) { alarm_fired = true;  }  }                        // Macro Timers 5 and 6 R-C and O-C Clock Time  
-
-  if (timerEnable && NowT>=makeTime(timer)) timer_fired = true;    // Macro Timers 7 and 8 RcT and OcT  Clock Time This is 2nd set of Repeat and Oneshot Timers
 
   if (power_fired) { if (PowerClock==1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
                      if (PowerClock==2) { DoPowerKeys('u', PowerKeysMenu, 10); } powerEnable = false; PowerClock = 0; power_fired = false; }
@@ -885,9 +882,18 @@ void DoCMTimers(byte TimerArr[], byte Num) // Num = 0-7 Timers = 1-8
 void CheckMacroTimers()
 /////////////////////////////////////////////////////////////////////////////////////
 { unsigned long TimeNow = millis(); 
-  int LayerAxDPrev;
-   
-  LayoutPrev = Layout;  LayerAxDPrev = LayerAxD;
+  int LayerAxDPrev;   
+  LayoutPrev = Layout;  LayerAxDPrev = LayerAxD; 
+  if ((NowMillis-aMinute)>tMin) aMinute=0; if ((NowMillis-tMinute)>tMin) tMinute=0; // if ((NowMillis-wMinute)>tMin) wMinute=0; 
+                           
+  if (powerEnable) { if (setPower==1) if (hour() == power.Hour && minute() == power.Minute) power_fired = true;   // Compare with timer then restart or switch off 
+                     if (setPower==2) if (NowT>=makeTime(power)) power_fired = true;  }  
+
+  if (alarmEnable) { if (setAlarm==1) if (hour() == alarm.Hour && minute() == alarm.Minute && aMinute == 0) { alarm_fired = true; }   // Compare with timer then restart or switch off 
+                     if (setAlarm==2) if (NowT>=makeTime(alarm)) { alarm_fired = true;  }  }                                          // Macro Timers 5 and 6 R-C and O-C Clock Time
+                     
+  if (timerEnable) { if (setTimer==1) if (hour() == timer.Hour && minute() == timer.Minute && tMinute == 0) { timer_fired = true; }   // Compare with timer then restart or switch off 
+                     if (setTimer==2) if (NowT>=makeTime(timer)) { timer_fired = true;  }  }                                          // Macro Timers 7 and 8 RcT and OcT Clock Time 
   
   if (MacroTimer1) { if ((TimeNow - TimeRepeatPrev) >= TimeRepeat)                           // Repeating MacroTimer1 still ON
                         { TimeRepeatPrev = TimeNow; DoCMTimers(MacroTimerArr1, 0);  } }
@@ -901,11 +907,11 @@ void CheckMacroTimers()
   if (Macrotimer4) { if ((TimeNow - timeOnceofPrev) >= timeOnceof)                           // Oneshot MacroTimer4 OFF
                         { Macrotimer4 = false; DoCMTimers(MacroTimerArr4, 3); } }
 
-  if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4);    }                  // Repeating Clock MacroTimer5 ON - Oneshot Clock MacroTimer6 OFF
-                     if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5); alarm_fired = false; }   }    
+  if (alarm_fired && aMinute==0) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4); aMinute = millis(); alarm_fired = false;  }      // Repeating aClock MacroTimer5 ON every 24 hours
+                                   if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5); alarm_fired = false; }   }  // Oneshot aClock MacroTimer6 ON once
                      
-  if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6);     }                // Repeating Clock MacroTimer7 ON - Oneshot Clock MacroTimer8 OFF
-                     if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); timer_fired = false; }  }   
+  if (timer_fired && tMinute==0) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6); tMinute = millis(); timer_fired = false;   }     // Repeating tClock MacroTimer7 ON every 24 hours
+                                   if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); timer_fired = false; }  }  // Oneshot tClock MacroTimer8 ON once 
                                
   MacroTimer18 = MacroTimer8 || MacroTimer7 || MacroTimer6 || MacroTimer5 || Macrotimer4 || MacroTimer3 || Macrotimer2 || MacroTimer1; 
   
@@ -920,7 +926,7 @@ void GetTimeData(tmElements_t *a, char *tArr, bool hm, int h, int m)
 // From Serial Rec: 'P'  [O-C][R-C] 'W'  [RcT][OcT] 'A'  [R-C][O-C] 'T'  tTime &t tTimeDateArr 
 //////////////////////////////////////////////////////////////////////////////////////////////
 { bool SetT = false;
- if (hm) { a->Hour = h; a->Minute = m; a->Second = 0; } 
+  if (hm) { a->Hour = h; a->Minute = m; a->Second = 0; } 
      else { if (RecBytes[0]=='t'||RecBytes[0]=='T') SetT = true;  // Enters with once with tArr[0] = char then after that yymmddwhhmm
             if (RecBytes[1]!=0x2d)  { a->Year   = (2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48)) - 1970; }
             if (RecBytes[3]!=0x2d)  { a->Month  = (RecBytes[3]-48)*10 + (RecBytes[4]-48); }
@@ -3483,36 +3489,7 @@ void FillKeysStr(int SelectLayout)
   if (SelectLayout==1||SelectLayout==0)   // Keys M1-M24
   { MacroM1M12[n] = 2; for (m=0; m<=strlen(str1to12[n]); m++) Mtr1to12[n][m] = str1to12[n][m]; MacroSizeM1M12[n] = m; } }
 }
-/////////////////////////////////////////
-unsigned long ReadMacroTimers(int Option)
-/////////////////////////////////////////
-{ long unsigned int current = 0; 
-  char TArray[4][10] = {"tRepeat", "TRepeat", "tOnce", "TOnce"};
-  File f = LittleFS.open(TArray[Option-1], "r"); 
-  while (f.available()) { long unsigned int c = f.read(); if ('0' <= c && c <= '9') { current = current * 10 + (c - '0'); }   } f.close(); 
-  return current; 
-}
-//////////////////////////////////////////////////////////////
-void WriteMacroTimers(unsigned long TVal, int Option, byte b) 
-//////////////////////////////////////////////////////////////
-// WriteMacroTimers(T, 5, b) *mt*num timeOnceof WriteMacroTimers(T, 6, b) *mT*num TimeOnceof
-// WriteMacroTimers(T, 7, b)                    WriteMacroTimers(T, 8, b)
-//////////////////////////////////////////////////////////////////////////////////////////////
-{ int n;
-  byte a;
-  char TArray[4][10] = {"tRepeat", "TRepeat", "tOnce", "TOnce"};
-  //                      01234567890123456789    0123456789012345689
-  char TPArr[4][21]  = { "Repeat  t           ", "Repeat  T          ",
-                         "Onceof  t           ", "Onceof  T          " };                          
-     
-  File f = LittleFS.open(TArray[Option-1], "w"); 
-  if (f) {f.print(TVal); f.close(); }
-  a = 1;
-  if (Option==1||Option==3) { n = 12; while (a!=0x00) { a = mTArrayStr[b][n-12]; TPArr[Option][n] = a;  n++; } }  
-  if (Option==2||Option==4) { n = 12; while (a!=0x00) { a = mtArrayStr[b][n-12]; TPArr[Option][n] = a;  n++; } }
-  //status((char *)mTArrayStr[b]); 
-  status(TPArr[Option]); SendBytesEnd(1); 
-}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 byte FindSDNum(byte C)
 ///////////////////////////////////////////////////////////////////////////////////////////
