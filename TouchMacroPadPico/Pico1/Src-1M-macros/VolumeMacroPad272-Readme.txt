@@ -8,8 +8,8 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad272.ino.elf"
-Sketch uses 257268 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 62568 bytes (23%) of dynamic memory, leaving 199576 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 257364 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 62576 bytes (23%) of dynamic memory, leaving 199568 bytes for local variables. Maximum is 262144 bytes.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -33,7 +33,9 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
 
 
 New changes:
-1. Fixed mistake in using old function WriteMacroTimers() instead of new WriteTimers().
+1. Fixed errors in WriteTimers and add protection for minute long retrigger when using hhmm in Macrotimers 
+   Fixed Pico 1 and 2 hhmm format - it now triggers when using Macro Timers [R-C] and [O-C] using both long format and short format
+   Fixed mistake in using old function WriteMacroTimers() instead of new WriteTimers().
 Changed Time and Clock handlers for Pico 1 (using its RTC where Sunday=0), and Pico 2 (using TimeLib.h where Sunday=1). Power Timers Clock-Restart and Clock-PowerOff functional with a
 choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hours max time-span) by using *ct*hhmmR,O, or using a full date + time <Pyymmddwhhmm>. To test set time
 using PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both MST and

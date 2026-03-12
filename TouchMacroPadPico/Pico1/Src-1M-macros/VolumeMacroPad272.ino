@@ -716,6 +716,9 @@ char tTimeDateArr[mPlaySize]  = { " " };   // Not system time but time sent with
 // Location\x.x.x\pico-sdk\src\rp2040\hardware_structs\include\\hardware\rtc.h   \hardware\structs\rtc.h   \hardware\regs\rtc.h
 // Problem: min is an Arduino reserved key word uses it as min() (macro) function - but Pico SDK rtc.h use it as minutes .min
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned long aMinute = 0;                 // Times 1 minute to stop repeating a clock timers firing for a minute before waiting for next 24 cycle
+unsigned long tMinute = 0;                 // Times 1 minute to stop repeating t clock timers firing for a minute before waiting for next 24 cycle
+unsigned long wMinute = 0;                 // Times 1 minute to stop repeating w clock timers firing for a minute before waiting for next 24 cycle
 char datetime_buf[256];
 char *datetime_str = &datetime_buf[0]; 
 char alarm_buf[256];
@@ -828,7 +831,8 @@ void loop()
 { if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
                    else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore  
 
-  if (MacroTimer18) CheckMacroTimers();   // Check Macro Timers 1-8 Oneshot Repeating Clocktime
+  if (powerEnable||alarmEnable||timerEnable) rtc_get_datetime(&t); // Update time hhmm  
+  if (MacroTimer18) CheckMacroTimers();                            // Check Macro Timers 1-8 Oneshot Repeating Clocktime
                                        
   if (power_fired) { if (PowerClock==1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
                      if (PowerClock==2) { DoPowerKeys('u', PowerKeysMenu, 10); } powerEnable = false; PowerClock = 0; power_fired = false; }
@@ -903,8 +907,11 @@ void CheckMacroTimers()
   int LayerAxDPrev;
    
   LayoutPrev = Layout;  LayerAxDPrev = LayerAxD;
+  if ((NowMillis-aMinute)>tMin) aMinute=0; if ((NowMillis-tMinute)>tMin) tMinute=0; // if ((NowMillis-wMinute)>tMin) wMinute=0; 
   
-  if (powerEnable||alarmEnable||timerEnable) rtc_get_datetime(&t); // Update time hhmm                    
+  if (powerEnable && setPower==1) if (t.hour==power.hour && t.min==power.min) { power_fired = true; }  // hhmm Compare with timer                      
+  if (alarmEnable && setAlarm==1) if (t.hour==alarm.hour && t.min==alarm.min && aMinute == 0) { alarm_fired = true; }  // hhmm Compare with timer 
+  if (timerEnable && setTimer==1) if (t.hour==timer.hour && t.min==timer.min && tMinute == 0) { timer_fired = true; }  // hhmm Compare with timer                      
   
   if (MacroTimer1) { if ((TimeNow - TimeRepeatPrev) >= TimeRepeat)                           // Repeating MacroTimer1 still ON
                         { TimeRepeatPrev = TimeNow; DoCMTimers(MacroTimerArr1, 0);  } }
@@ -918,21 +925,15 @@ void CheckMacroTimers()
   if (Macrotimer4) { if ((TimeNow - timeOnceofPrev) >= timeOnceof)                           // Oneshot MacroTimer4 OFF
                         { Macrotimer4 = false; DoCMTimers(MacroTimerArr4, 3); } }
 
-  if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4); alarm_fired = false; }  // Repeating Clock MacroTimer5 ON - Oneshot Clock MacroTimer6 OFF
-                     if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5); alarm_fired = false; }
-                   }    
+  if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4); aMinute = millis(); alarm_fired = false;  }   // Repeating Clock MacroTimer5 ON 
+                     if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5); alarm_fired = false; } } // Oneshot Clock MacroTimer6 ON                    
                      
-  if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6); alarm_fired = false; }  // Repeating Clock MacroTimer7 ON - Oneshot Clock MacroTimer8 OFF
-                     if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); timer_fired = false; }
-                   }   
+  if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6); tMinute = millis(); timer_fired = false;   }   // Repeating Clock MacroTimer7 ON 
+                     if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); timer_fired = false; } } // Oneshot Clock MacroTimer8 ON                 
                                
   MacroTimer18 = MacroTimer8 || MacroTimer7 || MacroTimer6 || MacroTimer5 || Macrotimer4 || MacroTimer3 || Macrotimer2 || MacroTimer1; 
   
   Layout = LayoutPrev; LayerAxD = LayerAxDPrev;
-
-  if (powerEnable && setPower==1) if (t.hour==power.hour && t.min==power.min) { powerEnable = false; power_fired = true; }  // hhmm Compare with timer                      
-  if (alarmEnable && setAlarm==1) if (t.hour==alarm.hour && t.min==alarm.min) { alarmEnable = false; alarm_fired = true; }  // hhmm Compare with timer 
-  if (timerEnable && setTimer==1) if (t.hour==timer.hour && t.min==timer.min) { timerEnable = false; timer_fired = true; }  // hhmm Compare with timer  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -941,7 +942,7 @@ void GetTimeData(datetime_t *a, bool hm, int h, int m)
 // Note min is an Arduino reserved key word uses it as min() (macro) function  
 // Pico SDK rtc.h use it as minutes .min
 ///////////////////////////////////////////////////////////////////////////////
-{ if (hm) { a->hour = h; a->min = m; }
+{ if (hm) { a->hour = h; a->min = m; a->sec = 0; }
      else { if (RecBytes[1]==0x2d)  a->year  = -1; else { a->year  = 2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48);  }
             if (RecBytes[3]==0x2d)  a->month = -1; else { a->month = (RecBytes[3]-48)*10 + (RecBytes[4]-48); }
             if (RecBytes[5]==0x2d)  a->day   = -1; else { a->day   = (RecBytes[5]-48)*10 + (RecBytes[6]-48); }
@@ -954,7 +955,7 @@ void GetTimeData(datetime_t *a, bool hm, int h, int m)
   if (RecBytes[0]=='t'||RecBytes[0]=='T') { TimeSet = true;     optionsindicators(0); } 
   if (RecBytes[0]=='a'||RecBytes[0]=='A') { alarmEnable = true; optionsindicators(0); setAlarm = 2-hm; }  // setAlarm = 1 if hm = true
   if (RecBytes[0]=='p'||RecBytes[0]=='P') { powerEnable = true; optionsindicators(0); setPower = 2-hm; }  // setPower = 2 if hm is false  
-  if (RecBytes[0]=='w'||RecBytes[0]=='W') { timerEnable = true; optionsindicators(0); setTimer = 2-hm; }  
+  if (RecBytes[0]=='w'||RecBytes[0]=='W') { timerEnable = true; optionsindicators(0); setTimer = 2-hm; }  // setTimer = 2 if hm is false  
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3437,7 +3438,7 @@ void ReadTimers(byte Option)
 /////////////////////////////////////
 { unsigned long int current = 0;   // https://stackoverflow.com/questions/62816850/arduino-read-integer-from-txt
  
- if (DimData[1]==0&&DimData[3]==0&&DimData[2]==0&&DimData[4]==0) { ResetTimers(1); Option==2; } // Use default values if all 4 are 0
+ if (DimData[1]==0&&DimData[3]==0&&DimData[2]==0&&DimData[4]==0) { ResetTimers(1); Option=2; } // Use default values if all 4 are 0
  
  if (Option==2) { File s = LittleFS.open("TimersData", "w");   // Will create file if not exist
                   s.write((const unsigned char *)DimData, 36); // Store 9 long unsigned int
@@ -3789,7 +3790,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 19: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x32 *m2*nn = Cursor move amount 
       { if (knum>5) b = c99;    // b = 0, 1-99
         if (b<100) {MouseDelta = b; status("Cursor Move changed"); SaveMouse(); StarOk = true; break; } else break; }
-        case 71: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x6d *mc*udlr,UDLR,nn = Cursor move Up Down Left Righ UDLR = 10 x udlr nn = 01-99 pixels move 
+        case 71: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x6d *mm*udlr,UDLR,nn = Cursor move Up Down Left Righ UDLR = 10 x udlr nn = 01-99 pixels move 
        { if (knum!=7 || d99>99) break; 
                          else { m=k4; if (m<0x5B) d=10; else d=1; 
                                 if (m=='U'||m=='u') MouseU(d99, d, 5); if (m=='D'||m=='d') MouseD(d99, d, 5);  // Move Up/Down d99*10 or d99
@@ -3816,7 +3817,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                         if (b=='d' || b=='D') { for (int n=0; n<d; n++) { usb_hid.mouseScroll(RID_MOUSE, -1*d99, 0); delay(5); } } }
         StarOk = true; break; }  
         case 20: //////////////////// KeyBrdByte[1]==0x6d *mt or *mT = macro onceof timers *mc*n*xyyy n=1-8 *=Link MST1=x (mstakn) Option1=yyy (1-24,1-99,1-255)
-      { if (k2=='c') { KeyBrdByte[0] = k4; if (k5=='*') KeyBrdByte[1] = k5; else k5 = ' '; MST1 = k6-48;   // *mc*n*12
+      { if (k2=='c') { KeyBrdByte[0] = KeyBrdByte[1] = 0; KeyBrdByte[0] = k4; if (k5=='*') KeyBrdByte[1] = k5; else k5 = ' '; MST1 = k6-48;   // *mc*n*12
                        if (knum==10) Option1 = e999; else Option1 = e99; MacroTimerOK = StarOk = GetTimerMacro(1); break;  } 
         T = GetT(knum);                                              // "tOnce", "TOnce"
         if (k2==0x74) { timeOnceof = T; WriteTimers(T, 5, b); } // *mt*num timeOnceof
@@ -3878,8 +3879,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          // datetime_t t = { .year  = 2022, .month = 11, .day   = 03, .dotw  = 4, .hour  = 14,  .min   = 00, .sec   = 00 };
          //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
          case 31: ////////////////////// KeyBrdByte[1]==0x74)  *t Time                           *tt*yymmddwhhmm Time      *tt*hhmmR,O
-      {  for (n=1; n<knum-3; n++) RecBytes[n] = KeyBrdByte[n+3]; RecBytes[0] = k2; e = m = 0; // 012345678901234 knum=15   012345678 knum=9
-         if (knum==9) { e = 10*b+(k5-48); m = 10*(k6-48)+(k7-48); if (e>23||m>59) { status("Enter *ta,w,p*hhmmR,O"); break; } }
+       { for (n=1; n<knum-3; n++) RecBytes[n] = KeyBrdByte[n+3]; RecBytes[0] = k2; RecBytes[n] = '\0'; e = m = 0;
+         if (knum == 9) { e = (k4-'0')*10 + (k5-'0'); m = (k6-'0')*10 + (k7-'0'); if (e > 23 || m > 59) { status("Enter *ta,w,p*hhmmR,O"); break; } }
          if (k2==0x74) {GetTimeData(&t, 0, 0, 0); rtc_set_datetime(&t); {TimeSet = StarOk = true;} break; } // *tt* Main TimeClock Set          
          if (k2==0x61) {GetTimeData(&alarm, knum==9, e, m); StarOk = true; break; }                         // *ta* [R-C][O-C]
          if (k2==0x77) {GetTimeData(&timer, knum==9, e, m); StarOk = true; break; }                         // *tw* [RcT][OcT]
@@ -4669,16 +4670,16 @@ bool GetTimerMacro (bool Option)  // Use Source Enter with MST1=0-5 Option1=1-24
   
   char nC = nChar;
   if (!Option) XLat1[5] = nChar; else if (isAlphaNumeric(KeyBrdByte[1])) nChar = XLat1[5] = KeyBrdByte[1];              // Test a-z A-Z 0-9 
-   
+  
   if (KeyBrdByte[1]==0x2A) { isLink = true;  DoMSTALinkName(Option1, MST1); strcpy(TimerName[b-1],  MSTLinkName); }     // XnnLink if 1*-8* XOption1Link -> XOption1+1Link    
                      else  { isLink = false; DoMSTAName(Option1, MST1);     strcpy(TimerName[b-1],  MSTAName);    }     // Xnn if 1-8 added XOption1 -> XOption1+1                       
   nChar = nC;
-  
+    
   //for (n=0; n<8; n++) TimerName[n][0] = 0x00;  
   if (SrcDst==0||SrcDst==1) sdCard = false; if (SrcDst==2||SrcDst==3) sdCard = true;   // For Source 0,1=Flash 2,3=SDCard 
   if (Option) sdCard = LayerAxD;                                                       // Caller is *Code not Macroeditor
   c = XLat[MST1];                                                                      // c = Layout 1 3 4 (2 0 0 = A K N)
-
+  
   switch(b) 
   { case 1: MacroTimerArr1[0] = c; MacroTimerArr1[1] = Option1; MacroTimerArr1[2] = sdCard; MacroTimerArr1[3] = isLink; break;
     case 2: MacroTimerArr2[0] = c; MacroTimerArr2[1] = Option1; MacroTimerArr2[2] = sdCard; MacroTimerArr2[3] = isLink; break;
