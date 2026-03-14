@@ -15,7 +15,8 @@ Serial2Pico is a configuration and control app for the Pico Touch LCD developed 
 A start has been made with the auto-app-switch function. Each of the three Layouts M, S, T will have an auto-app-switch enable/disable and the PC App will have a list of these apps which can be enabled/disabled. When enabled a Layout and its 4 layers, will switch all of its macros to the app-specific macros, and change its labels to app-specific labels. It will be 24 keys per app at first but can easily be doubled to 48 keys per app (SDCard + Flash = 24 + 24 keys). If required the nKeys can be adapted to be app-aware as well which will yield 996 labels and macros per app for 72 different apps.
 
 Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App internal list (wip only has  edge, chrome, word, notepad in list currently):
-<br> \*ap\*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in Layout 1,3,4. Pressing the keys M1-M24 or S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder /appname/. \*ap\*appname=0 switches appname app switch off. 
+<br> \*ap\*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in Layout 1,3,4. Pressing the keys M1-M24 or S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder /appname/. 
+<br> \*ap\*appname=0 switches appname app switch off. 
 <br> \*ap\*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys. 
 <br> \*ap\* disables App Switch function
 
