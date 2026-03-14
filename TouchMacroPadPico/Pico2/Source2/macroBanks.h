@@ -13,7 +13,7 @@ cSt int iListMax = 12;                               // Number of entries
 byte MacroInstructionList[3][iListMax] = 
 { 2, 5, 6, 7, 9, 0, 0, 0, 0, 0, 0, 0,                // Layout 1 = M
   1, 2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0,                // Layout 3 = S
-  2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;             // Layout 4 = T
+  10, 12, 11, 13, 0, 0, 0, 0, 0, 0, 0, 0 } ;         // Layout 4 = T
 cSt byte MacroInstructionListDefault[3][iListMax] =  // Defaults to reset MacroInstructionList
 { 2, 5, 6, 7, 9, 0, 0, 0, 0, 0, 0, 0,    1, 2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0,     2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;  
 bool iList = false;     // Select between new instructionlist or old coded section - use *ix* to switch new list-based on
