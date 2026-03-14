@@ -948,10 +948,10 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     PC App, or enter as *1s*< and *1e*> and save.
 (X) Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App
     list of App Switches:
-    *ap*appname creates a folder /appname/ if it does not exist on the SDCard
-    *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys and enables App Switch. Pressing the keys M1-M24 or 
-    *S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder appname
-    folder /appname/
+    *ap*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in 
+    Layout 1,3,4. Pressing the keys M1-M24 or *S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside
+    the SDCard folder /appname/. *ap*appname=0 switches appname app switch off. 
+    *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys. 
     *ap* disables App Switch function
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 

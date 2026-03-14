@@ -1338,10 +1338,16 @@ void DoPowerKeys (char Cmd, bool Menu, int s)
                    ConfigButtons(1); }
 }
 
+/////////////////
 bool DoAppDir()
-{ strcpy(NameStr3, "/"); strcat(NameStr3, AppName);  
-  if (SD.exists(AppDir)) AppState = 2; else if (SD.mkdir(AppDir)) AppState = 1; else return false;
-  return true;
+/////////////////
+{ 
+  if (AppL134==0) { AppState = 0; return true; }
+  if (!(AppL134==1||AppL134==3||AppL134==4)) return false;
+  
+  if (SD.exists(AppDir)) AppState = 2; else if (SD.mkdir(AppDir)) AppState = 1;
+   
+  if (AppState==0) return false; else return true;
 }
 
 ///////////////////////////////
@@ -4113,10 +4119,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 85: ////////////////////// KeyBrdByte[1]=='2'&&KeyBrdByte[2]=='e' *2e*ssseee Serial Start Markers as sss = eee 0-255 or as ssee = 00-FF hex
        { StarOk = GetStartEnd (1, 1, c999); break; }   
          case 86: ////////////////////// KeyBrdByte[1]=='a'&&KeyBrdByte[2]=='p' *ap*appname as max 12 chars or *ap*n n=1,3,4 Layout M S T keys or *ap* = App Switch off
-       { if (knum==4) { AppState = 0; AppDir[0] = AppName[0] = 0x00; status("App Switch OFF"); StarOk = true; break; }
-         if (knum==5) { if (k4=='1'||k4=='3'||k4=='4') AppL134 = k4-48; AppState = 2; strcpy(NameStr1, "App Switch ON  "); NameStr1[14] = k4; status(NameStr1); StarOk = true; break; }
-         if (knum<17) { for (n=0; n<knum-4; n++) AppDir[n+1] = AppName[n] = KeyBrdByte[n+4]; AppDir[0] = AppDir[n+1] = '/'; AppDir[n+2] = AppName[n] = 0x00; 
-         StarOk = DoAppDir(); if (StarOk) status(AppDir); /*Serial.println(AppDir); Serial.println(AppName); Serial.println(AppState);*/ } break; }                                                                                                
+       { if (knum==4) { AppState = 0; AppDir[0] = AppName[0] = 0x00; status("App Switch OFF"); StarOk = true; break; } 
+         if (knum==5) { if (k4=='1'||k4=='3'||k4=='4') { AppL134 = k4-48; AppState = 2; strcpy(NameStr1, "App Switch Layer  "); NameStr1[17] = k4; status(NameStr1); StarOk = true; } break; }
+         if (KeyBrdByte[knum-2]=='=' && knum>5) { for (n=0; n<knum-6; n++) AppDir[n+1] = AppName[n] = KeyBrdByte[n+4]; AppDir[0] = AppDir[n+1] = '/'; AppDir[n+2] = AppName[n] = 0x00; 
+         AppL134 = KeyBrdByte[knum-1]-48; StarOk = DoAppDir(); if (StarOk) if (AppL134!=0) status(AppDir); else status("No App Switch"); } break; }                                                                                                
       } return StarOk;                
 }
 

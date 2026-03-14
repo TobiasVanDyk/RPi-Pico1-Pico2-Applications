@@ -15,7 +15,7 @@ Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Ard
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad332.ino.elf"
-Sketch uses 248804 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 248884 bytes (11%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 63600 bytes (12%) of dynamic memory, leaving 460688 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad332.ino.uf2 
 Resetting COM3
@@ -46,10 +46,10 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 
 New changes:
-1. Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App list of App Switches:
-   *ap*appname creates a folder /appname/ if it does not exist on the SDCard
-   *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys and enables App Switch. Pressing the keys M1-M24 or *S1-S24 or T1-T24 will then execute macros files such as 
-   t01 to t24 inside the SDCard folder appname folder /appname/
+1. Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App internal list (wip)
+   *ap*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in Layout 1,3,4. Pressing the keys M1-M24 or *S1-S24 or 
+   T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder /appname/. *ap*appname=0 switches appname app switch off. 
+   *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys. 
    *ap* disables App Switch function
 2. Fixed WriteTimers error. Fixed Pico 2 hhmm format it now triggers when using Macro Timers [R-C] and [O-C] using both long format and short format. Fixed mistake in using old 
 function WriteMacroTimers() instead of new WriteTimers().
