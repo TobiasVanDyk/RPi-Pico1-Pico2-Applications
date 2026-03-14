@@ -641,8 +641,7 @@ pressing the [Add] key after the last * is not necessary. All *Codes return to s
 pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The main codes are listed below:
 
 (1) Macro Timer Keys time values - default Short Time = 30 seconds and default Long Time 10 minutes. To change Timer
-    values send Repeat Macro Timer *mt*num or *mT*num or Oneshot Macro Timer *nt*num or *nT*num where num 0 is
-    3 hours t time and 300 hours T time mode. 1 = 30 seconds (2 hours for T) to 9 = 1 hour (48 hours for T). Associate 
+    values send Repeat Macro Timer *mt*num or *mT*num or Oneshot Macro Timer *nt*num or *nT*num values Associate 
     a Macro with a Timer in the KeyBrd Macro Tools Page using key [Tmr] after 1 to 8 have been [ADD]ed to information
     line at the bottom. Then the Source Number Macro will be linked to (1) and (2) Repeat-Timer T and t, (3) and (4)
     Oneshot-Timer T and t, (5) Repeat on Clock Time, (6) Oneshot on Clock Time, (7) Repeat Countdown Timer, 
@@ -652,7 +651,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     press [Cfg][Mct][R-t]. The Run box will then keep opening repeatedly about every 10-30 seconds - pause by pressing
     [R-t] again, restart press [R-t], or cancel by pressing the yellow button [Stop]. Add a star * to the added number
     1-8 i.e 1*, 2* etc. use macrolink files XnnLink instead of macro files Xnn. Use the option Pad [o] to select where
-    (SDCard or Flas) the macro file is stored.
+    (SDCard or Flash) the macro file is stored.
 (2) LCD blank timeout - Send the macro *tb*nnn nnn seconds nn n minutes *tb* 30 seconds. 10 seconds is the minimum.
     For example: (1) *tb*nnn=010-999 seconds. (2) *tb*nn=01-99 minutes (3) *tb*n=1-9 minutes or 0=30 seconds 
 (3) LCD blank dim value - Send the macro *db*n nn backlight pwm *db*(0-9)x10 or *db*00-100 % PWM. 
@@ -711,8 +710,9 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (j) *br* = toggle brightness controls up/down replace volume up/dwn for Layouts 1, 3, 4 (not in Layout 2 Cfg). The
     brightness slider usually only has an effect when used in notebook computers not desktops.
 (k) *tt* *ta* *tp* *tw* Use *tx*yymmddwhhmm -> *tx*22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w
-    t = Main Time/Clock a  = Macro Clock Repeat-Oneshot [R-C][O-C] p = Macro Clock Countdown [RcT][OcT] 
-    w = Power Clock [O-C][R-C]. if using [*Cm] only add the numbers yymmddwhhmm w = weekday 0 = Sunday 6 = Saturday  
+    t = Main Time/Clock a  = Macro Clock Repeat-Oneshot [R-C][O-C] w = Macro Clock Countdown [RcT][OcT] 
+    p = Power Clock [O-C][R-C]. if using [*Cm] only add the numbers yymmddwhhmm w = weekday 0 = Sunday 6 = Saturday
+    (If a Pico 2 used then Sunday=1 Saturday=7 as in TimeLib.h)  
 (l) *xn*number n = 0,1 - 8, 9 number = 1-54. Top row 3 keys cX-Cut, cC-Copy, cV-Paste: Programmable as x1, x2, x3 
     Layout 1, and x4, x5, x6 for Layout 3 and 4. *x0*0 clear all 8 keys, *xn*0 clear all 6 top-row keys. 54 options 
     are: Del Bks Tab aTb Ins Esc PrS aPr Ret Snp Osk UnD ReD caD Cut Cpy Pst Tsk Run wX CPi Ts1 Ts6  K1 - K24 Num 
@@ -879,17 +879,17 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     label option is switched on. Use the Macro Editor to copy labelfiles FileM,S,T or label1, 2, 3 from the 
     SDCard -> Flash by setting the source/destination brown/white, enter name1=name2, and then press [Cpy]. 
 (L) Layout, Layer, and storage changes  via starcodes *ad*, *ae*, and *lx* - also via serial <*ad* > <*ae* > <*lx* >
-   *ad*xs with x = a,b,c,d (change layers A-D) s = s,f (change SDCard or Flash)
-   *ad* toggle SDCard <-> Flash
-   *ad*d switch to layer D
-   *ae* Macroeditor Source-Destination: 00 both flash 01 Src=flash Dst=sdcard 10 Src=sdcard Dst=flash 11 both sdcard
-   *ae* with no number = increment Macroeditor Source-Destination by one 0-3 = 00-11
-   *ae*n n = 0-3 = 00-11 - set Macroeditor Source-Destination to Flash or SDCard for macro/file copy, rename, remove etc
-   *sd*bs switch to layer B on Flash
-   *lx*lxs l = 1-4 (change Layout 1-4) x = a,b,c,d (change layers A-D) s = s,f (change SDCard or Flash)
-   *lx*3 change to Layout 3 (S keys)
-   *lx*1bf change to Layout 1 (M keys), Layer B, and Flash    
-    *lx*s *lx*m *lx*n *lx*0 *lx*k switch directly to 5 Pads s k m n o in Layout 2
+    *ad*xs with x = a,b,c,d (change layers A-D) s = s,f (change SDCard or Flash)
+    *ad* toggle SDCard <-> Flash
+    *ad*d switch to layer D
+    *ae* Macroeditor Source-Destination: 00 both flash 01 Src=flash Dst=sdcard 10 Src=sdcard Dst=flash 11 both sdcard
+    *ae* with no number = increment Macroeditor Source-Destination by one 0-3 = 00-11
+    *ae*n n = 0-3 = 00-11 - set Macroeditor Source-Destination to Flash or SDCard for macro/file copy, rename, remove etc
+    *sd*bs switch to layer B on Flash
+    *lx*lxs l = 1-4 (change Layout 1-4) x = a,b,c,d (change layers A-D) s = s,f (change SDCard or Flash)
+    *lx*3 change to Layout 3 (S keys)
+    *lx*1bf change to Layout 1 (M keys), Layer B, and Flash    
+    *lx*s *lx*m *lx*n *lx*o *lx*k switch directly to 5 Pads s k m n o in Layout 2
 (M) *dt*f,m,s or *dt*0,1,2  adjust the delay times between macros/keys-pressed for slower or virtual machines, medium 
     fast PCs, and fast PC's delay times.  
 (N) *vx*000 to *vx*111 Volume enabled/disabled in Layouts 1,3,4 if enabled in Layout 2.  For example enter *vx*011 then
@@ -945,6 +945,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     the new firmware - this condition where both are 0x00 are handled by setting them to the default < and >. Otherwiae
     use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] config button, before opening the 
     PC App, or enter as *1s*< and *1e*> and save.
+(X) Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App
+    list of App Switches:
+    *ap*appname creates a folder /appname/ if it does not exist on the SDCard
+    *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys and enables App Switch. Pressing the keys M1-M24 or 
+    *S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder appname
+    folder /appname/
+    *ap* disables App Switch function
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
