@@ -452,26 +452,26 @@ const static char FxyChr[10][4] = // F01 to F24
 {"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 122; // StarCodes Count 16+16+16+16+16+16+16+10 StarNum = 0-121
+const static int StarCodesMax = 123; // StarCodes Count 16+16+16+16+16+16+16+11 StarNum = 0-122
 const static char StarCode[StarCodesMax][3] =    
-{ "ad", "ae", "am", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", "c2", 
-  "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo", "fs", 
-  "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", "m0", 
-  "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", "nn", 
-  "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", 
-  "rT", "sa", "sd", "se", "sf", "sF","sm", "ss", "st",  "sx", "ta", "tb", "tp", "tt", "tw", "ua", 
-  "ul", "up", "vx", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", 
-  "0d", "0n", "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
+{ "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", 
+  "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo",   
+  "fs", "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", 
+  "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", 
+  "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", 
+  "rt", "rT", "sa", "sd", "se", "sf", "sF","sm", "ss", "st",  "sx", "ta", "tb", "tp", "tt", "tw", 
+  "ua", "ul", "up", "vx", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R",
+  "09", "0d", "0n", "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
-{ 57,   59,   1,    1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   64,
-  3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   11,   
-  11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   67,
-  18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   74,   
-  75,   21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   24,   
-  24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   4,    31,   31,   31,   33,   
-  32,   43,   61,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   
-  53,   46,   47,   48,   54,   52,   82,   83,   84,   85    };
+{ 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   
+  64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   
+  11,   11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   
+  67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   
+  74,   75,   21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   
+  24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   4,    31,   31,   31,   
+  33,   32,   43,   61,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   
+  45,   53,   46,   47,   48,   54,   52,   82,   83,   84,   85    };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -568,12 +568,17 @@ bool DoUpKey = false;            // Set true by SendBytes to let Upkey know vali
 bool KeySkip = true;             // Skip first key pressed in LCD in dimmed state - used to wake LCD - toggle with *ks*
 bool LinkOk = false;             // Used in DoKeyMST() DoKey16() DoLinkStr() test if linkfile executed ok
 
-char MSTAName[40]  = "xnn";      // 26 if nDir added to MSTA filename usually a01-a99 m01-m24 s01-s24 t01-t24 from Option1 = 0-23 Option2 = 0-23                             
-char MSTName[40]   = "xnn";      // 26 if nDir added to MST filename usually m01-m24 s01-s24 t01-t24 from Layout = 1-4 
+char MSTAName[80]  = "xnn";      // Longer if nDir or AppDir added to MSTA filename usually a01-a99 m01-m24 s01-s24 t01-t24 from Option1 = 0-23 Option2 = 0-23                             
+char MSTName[80]   = "xnn";      // Longer if nDir or AppDir to MST filename usually m01-m24 s01-s24 t01-t24 from Layout = 1-4 
 char MSTLinkName[] = "XnnLink";  // Filenames M01Link, S24Link T09Link, K01-K24Link  Layout = 1-4 and 5 for K
-char NameStr1[60]  = { "" };     // Used in: DoNKey() ListMacro() RemoveMacro() DoLinkStr() DoKeyMST() DoKey16() - NameStr1
-char NameStr2[40]  = { "" };     // Used in: CopyMacro() RenameMacro() - NameStr1 + NameStr2
+char NameStr1[80]  = { "" };     // Used in: DoNKey() ListMacro() RemoveMacro() DoLinkStr() DoKeyMST() DoKey16() ListFiles() ListSDFiles() CopyFlashFiles2SDCard() - NameStr1
+char NameStr2[80]  = { "" };     // Used in: CopyMacro() RenameMacro() - NameStr1 + NameStr2
 char NameStr3[240] = { "" };     // Used in: DoNKeys must handle nDir + NKeys filename = 20 + 200
+
+int  AppState = 0;               // 0 = App switch off 1 = App switch on and AppFolders ok 2 = all ok for use
+char AppName[80]  = "";          // *ap*AppName
+char AppDir[80]   = "";          // AppDir usually = AppName
+int  AppL134 = 0;                // App Switch on whick Layout M S T = 1 3 4 
 
 bool PadKeys = false;            // 5 Small Config Buttons on RH side Red Blue Green
 bool KeyFontBold = false;        // Button Font Bold/Normal labels
@@ -1381,6 +1386,18 @@ void DoPowerKeys (char Cmd, bool Menu, int s)
                    ConfigButtons(1); }
 }
 
+/////////////////
+bool DoAppDir()
+/////////////////
+{ 
+  if (AppL134==0) { AppState = 0; return true; }
+  if (!(AppL134==1||AppL134==3||AppL134==4)) return false;
+  
+  if (SDFS.exists(AppDir)) AppState = 2; else if (SDFS.mkdir(AppDir)) AppState = 1; else AppState = 0;
+   
+  return (AppState != 0);
+}
+
 ///////////////////////////////
 void DoBsdCodes(byte Num)
 ///////////////////////////////-
@@ -1400,6 +1417,7 @@ void DoBsdCodes(byte Num)
   usb_hid.keyboardReport(HIDKbrd, 0, keycode); delay(dt25); 
   usb_hid.keyboardRelease(HIDKbrd);            delay(dt25); 
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in sequence 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1432,10 +1450,11 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
 // For all 4 forms of delay  - dd n, d nn, D nn DD n if nn = 00 or n = 0 dd, d, D, DD is executed as if n = 1
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 { char NameStr[12] = { "Xnn" };
+  char AppStr[80]  = { "" };
   byte c, e, *BPtr, nkey = 0;  
   uint32_t a, b, d;
   int i, k, m, n, j = 0;  
-  bool DoneM = false;
+  bool AxD, DoneM = false;
   int LinkDelay = 0, LinkRepeat = 0; 
   const int nr =     100;        // repeat 100x
   const int nS =    1000;        // d nn delay in seconds
@@ -1444,8 +1463,10 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
   const int nH = 3600000;        // DD n delay in hours   
   
   while (j<NameStrLen-1) 
-        {for (i=0; i<3; i++) { NameStr[i] = inputString[i+j]; }       // Save and restore nChar, NKeysX, Numkeys123 in DoKey16() and DoKeyMST()
-         LinkOk = false; nkey = LinkDelay = 0; a = NameStr[i-1]-48; e = NameStr[i-2]; c = NameStr[i-3]; b = e-48; d = b*10 + a; 
+        {if (AppState==2 && Layout==AppL134) strcpy(AppStr, AppDir);  
+         for (i=0; i<3; i++) { NameStr[i] = inputString[i+j]; }       // Save and restore nChar, NKeysX, Numkeys123 in DoKey16() and DoKeyMST()
+         
+         LinkOk = false; nkey = LinkDelay = 0; a = NameStr[i-1]-48; e = NameStr[i-2]; c = NameStr[i-3]; b = e-48; d = b*10 + a;   // 00-99 max
          for (n=0; n<10; n++) if (c==nKeysLnkChar[n]) nkey = 1;       // Do Xnn as nkey not macro exclude rR dD lL
                                
          if (c=='d'||c=='D') { LinkDelay = nS*(c=='d'&&e!='d')*d + nM*(c=='D'&&e!='D')*d + nH*(c=='D'&&e=='D')*a + nr*(c=='d'&&e=='d')*a;
@@ -1467,13 +1488,15 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
          j += 3; 
          if (LinkDelay==0)
             {NameStr[j+1] = 0x00; 
-             BPtr = MacroBuff; 
-             MacroBuffSize = DoFileBytes(0, NameStr, BPtr, ByteSize, LayerAxD); 
+             BPtr = MacroBuff;              
+             if (AppState==2 && Layout==AppL134) { AxD = LayerAxD; strcat(AppStr, NameStr); LayerAxD = 1; } else strcpy (AppStr, NameStr);
+             MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD); 
              if (MacroBuffSize==0) { status("Macro not found"); return; }
              LinkOk = true;
 
              DoneM = ExecuteCode(0);
-                                       
+             
+             if (AppState==2 && Layout==AppL134) LayerAxD = AxD;                          
              if (LinkRepeat>0) j -= 3;
            } LinkRepeat-- ;                     // if (LinkDelay==0)
         }                                       // while (j<NameStrLen)
@@ -1513,9 +1536,9 @@ void DoKey16(byte Num)        // Currently the same as DoKeyMST() but will chang
   Numkeys123 = n123;  
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DoKeyMST(byte Num, bool Timers)        // Currently the same as DoKey16() but will change in future
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+void DoKeyMST(byte Num, bool Timers)        
+////////////////////////////////////////////////////////////////////////////////////////////
 // Keys M1-M24 read content of files M01Link-M24Link on SDCard/FlashMem which contains: 
 // 3-letter filesname on flash memory such as a01-a99 (read in groups of 3 bytes = filename)
 // Send *sd*k, make A-D orange A, goto Layer 1 (M), send <2a50a51a52>, it shows M02Link in status
@@ -1530,13 +1553,13 @@ void DoKeyMST(byte Num, bool Timers)        // Currently the same as DoKey16() b
   File f;
   int n = 0;
   LinkOk = false;
-  nKeysShow = 0;  // Else nKeys will not execute
+  nKeysShow = 0;           // Else nKeys will not execute
   char xChar = nChar;      // Save nChar
   int n123 = Numkeys123;   // Save Numkeys123 
   
   LayerAxDSave = LayerAxD;
   if (!Timers) DoMSTLinkName(Num, Layout);      // Layout -> M S T filename such as M01Link
-  strcpy(NameStr1, MSTLinkName);   // MxxLink + 0x00 length = 8 
+  if (AppState==2 && Layout==AppL134) { strcpy(NameStr1, AppDir); strcat(NameStr1, MSTLinkName); } else strcpy(NameStr1, MSTLinkName);  // MxxLink + 0x00 length = 8               
   
   do { if (LayerAxD) f = SDFS.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
@@ -1717,20 +1740,24 @@ bool MacroKeys(byte c, byte Option)
 { uint8_t a, n, b; 
   int i;
   byte *BPtr; 
-  bool MacroKeysOK = false;    
-  File f;  
-
+  bool AxD, MacroKeysOK = false;
+  char AppStr[80] = "";
+  
+  AxD = LayerAxD;
+  // AppStr[0] = 0x00;
   // if (Option==1) { DoMSTAName(c, Layout); Option=3; }   // No use with 1 yet
 
   if (Option==2) 
      {DoMSTName(c, Layout);
-      BPtr = MacroBuff; 
-      MacroBuffSize = DoFileBytes(0, MSTName, BPtr, ByteSize, LayerAxD);    
-      if (MacroBuffSize==0) return MacroKeysOK; }   
+      if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTName); } else strcpy(AppStr, MSTName); // Key [T7] executes file /AppDir/ + t07 = /AppDir/m11 always SDCard      
+      BPtr = MacroBuff;       
+      MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);    
+      if (MacroBuffSize==0) return MacroKeysOK;  }   
 
   if (Option==3)          // DonKeys go here with MSTAName includes /nDir
      {BPtr = MacroBuff;   // SendBytes if (macroA) also comes here
-      MacroBuffSize = DoFileBytes(0, MSTAName, BPtr, ByteSize, LayerAxD);    
+      if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTAName); } else strcpy(AppStr, MSTAName); // Key [M11] executes file /AppDir/ + m11 = /AppDir/m11 always SDCard      
+      MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);   
       if (MacroBuffSize==0) return MacroKeysOK; }
   
   if (Option==0)   // Some callers already copied into MacroBuff
@@ -1747,6 +1774,8 @@ bool MacroKeys(byte c, byte Option)
   if ((MacroBuff[0]==0x2A)&&(MacroBuff[1]==0x2A)) { for (n = 0; n < MacroBuffSize; n++) MacroBuff[n] = MacroBuff[n+1]; MacroBuffSize--; } 
 
   MacroKeysOK = ExecuteCode(0);
+  
+  if (AppState==2 && Layout==AppL134) LayerAxD = AxD;
   
   return MacroKeysOK;
 }
@@ -3387,6 +3416,10 @@ void GetSysInfo(int Action)
   SerPr2;
   Serial.print("Serial Comms Start and End Markers: "); 
   Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);
+
+  SerPr2;
+  Serial.print("App Switcher AppName Folder State Layer:" ); Serial.print(AppName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);      
+  SerPr2;
   
   SerPr2;
   ReadTimers(1);
@@ -3790,7 +3823,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 19: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x32 *m2*nn = Cursor move amount 
       { if (knum>5) b = c99;    // b = 0, 1-99
         if (b<100) {MouseDelta = b; status("Cursor Move changed"); SaveMouse(); StarOk = true; break; } else break; }
-        case 71: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x6d *mm*udlr,UDLR,nn = Cursor move Up Down Left Righ UDLR = 10 x udlr nn = 01-99 pixels move 
+        case 71: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x6d *mc*udlr,UDLR,nn = Cursor move Up Down Left Righ UDLR = 10 x udlr nn = 01-99 pixels move 
        { if (knum!=7 || d99>99) break; 
                          else { m=k4; if (m<0x5B) d=10; else d=1; 
                                 if (m=='U'||m=='u') MouseU(d99, d, 5); if (m=='D'||m=='d') MouseD(d99, d, 5);  // Move Up/Down d99*10 or d99
@@ -3946,9 +3979,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { if (k2==0x78) { iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // or use WriteConfig1(0);
                          if (iList) status("Instruction List ON"); else status("Instruction List OFF"); StarOk = true; break; }       
          if (k2==0x73) i = 1; if (k2==0x74) i = 2; if (k2==0x6d) i = 0;                        // *is*, *it*, *im* 
-         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; 
+         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-52 - max iListMax=12 entries
              status("Instruction List Reset"); SaveInstructionList(); StarOk = true; break; }  // Reset if not numbers added                  
-         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48;      // Instruction list 0-9, or 49-52 - max iListMax=12 entries
+         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48-39*(KeyBrdByte[4+n]=='a'||KeyBrdByte[4+n]=='b'||KeyBrdByte[4+n]=='c'||KeyBrdByte[4+n]=='d');
          status("Instruction List filled"); SaveInstructionList(); StarOk = true; break; }     // a=0x62=97->after -48 a b c d = 49 50 51 52
          case 45: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x39 *09* Number-Pad or 96 n-Keys n01-n96
        { nKeys = !nKeys; Config1[7] = nKeys; WriteConfig1(0); 
@@ -4119,7 +4152,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { StarOk = GetStartEnd (1, 0, c999); break; } 
          case 85: ////////////////////// KeyBrdByte[1]=='2'&&KeyBrdByte[2]=='e' *2e*ssseee Serial Start Markers as sss = eee 0-255 or as ssee = 00-FF hex
        { StarOk = GetStartEnd (1, 1, c999); break; }                                                                                          
-      } return StarOk;
+         case 86: ////////////////////// KeyBrdByte[1]=='a'&&KeyBrdByte[2]=='p' *ap*appname as max 12 chars or *ap*n n=1,3,4 Layout M S T keys or *ap* = App Switch off
+       { if (knum==4) { AppState = 0; AppDir[0] = AppName[0] = 0x00; status("App Switch OFF"); StarOk = true; break; } 
+         if (knum==5) { if (k4=='1'||k4=='3'||k4=='4') { AppL134 = k4-48; AppState = 2; strcpy(NameStr1, "App Switch Layer  "); NameStr1[17] = k4; status(NameStr1); StarOk = true; } break; }
+         if (KeyBrdByte[knum-2]=='=' && knum>5) { for (n=0; n<knum-6; n++) AppDir[n+1] = AppName[n] = KeyBrdByte[n+4]; AppDir[0] = '/'; AppDir[n+1] = '/'; AppDir[n+2] = AppName[n] = 0x00; 
+         AppL134 = KeyBrdByte[knum-1]-48; StarOk = DoAppDir(); if (StarOk) if (AppL134!=0) status(AppDir); else status("No App Switch"); } break; }                                                                                               
+      } return StarOk;     
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5157,11 +5195,17 @@ void showKeyData()
    SerPr2;  
 
    SerPr2;
+   Serial.print("Macro InstructionList :" ); Serial.print(iList); 
+   SerPr2;
    for ( m = 0; m<3; m++ ) 
-       { Serial.print("MacroInstructionList " ); Serial.print(m); Serial.print(": ");
+       { Serial.print("Macro InstructionList " ); Serial.print(m); Serial.print(": ");
          for ( n = 0; n < iListMax; n++) 
              { b =  MacroInstructionList[m][n]; Serial.print(b); SerPr1; }
          SerPr2; }
+
+   SerPr2;
+   Serial.print("App Switcher AppName Folder State Layer:" ); Serial.print(AppName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);      
+   SerPr2;        
         
    SerPr2;
    Serial.print(" Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
@@ -5223,4 +5267,4 @@ void showKeyData()
  }
 
  
-/************* EOF line 5199 *****************/
+/************* EOF line 5261 *****************/
