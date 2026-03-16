@@ -3,7 +3,7 @@
 
 <p align="left">
 <img src="images/Win10-95.png" height="120" /> 
-<img src="images/Win11-91.png" height="120" /> 
+<img src="images/Win10-87.png" height="120" /> 
 <img src="images/Win11-77.png" height="120" />  
 <img src="images/Win10-98.png" height="120" />   
 <img src="images/Win10-96.png" height="120" />    
