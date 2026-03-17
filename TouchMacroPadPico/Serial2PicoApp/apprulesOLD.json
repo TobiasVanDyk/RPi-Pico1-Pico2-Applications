@@ -1,0 +1,15 @@
+[
+  { "App":"chrome", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"msedge", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"devenv", "Arg":"debug", "Layout":"4", "Enabled":true },
+  { "App":"notepad", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"winword", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"foobar2000", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"xnviewmp", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"Sumatrapdf", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"excel", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"outlook", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"firefox", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"mspaint", "Arg":"", "Layout":"4", "Enabled":true },
+  { "App":"vlc", "Arg":"", "Layout":"3", "Enabled":true }
+]
