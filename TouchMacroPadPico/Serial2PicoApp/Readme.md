@@ -26,42 +26,43 @@ App Switch function - the PC App sends the name of the opened program that has f
 <br> NB: Each Layout tab 1, 3, 4 has a checkbox App that must be checked to enable app switching for that tab. The Comms tab will show the app switching commands being sent. The PC App already has provisioned App page title switching as well, but this has not fully tested as yet - enable it with the checkbox in the Config tab and add the window title names to the apprules.json file.
 
 ```
-This is an example of how to use all four types of macros with the App Switching function. I used the text editor TextEditPlus because it has the nice
-Windows process name "text.exe" but you can also use Notepad - just substitute "text" with "notepad". You can do all the file copying and renaming with
-the PC App Serial2Pico (make sure your source file selected does not have a space at the end), but it is probably the best to take the SD Card out and
-do the file copies from a PC. 	 
+This is an example of how to use all four types of macros with the App Switching function. I used the text editor TextEditPlus because it
+has the nice Windows process name "text.exe" but you can also use Notepad - just substitute "text" with "notepad". You can do all the file
+copying and renaming with the PC App Serial2Pico (make sure your source file selected does not have a space at the end), but it is probably
+the best to take the SD Card out and do the file copies from a PC. 	 
 
 Download the zip file AppSwitchExample.zip and extract it to the folder text.
 
-Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in your Config tab, i.e. the same folder as the
-Symbolbanks json files.
+Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in your Config tab, i.e. the same folder
+as the Symbolbanks json files.
 
-If you already have a folder /notepad or /text copy all the files in this folder - except label3, LabelT, and apprules.json - to your SDCardFolder
-/text or /notepad.
+If you already have a folder /notepad or /text copy all the files in this folder - except label3, LabelT, and apprules.json - to your
+SDCardFolder /text or /notepad, else make a folder text or notepad before copying the files.
 
-Copy LabelT and label3 to the root folder of your SDCard, and then because of configuration differences, for safety copy all the files in your
-/text or /notepad folder also to the root folder of the SDCard.
+Copy LabelT and label3 to the root folder of your SDCard, and then because of possible configuration differences, for safety copy all the
+files in your /text or /notepad folder also to the root folder of the SDCard.
 
-Put the SDCard back i the Pico, start Serial2Pico and check that TextEditPlus or Notepad is enabled in the App Switching list in the Config tab.
-If not enable it and press Save.
+Put the SDCard back i the Pico, start Serial2Pico and check that TextEditPlus or Notepad is enabled in the App Switching list in the
+Config tab. If not enable it and press Save.
 
-Switch your macropad to Layer 4 - T keys - using the Tab L4 on the top of the PC App. The Pico macropad (but not the PC App) should now display
-the labels TO1, T02, T03 etc instead of T1, T2, T3 - that means your default labels is now using the label3 custom labels. If not use the
-[Cfg]->[Opt]->[T]Custom Labels->Pad[o] so it displays Custom Labels ON
+Switch your macropad to Layer 4 - T keys - using the Tab L4 on the top of the PC App. The Pico macropad (but not the PC App) should
+now display the labels TO1, T02, T03 etc instead of T1, T2, T3 - that means your default labels is now using the label3 custom labels. If
+not use the [Cfg]->[Opt]->[T]Custom Labels->Pad[o] so it displays Custom Labels ON
 
-Switch the PC App to the T keys Layout 4 - check that the Pico displays the same Layout 4 - then open the Text editor you are using and check
-in the Comms tab for the trace information such as <text=4> which means it has opened.
+Switch the PC App to the T keys Layout 4 - check that the Pico displays the same Layout 4 - then open the Text editor you are using and
+check in the Comms tab for the trace information such as <text=4> which means it has opened.
 
 You can now test the four types of macro files:
-(1) Press key [T01] on the physical Pico macropad (not the PC App) - this should run the file [T01] which contains the text "n04" and then type
-the text "n04" in your opened text editor
-(2) Press key [T02] - this should now run the file T02Link which also contains the text "n04", because its filename end with Link, it will try
-to run the nKey file named n04, which contains the text K24Link, which contains the string a30a31d01a32d03r20a33d03U02·- i.e. string and not
+(1) Press key [T01] on the physical Pico macropad (not the PC App) - this should run the file [T01] which contains the text "n04" and
+then type the text "n04" in your opened text editor
+(2) Press key [T02] - this should now run the file T02Link which also contains the text "n04", because its filename end with Link,
+it will try to run the nKey file named n04, which contains the text K24Link, and being recognised as an nKey, will then run the the file
+K24Link which contains the string a30a31d01a32d03r20a33d03U02·- i.e. string and not text because it has the 0x00 char at the end of the
+string. This then being a link file, the same as for key [T02], runs the macro files a30, a31, a42, a33 and U02.
+(3) Press key [T03] - this should now run the file T03Link which contains the string a30a31d01a32d03r20a33d03U02·- i.e. string and not
 text because it has the 0x00 char at the end of the string. This then runs the files a30, a31, a42, a33 and U02.
-(3) Press key [T03] - this should now run the file T03Link which contains the string a30a31d01a32d03r20a33d03U02·- i.e. string and not text
-because it has the 0x00 char at the end of the string. This then runs the files a30, a31, a42, a33 and U02.
-(4) Press Press key [T04] - this should now run the macro file T04 which contains the three hex values for Ctr + A or Select All (E0 04 00)
-and should select any text in your opened editor.
+(4) Press Press key [T04] - this should now run the macro file T04 which contains the three hex values for Ctr + A or Select All
+(E0 04 00) and should select any text in your opened editor.
 
 That means your App Switch application can now open macros that type text, open an nKeys file n04, run a string of macros a30 to a31, and
 run the macro Ctr+A. Note the very powerful double indirection given by the nKey n04 in the key file for [T02]
