@@ -26,18 +26,19 @@ App Switch function - the PC App sends the name of the opened program that has f
 <br> NB: Each Layout tab 1, 3, 4 has a checkbox App that must be checked to enable app switching for that tab. The Comms tab will show the app switching commands being sent. The PC App already has provisioned App page title switching as well, but this has not fully tested as yet - enable it with the checkbox in the Config tab and add the window title names to the apprules.json file.
 
 ```
-This is an example of how to use all four types of macros with the App Switching function. I used the text editor TextEditPlus
-because it has the nice Windows process name "text.exe" but you can also use Notepad - just substitute "text" with "notepad".
-You can do all the file copying and renaming with the PC App Serial2Pico (make sure your source file selected does not have
-a space at the end), but it is probably the best to take the SD Card out and do the file copies from a PC. 	 
+This is an example of how to use all four types of macros with the App Switching function. I used the text editor
+TextEditPlus because it has the nice Windows process name "text.exe" but you can also use Notepad - just substitute
+"text" with "notepad". You can do all the file copying and renaming within the PC App Serial2Pico (make sure your source
+file selection does not have a space at the end), but it is probably the best to take the SD Card out and do the file
+copies from a PC. 	 
 
 Download the zip file AppSwitchExample.zip and extract it to the folder text. It contains the files:
 U02 a30 a31 a32 a33 apprules.json K24Link label3 LabelT n04 T01 T02Link T03Link T04 T05
 
-Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in your Config tab, i.e.
-the same folder as the Symbolbanks json files.
+Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in your Config tab,
+i.e. the same folder as the Symbolbanks json files.
 
-If you already have a folder /notepad or /text copy all the files in this folder - except label3, LabelT, and apprules.json -
+If you already have a folder /notepad or /text copy all the files in this folder - except label3, LabelT, and apprules.json
 to your SDCardFolder /text or /notepad, else make a folder text or notepad before copying the files.
 
 Copy LabelT and label3 to the root folder of your SDCard, and then because of possible configuration differences, for
@@ -62,7 +63,7 @@ being recognised as an nKey, will then run the file K24Link which contains the s
 i.e. string and not text because it has the 0x00 char at the end of the string. This then being a link file, the same
 as for key [T03] as examined next, runs the macro files a30, a31, a42, a33 and U02. Note the nKeys files do not have
 to start with the character "n", it could be any number of characters from a-z, A-Z, 0-9, as there is a configurable
-list which identify files as being "nKeys", the default being all of them except d, D, r, R, l, and L.
+list which identify files as being "nKeys", the default being all of them.
 (3) Press key [T03] - this should now run the file T03Link which contains the string a30a31d01a32d03r20a33d03U02·-
 i.e. string and not text because it has the 0x00 char at the end of the string. This then runs the files a30, a31,
 a42, a33 and U02.
