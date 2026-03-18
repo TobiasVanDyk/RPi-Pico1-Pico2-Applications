@@ -31,7 +31,8 @@ because it has the nice Windows process name "text.exe" but you can also use Not
 You can do all the file copying and renaming with the PC App Serial2Pico (make sure your source file selected does not have
 a space at the end), but it is probably the best to take the SD Card out and do the file copies from a PC. 	 
 
-Download the zip file AppSwitchExample.zip and extract it to the folder text.
+Download the zip file AppSwitchExample.zip and extract it to the folder text. It contains the files:
+U02 a30 a31 a32 a33 apprules.json K24Link label3 LabelT n04 T01 T02Link T03Link T04 T05
 
 Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in your Config tab, i.e.
 the same folder as the Symbolbanks json files.
