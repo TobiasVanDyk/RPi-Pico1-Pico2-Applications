@@ -60,9 +60,9 @@ text "n04" and then type the text "n04" in your opened text editor.
 ends with Link, it will try to run the nKey file named n04, which contains the text K24Link, and with the character "n"
 being recognised as an nKey, will then run the the file K24Link which contains the string a30a31d01a32d03r20a33d03U02·-
 i.e. string and not text because it has the 0x00 char at the end of the string. This then being a link file, the same
-as for key [T02], runs the macro files a30, a31, a42, a33 and U02. Note the nKeys files do not have to start with the
-character "n", it could be any character from a-z,A-Z,0-9, as there is a configurable list which identify files as
-being "nKeys".
+as for key [T03] as examined next, runs the macro files a30, a31, a42, a33 and U02. Note the nKeys files do not have
+to start with the character "n", it could be any character from a-z,A-Z,0-9, as there is a configurable list which
+identify files as being "nKeys".
 (3) Press key [T03] - this should now run the file T03Link which contains the string a30a31d01a32d03r20a33d03U02·-
 i.e. string and not text because it has the 0x00 char at the end of the string. This then runs the files a30, a31,
 a42, a33 and U02.
