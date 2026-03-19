@@ -1686,7 +1686,7 @@ bool ExecuteCode(byte Option)
 
   if (MacroBuff[0]>0x7F) { for (n=0;  n<6; n++) {keycode[n] = MacroBuff[n]; if (keycode[n]==0) break; }         // allow one 0x00 in keycode
                                                               usb_hid.keyboardReport(HIDKbrd, 0, keycode);      delay(dt25); 
-                                                              usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25); 
+                                                              usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25);                                                               
                                                               return true;}                                    // Repeat                                                      
 
   if (Option==1) return false;  // DoNKeys()
@@ -1714,7 +1714,7 @@ bool MacroKeys(byte c, byte Option)
      {DoMSTName(c, Layout);
       if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTName); } else strcpy(AppStr, MSTName); // Key [T7] executes file /AppDir/ + t07 = /AppDir/m11 always SDCard      
       BPtr = MacroBuff;       
-      MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);    
+      MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);        
       if (MacroBuffSize==0) return MacroKeysOK;  }   
 
   if (Option==3)          // DonKeys go here with MSTAName includes /nDir
@@ -3995,16 +3995,16 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { if (knum>5) { status("nKeys LinkString characters changed");
                        for (n=0; n<knum-4; n++) nKeysLnkChar[n] = KeyBrdByte[4+n]; WriteConfig1(1); StarOk = true; break; } } 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
-       { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 
-         // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3
-         strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); // label1,2,3 is default text in files LabelM,S,T 
-         if (k2==0x6D) { Config1[72] = MLabel = !MLabel || (knum>5); NameStr2[5] = 'M'; NameStr1[5] = '1'; if (MLabel) strcpy(NameStr3, " ON"); m = 1; }
-         if (k2==0x73) { Config1[73] = SLabel = !SLabel || (knum>5); NameStr2[5] = 'S'; NameStr1[5] = '2'; if (SLabel) strcpy(NameStr3, " ON"); m = 3; }
-         if (k2==0x74) { Config1[74] = TLabel = !TLabel || (knum>5); NameStr2[5] = 'T'; NameStr1[5] = '3'; if (TLabel) strcpy(NameStr3, " ON"); m = 4; }
-         if (knum>4)   { if (knum>5) for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n];   // default is NameStr1 = label1,2,3
+       { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
+         // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3 To save thes must do [Cfg]->[Sav]
+         strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); // label1,2,3 is default text in files LabelM,S,T          
+         if (k2==0x6D) { if (knum==4) Config1[72] = MLabel = !MLabel; if (knum>5); { NameStr2[5] = 'M'; NameStr1[5] = '1'; } if (MLabel) strcpy(NameStr3, " ON"); m = 1; }
+         if (k2==0x73) { if (knum==4) Config1[73] = SLabel = !SLabel; if (knum>5); { NameStr2[5] = 'S'; NameStr1[5] = '2'; } if (SLabel) strcpy(NameStr3, " ON"); m = 3; }
+         if (k2==0x74) { if (knum==4) Config1[74] = TLabel = !TLabel; if (knum>5); { NameStr2[5] = 'T'; NameStr1[5] = '3'; } if (TLabel) strcpy(NameStr3, " ON"); m = 4; }
+         if (knum>4)   { if (knum>5) { for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n]; NameStr1[n] = 0x00; } // default is NameStr1 = label1,2,3
                          if (LayerAxD) f1 = SD.open(NameStr2, "w"); else f1 = LittleFS.open(NameStr2, "w"); 
                          f1.print(NameStr1); f1.print('\0'); f1.close();  }         
-         DoMSTLabel(0, m); WriteConfig1(0); strcat(NameStr2, NameStr3); status(NameStr2); StarOk = true; break; }
+         DoMSTLabel(0, m); WriteConfig1Change = true; strcat(NameStr2, NameStr3); status(NameStr2); StarOk = true; break; }
         case 56: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x66 *cf*number or *cf*src=dst - copy file source=destination
       { byte cfoption = 0;          // *cf*0 or *cf*00 -> Copy all six default label files from SDCard to Flash, *cf*1 or *cf*01 is Flash to SDCard
         if (knum==4) { status("Use *cf*number=0-9 or *cf*copyfrom=copyto"); StarOk = true; break; }  
