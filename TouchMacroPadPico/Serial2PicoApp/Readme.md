@@ -26,53 +26,78 @@ App Switch function - the PC App sends the name of the opened program that has f
 <br> NB: Each Layout tab 1, 3, 4 has a checkbox App that must be checked to enable app switching for that tab. The Comms tab will show the app switching commands being sent. The PC App already has provisioned App page title switching as well, but this has not fully tested as yet - enable it with the checkbox in the Config tab and add the window title names to the apprules.json file.
 
 ```
-This is an example of how to use all four types of macros with the App Switching function. I used the text editor
-TextEditPlus because it has the nice Windows process name "text.exe" but you can also use Notepad - just substitute
-"text" with "notepad". You can do all the file copying and renaming within the PC App Serial2Pico (make sure your source
-file selection does not have a space at the end), but it is probably the best to take the SD Card out and do the file
-copies from a PC. 	 
+Five Macro Types with Label changes
 
-Download the zip file AppSwitchExample.zip and extract it to the folder text. It contains the files:
-U02 a30 a31 a32 a33 apprules.json K24Link label3 LabelT n04 T01 T02Link T03Link T04 T05
+This is an example of how to use all five types of macros with the App Switching function. I used the text
+editor TextEditPlus because it has the nice Windows process name "text.exe" but you can also use Notepad - 
+just substitute "text" with "notepad". You can do all the file copying and renaming with the PC App 
+Serial2Pico (make sure your source file selected does not have a space at the end), but it is probably the 
+best to take the SD Card out and do the file copies from a PC.
+ 	 
 
-Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in your Config tab,
-i.e. the same folder as the Symbolbanks json files.
+Download the zip file AppSwitchExample2.zip and extract it to the folder text. It contains the files: 
+n04 n05 OpenAI.txt T01 T02Link T03Link T04 T05Link T06 U02 a30 a31 a32 a33 apprules.json K24Link label3 
+labelnotepad LabelT labeltext labeltext.json
 
-If you already have a folder /notepad or /text copy all the files in this folder - except label3, LabelT, and apprules.json
-to your SDCardFolder /text or /notepad, else make a folder text or notepad before copying the files.
+Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in 
+your Config tab, i.e. the same folder as the Symbolbanks json files. 
 
-Copy LabelT and label3 to the root folder of your SDCard, and then because of possible configuration differences, for
-safety copy all the files in your /text or /notepad folder also to the root folder of the SDCard.
+If you already have a folder /notepad or /text copy all the files in this folder - except labelnotepad, 
+label3, labeltext.json, LabelT, and apprules.json - to your SDCardFolder /text or /notepad, else make a 
+folder text or notepad before copying the files.
 
-Put the SDCard back in the Pico, start Serial2Pico and check that TextEditPlus or Notepad is enabled in the App Switching
-list in the Config tab. If not enable it and press Save.
+Copy LabelT and label3 to the root folder of your SDCard.
 
-Switch your macropad to Layer 4 - T keys - using the Tab L4 on the top of the PC App. The Pico macropad (but not the PC App)
-should now display the labels TO1, T02, T03 etc instead of T1, T2, T3 - that means your default labels is now using the
-label3 custom labels. If not use the [Cfg]->[Opt]->[T]Custom Labels->Pad[o] so it displays Custom Labels ON
+Put the SDCard back in the Pico, start Serial2Pico and check that TextEditPlus or Notepad is enabled in the 
+App Switching list in the Config tab. If not enable it and press Save.
 
-Switch the PC App to the T keys Layout 4 - check that the Pico displays the same Layout 4 - then open the Text editor you
-are using and check in the Comms tab for the trace information such as <text=4> which means it has opened.
+Switch your macropad to Layer 4 - T keys - using the Tab L4 on the top of the PC App. The Pico macropad 
+(but not the PC App) should now display the labels TO1, T02, T03 etc instead of T1, T2, T3 - that means 
+your default labels is now using the label3 custom labels. If not use the [Cfg]->[Opt]->
+[T]Custom Labels->Pad[o] so it displays Custom Labels ON.
 
-You can now test the four types of macro files:
-(1) Press key [T01] on the physical Pico macropad (not the PC App) - this should run the file [T01] which contains the
-text "n04" and then type the text "n04" in your opened text editor.
-(2) Press key [T02] - this should now run the file T02Link which also contains the text "n04", but because its filename
-ends with Link, it will try to run the nKey file named n04, which contains the text K24Link, and with the character "n"
-being recognised as an nKey, will then run the file K24Link which contains the string a30a31d01a32d03r20a33d03U02 -
-i.e. string and not text because it has the 0x00 char at the end of the string. This then being a link file, the same
-as for key [T03] as examined next, runs the macro files a30, a31, a42, a33 and U02. Note the nKeys files do not have
-to start with the character "n", it could be any number of characters from a-z, A-Z, 0-9, as there is a configurable
-list which identify files as being "nKeys", the default being all of them.
-(3) Press key [T03] - this should now run the file T03Link which contains the string a30a31d01a32d03r20a33d03U02·-
-i.e. string and not text because it has the 0x00 char at the end of the string. This then runs the files a30, a31,
-a42, a33 and U02.
-(4) Press Press key [T04] - this should now run the macro file T04 which contains the three hex values for Ctr + A
-or Select All (E0 04 00) and should select any text in your opened editor.
+Switch the PC App to the T keys Layout 4 - check that the Pico displays the same Layout 4 - then open 
+the Text editor you are using and check in the Comms tab for the trace information such as <text=4> or 
+<notepad=4> which means it has registered as an enabled app for app switching (labels and macros). 
 
-That means your App Switch application can now open macros that type text, open an nKeys file n04, run a string of
-macros a30 to a31, and run the macro Ctr+A. Note the very powerful double indirection given by using the nKey n04
-in the key file for [T02].
+Layout 4 should now have six new labels "text", "2x>>", "Link", "CtrlA", and "OpnAI". Move the focus 
+to something else - for example open Windows Explorer, and note that the labels have changed back to [T01] 
+etc. If you have installed the MS Word files in the folder winword, then you can open word and check that 
+the labels change between the custom labels for Word and those for your Text Editor.
+
+You can now test the five types of macro files:
+
+(1) Press key [text] = key T1 on the physical Pico macropad (not the PC App) - this should run the file
+[T01] which contains the text "n04" and then type the text "n04" in your opened text editor
+
+(2) Press key [2x>>] = key T2 - this should now run the file T02Link which also contains the text "n04",
+but because its filename ends with Link, it will try to run the nKey file named n04, which contains the 
+text K24Link, and with the character "n" being recognised as an nKey, will then run the file K24Link 
+which contains the string a30a31d01a32d03r20a33d03U02 - i.e. string and not text because it has the 
+0x00 char at the end of the string. This then being a link file, the same as for key [T03] as examined 
+next, runs the macro files a30, a31, a42, a33 and U02. Note the nKeys files do not have to start with 
+the character "n", it could be any number of characters from a-z, A-Z, 0-9, as there is a configurable 
+list which identify files as being "nKeys", the default being all of them. 
+
+(3) Press key [Link] = key T03 - this should now run the file T03Link which contains the string 
+a30a31d01a32d03r20a33d03U02 - i.e. string and not text because it has the 0x00 char at the end of the 
+string. This then again runs the files a30, a31, a42, a33 and U02.
+
+(4) Press key [CtrlA] = key T4 - this should now run the macro file T04 which contains the three 
+hexadecimal values for Control + A or Select All (E0 04 00). and should select any text in your opened 
+editor.
+
+(5) Press key [OpnAI] = key T5 - this should now run the macro file T05 which has the text "n05" and 
+file n05 has the text "OpenAI.txt". It will then type text information available on the OpenAI website
+to your still opened text editor, which will take a long time This is an example of a large text file, 
+which can be of any size up to the limit of the filesystem on the SDCard (Fat32). 
+
+(6) Press key [T06] - this should now run the macro file T06 which has the text for three famous 
+sentences and it will then type that as text to your text editor.
+
+That means your App Switch application can now open macros that type text, open an nKeys file n04, 
+run a string of macros a30 to a31, and run the macro Ctrl+A, and type very large text files. Note 
+the very powerful double indirection given by using the nKey n04 in the key file for [T2].
 ```
 
 *When using the PC App the < > bracket set and the \*Commands are added automatically after Enter is pressed, by the Macrotimer and Powertimer pages - this will require the [Load values 3x] key to be pressed two or three times to complete a setup.* The set of Macro Timers have been mostly completed. What is left is to assign a function to the [Rep]eat key, decide on how to handle repeating-clock timers (i.e. should they ignore the date and only use the time etc), and to decide how to differentiate meaningfully between the [RcT], [R-C], [OcT], and [O-C] timers. (Note that the Time and Clock handlers for Pico 1 is using its HW RTC where Sunday = 0, and the Pico 2 is using TimeLib.h where Sunday = 1.) Use < t\*mnnn> or < t\*mnnn> to program the timer-macro link where t = timer 1-8 and m = 0 - 5 i.e. 012345 = mstakn, For example m = macro M1-M24, same for s and t, a = macrofiles a01-a99, k = Linkfiles Knnlink, n = nKeys 001-999 or 01-99 - when executing the timer will use the current nChar = a-zA-Z-0-9 if a the star after the timer number is a space, and if it is an alphanumeric that will be used as the nKeys character. The 3rd \* is for a Link file, replace it with a space if a Link file is not used, or a different nChar. The Macrotimer runs files not macro keys i.e. to run macro S01 there must be a file s01 either on the SDCard or Flash. After sending t\*values press [Cfg]->[mCT] and then press the timer button that corresponds to the number t = 1-8. Because the same code is used in the macro-editor enter nn or nnn as one less than the macro key value i.e. enter nn-00 for key M01. To run one-shot timer [O-t] with K11Link which is on the SD Card and all the files linked in K11Link are also on the SDCard, send 4\*410 and then press [O-t]. Sending 2 100 will run the repeat timer 2 [R-t] on macro S01. 2 000 will run the one-shot timer 2 [O-t] on macro M01 provided there is a file named m01 on the SD Card or Flash. 2 100 will do the same with macro file s01. To set the macro Clock time timers three steps are needed: (1) First link a macro with the one or more of the clock timers 5 - 8. For example 5 100 will link macro file S01 to Timer 5 [R-C]. (2) Then send 26030771410 which will set alarm timers 5 and 6 = [R-C] and [O-C] to 14h10 and (3) press [R-C] on the LCD (or app if the "use other keys" had been selected). At 14h10 macro file S01 will trigger once only, because the full date will never again occur. For a 24 hour cycle repeat use the short form hhmm instead of the full date 7 March 2026: Press [Looad values 3x] until hhmm show, replace it with the trigger hours and minutes hhmm such as 1410, press enter, and finally press the correspomding timer key on the Macrotimer page. Remember the < > and also the *Commands are are not required, they are added automatically. 
