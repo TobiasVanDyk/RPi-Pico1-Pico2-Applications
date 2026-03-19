@@ -74,13 +74,14 @@ but because its filename ends with Link, it will try to run the nKey file named 
 text K24Link, and with the character "n" being recognised as an nKey, will then run the file K24Link 
 which contains the string a30a31d01a32d03r20a33d03U02 - i.e. string and not text because it has the 
 0x00 char at the end of the string. This then being a link file, the same as for key [T03] as examined 
-next, runs the macro files a30, a31, a42, a33 and U02. Note the nKeys files do not have to start with 
+next, runs the macro files a30, a31, a32, a33 and U02. Note the nKeys files do not have to start with 
 the character "n", it could be any number of characters from a-z, A-Z, 0-9, as there is a configurable 
 list which identify files as being "nKeys", the default being all of them. 
 
 (3) Press key [Link] = key T03 - this should now run the file T03Link which contains the string 
 a30a31d01a32d03r20a33d03U02 - i.e. string and not text because it has the 0x00 char at the end of the 
-string. This then again runs the files a30, a31, a42, a33 and U02.
+string. This then again runs the files a30, a31, a32, a33 and U02 where the d and r characters are
+used for delay and repeat.
 
 (4) Press key [CtrlA] = key T4 - this should now run the macro file T04 which contains the three 
 hexadecimal values for Control + A or Select All (E0 04 00). and should select any text in your opened 
