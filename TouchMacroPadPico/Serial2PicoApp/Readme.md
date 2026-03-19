@@ -32,8 +32,7 @@ This is an example of how to use all five types of macros with the App Switching
 editor TextEditPlus because it has the nice Windows process name "text.exe" but you can also use Notepad - 
 just substitute "text" with "notepad". You can do all the file copying and renaming with the PC App 
 Serial2Pico (make sure your source file selected does not have a space at the end), but it is probably the 
-best to take the SD Card out and do the file copies from a PC.
- 	 
+best to take the SD Card out and do the file copies from a PC. 	 
 
 Download the zip file AppSwitchExample2.zip and extract it to the folder text. It contains the files: 
 n04 n05 OpenAI.txt T01 T02Link T03Link T04 T05Link T06 U02 a30 a31 a32 a33 apprules.json K24Link label3 
@@ -87,7 +86,7 @@ string. This then again runs the files a30, a31, a42, a33 and U02.
 hexadecimal values for Control + A or Select All (E0 04 00). and should select any text in your opened 
 editor.
 
-(5) Press key [OpnAI] = key T5 - this should now run the macro file T05 which has the text "n05" and 
+(5) Press key [OpnAI] = key T5 - this should now run the macro file T05Link which has the text "n05" and 
 file n05 has the text "OpenAI.txt". It will then type text information available on the OpenAI website
 to your still opened text editor, which will take a long time This is an example of a large text file, 
 which can be of any size up to the limit of the filesystem on the SDCard (Fat32). 
