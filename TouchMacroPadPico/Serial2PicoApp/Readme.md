@@ -35,8 +35,8 @@ Serial2Pico (make sure your source file selected does not have a space at the en
 best to take the SD Card out and do the file copies from a PC. 	 
 
 Download the zip file AppSwitchExample2.zip and extract it to the folder text. It contains the files: 
-n04 n05 OpenAI.txt T01 T02Link T03Link T04 T05Link T06 U02 a30 a31 a32 a33 apprules.json K24Link label3 
-labelnotepad LabelT labeltext labeltext.json
+n04 n05 OpenAI.txt T01 T02Link T03Link T04 T05Link T06 T07Link n07 U02 a30 a31 a32 a33 apprules.json
+K24Link label3 labelnotepad LabelT labeltext labeltext.json
 
 Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in 
 your Config tab, i.e. the same folder as the Symbolbanks json files. 
