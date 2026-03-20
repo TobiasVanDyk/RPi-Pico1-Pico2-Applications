@@ -15,14 +15,14 @@ Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Ard
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad334.ino.elf"
-Sketch uses 249716 bytes (11%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 248812 bytes (11%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 63656 bytes (12%) of dynamic memory, leaving 460632 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad334.ino.uf2 
 Resetting COM3
-Converting to uf2, output size: 578048, start address: 0x2000
+Converting to uf2, output size: 576000, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 578048 bytes to D:/NEW.UF2
+Wrote 576000 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 

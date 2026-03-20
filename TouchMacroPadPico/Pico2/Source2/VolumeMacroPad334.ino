@@ -1721,7 +1721,7 @@ bool MacroKeys(byte c, byte Option)
   if (Option==3)          // DonKeys go here with MSTAName includes /nDir
      {BPtr = MacroBuff;   // SendBytes if (macroA) also comes here
       if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTAName); } else strcpy(AppStr, MSTAName); // Key [M11] executes file /AppDir/ + m11 = /AppDir/m11 always SDCard  
-      SerPr2; Serial.print("MacroKeys"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(MSTAName); SerPr1; Serial.print(nDir); SerPr2;     
+      // SerPr2; Serial.print("MacroKeys"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(MSTAName); SerPr1; Serial.print(nDir); SerPr2;     
       MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);   
       if (MacroBuffSize==0) return MacroKeysOK; }
   
@@ -1796,7 +1796,7 @@ void DoNKeys(int Button)
   if (nStrLen<nKeySize) { f.readBytes(nFile, nStrLen); f.close(); nFile[nStrLen] = 0; } // Valid Filename     
   // if (isMacro) strcpy(nFile, NameStr3);                                              // un-redirection - MSTAK large file ?
   
-  SerPr2; Serial.print("DonKeys"); SerPr1; Serial.print(nFile); SerPr1; Serial.print(NameStr3); SerPr1; Serial.print(nDir); SerPr1; Serial.print(c); SerPr2;
+  // SerPr2; Serial.print("DonKeys"); SerPr1; Serial.print(nFile); SerPr1; Serial.print(NameStr3); SerPr1; Serial.print(nDir); SerPr1; Serial.print(c); SerPr2;
   
   if (nKeysShow) { status(nFile); Option1 = Option2 = c; MST1 = MST2 = 5; return; }  // Only display its nKeys content -switch off nKeysShow in DoLink
   
@@ -3362,7 +3362,7 @@ void GetSysInfo(int Action)
   if (MediaChange) { if (VolOn!=Config1[25] || MuteOn!=Config1[24] || Media!=Config1[27] || ToneOn!=Config1[79]) { WriteConfig1(1); MediaChange = false; } }  
   if (SaveOptionOS) { WriteConfig1(1); SaveOptionOS = false; }  
   
-  Serial.println("Version: VolumeMacro332 Tobias van Dyk February 2026 License GPL3");
+  Serial.println("Version: VolumeMacro334 Tobias van Dyk March 2026 License GPL3");
   Serial.println("Hardware: Waveshare Pico 2 RP2350 ILI9488 Resistive TouchLCD 3.5inch"); 
   Serial.printf("CPU MHz (Pico 1 or RP20240): %d\n\r", fCPU);
   Serial.printf("FreeHeap: %d\n\r", fHeap);
@@ -3382,44 +3382,8 @@ void GetSysInfo(int Action)
   Serial.println("\n");
   
   DisplayClocks(false);
- 
-  SerPr2;
-  Serial.print("Serial Comms Start and End Markers: "); 
-  Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);
 
-  SerPr2;
-  Serial.print("App Switcher Folder State Layer:" ); Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);
-    
-  SerPr2;
-  ReadTimers(1);
-  Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
-
-  b = (DimVal*100)/255;
-  Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
-
-  b = (NormVal*100)/255; if (b==0) b = 100;
-  Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
-      
-  Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
-  Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
-
-  Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
-  Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
-
-  Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
-  Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
-  
-  Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
-  Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
-  Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
-  Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
-  Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;
-
-  Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
-
-  Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); }
-   
-  //showKeyData();   
+  showKeyData(0);  
 }
 
 ////////////////////
@@ -3782,8 +3746,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 15: //////////////////// KeyBrdByte[1]==0x6b&&KeyBrdByte[2]==0x73 *ks* Skip first key pressed in LCD in dimmed state  
       { KeySkip = !KeySkip; Config1[0] = KeySkip; WriteConfig1(0);
         if (!KeySkip) status("Wakeup Key disabled"); else status("Wakeup Key enabled"); StarOk = true; break; }
-        case 16: //////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x64 *ld* List Data Links and Macros via serial port
-      { showKeyData(); status("Links Data Sent"); StarOk = true; break; }
+        case 16: //////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x64 *ld*n List Data Links and Macros via serial port
+      { if (knum==4) b = 1; showKeyData(b); status("Macropad Data Sent"); StarOk = true; break; }
         case 17: //////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x66 "*df*" = delete all SDCard files
       { status("SDCard Files deleted"); ListSDFiles(1, 0); StarOk = true; break; }
         case 70: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]=='Z' *mZ*nn = Mouse 0,0 position 0=LB 1=LT 2=RT 3=RB Saved in Config1 MouseZ
@@ -5137,9 +5101,9 @@ void touch_calibrate()
 
 }
 
-////////////////////////
-void showKeyData() 
-////////////////////////
+/////////////////////////////////
+void showKeyData(byte Option) 
+/////////////////////////////////
 {  byte p, n, m, b;
    char c; 
    File f1, f2, f3;
@@ -5173,19 +5137,41 @@ void showKeyData()
              { b =  MacroInstructionList[m][n]; Serial.print(b); SerPr1; }
          SerPr2; }
 
-   SerPr2;
-   Serial.print("App Switcher AppName Folder State Layer: " ); Serial.print(AppName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);      
-   SerPr2;
-   
-   SerPr2;
-   Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
-   Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
-   SerPr2;
-   Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
-   Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
-   Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
-   Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
-   Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;
+  SerPr2;
+  Serial.print("Serial Comms Start and End Markers: "); 
+  Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);
+
+  SerPr2;
+  Serial.print("App Switcher Folder State Layer:" ); Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);
+    
+  SerPr2;
+  ReadTimers(1);
+  Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
+
+  b = (DimVal*100)/255;
+  Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
+
+  b = (NormVal*100)/255; if (b==0) b = 100;
+  Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
+      
+  Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
+  Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
+
+  Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
+  Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
+
+  Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
+  Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
+  
+  Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
+  Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
+  Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
+  Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
+  Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;
+
+  Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
+
+  Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); }
         
    SerPr2;
    Serial.print("Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
@@ -5221,22 +5207,9 @@ void showKeyData()
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr7[m]); SerPr1; } Serial.print(TimerName[6]); SerPr2;
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr8[m]); SerPr1; } Serial.print(TimerName[7]); SerPr2;  
 
-   SerPr2;
-   ReadTimers(1);
-   Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
 
-   b = (DimVal*100)/255;
-   Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
-
-   b = (NormVal*100)/255; if (b==0) b = 100;
-   Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
-      
-   Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
-   Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
-
-   Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
-   Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
-    
+   if (Option==0) return;
+   
    SerPr2;
    for ( m = 0; m<24; m++ ) 
        { Serial.print(m); Serial.print(" Mxx 20bytes " ); Serial.print(MacroSizeM1M12[m]); Serial.print(" Mtr Status " ); Serial.print(MacroM1M12[m]); SerPr1;
@@ -5257,4 +5230,4 @@ void showKeyData()
          
  }
 
-/************* EOF line 5245 *****************/
+/************* EOF line 5233 *****************/
