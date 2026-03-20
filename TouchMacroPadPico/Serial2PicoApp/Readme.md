@@ -44,7 +44,8 @@ labeltext labeltext.json. The S keys Layout 3 files are similarly named with S i
 Because you have both keyset files inside the folders you can switch between layouts 3 and 4 using the
 App checkbox on each Layout. If a key behaves differently between the S and T sets press the Data button
 in the Config tab and look at the listing for the instruction set for the two layouts. The manual.h
-explains how the instruction sets can be changed in section (z) *im.s.t*list+0
+explains how the instruction sets can be changed in section (z) *im.s.t*list+0 For example try to set
+keys S to the same list as keys T by using <*is*acbd0>
 
 Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in 
 your Config tab, i.e. the same folder as the Symbolbanks json files. 
