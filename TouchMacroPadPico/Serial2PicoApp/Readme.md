@@ -36,15 +36,15 @@ just substitute "text" with "notepad". You can do all the file copying and renam
 Serial2Pico (make sure your source file selected does not have a space at the end), but it is probably the 
 best to take the SD Card out and do the file copies from a PC. 	 
 
-Download the zip file AppSwitchExample.zip and extract it to the folder text. It contains two folders
-one for notepad and one for TextEditplus named text. The T keys layout files are: n04 n05 OpenAI.txt
-T01 T02Link T03Link T04 T05Link T06 T07Link n07 U02 a30 a31 a32 a33 apprules.json K24Link label3 LabelT
-labeltext labeltext.json. The S keys Layout 3 files are similarly named with S instead of T.
+Download the zip file AppSwitchExample.zip and extract it. It contains two folders one for notepad and one
+for TextEditplus named text. The T keys layout files are: n04 n05 OpenAI.txt T01 T02Link T03Link T04
+T05Link T06 T07Link n07 U02 a30 a31 a32 a33 apprules.json K24Link label3 LabelT labeltext labeltext.json.
+The S keys Layout 3 files are similarly named with S instead of T.
 
 Because you have both keyset files inside the folders you can switch between layouts 3 and 4 using the
 App checkbox on each Layout. If a key behaves differently between the S and T sets press the Data button
 in the Config tab and look at the listing for the instruction set for the two layouts. The manual.h
-explains how the instruction sets can be changed in section (z) *im.s.t*list+0 For example try to set
+explains how the instruction sets can be changed in section (z) *im,s,t*list+0 For example try to set
 keys S to the same list as keys T by using <*is*acbd0>
 
 Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in 
