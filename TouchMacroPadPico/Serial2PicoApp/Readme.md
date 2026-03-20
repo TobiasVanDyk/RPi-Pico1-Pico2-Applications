@@ -39,10 +39,12 @@ best to take the SD Card out and do the file copies from a PC.
 Download the zip file AppSwitchExample.zip and extract it to the folder text. It contains two folders
 one for notepad and one for TextEditplus named text. The T keys layout files are: n04 n05 OpenAI.txt
 T01 T02Link T03Link T04 T05Link T06 T07Link n07 U02 a30 a31 a32 a33 apprules.json K24Link label3 LabelT
-labeltext labeltext.json. The S keys Layout 3 files are similarly named with S intead of T.
+labeltext labeltext.json. The S keys Layout 3 files are similarly named with S instead of T.
 
 Because you have both keyset files inside the folders you can switch between layouts 3 and 4 using the
-App checkbox on each Layout.
+App checkbox on each Layout. If a key behaves differently between the S and T sets press the Data button
+in the Config tab and look at the lsisting for the instruction sets for the two layouts. The manual.h
+explains how the instruction sets can be changed in section (z) *im.s.t*list+0
 
 Use the apprules.json file in the folder for your Pico macropad - move it to the folder location as in 
 your Config tab, i.e. the same folder as the Symbolbanks json files. 
