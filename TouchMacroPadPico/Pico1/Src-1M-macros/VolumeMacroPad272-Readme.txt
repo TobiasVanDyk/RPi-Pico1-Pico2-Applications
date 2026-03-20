@@ -8,8 +8,8 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad272.ino.elf"
-Sketch uses 258428 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 62884 bytes (23%) of dynamic memory, leaving 199260 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 258852 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 62932 bytes (24%) of dynamic memory, leaving 199212 bytes for local variables. Maximum is 262144 bytes.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -32,7 +32,7 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
                 #define SPI_TOUCH_FREQUENCY  2500000   // 1MHz max 250kHz or 600kHz needed for Pico 2
 
 New changes:
-1. Fixed Labels Folder switching in Star Codes function
+1. Fixed Labels Folder switching in Star Codes function and added nDir = AppDir switch. Reset nDir to / after App Switch closed.
 2. Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App internal list (wip)
    *ap*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in Layout 1,3,4. Pressing the keys M1-M24 or *S1-S24 or 
    T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder /appname/. *ap*appname=0 switches appname app switch off. 

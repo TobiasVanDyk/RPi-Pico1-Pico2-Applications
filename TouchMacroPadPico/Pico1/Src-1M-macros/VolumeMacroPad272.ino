@@ -365,7 +365,7 @@ bool nKeys = true;                   // Numpad Pages or Macro keys n01 - n9996 c
 int  nKeysPage = 100;                // Number of nKeys pages change with *0p*pages where pages = 1-83
 const int NumKeysPageMax = 8;        // Change Config1[9] as well - normally 8 = max pages NumPad
 char nChar = 'n';                    // Current nKeys first char (on keys and filename) can be 0-9, a-z, A-Z change with *0n*char 
-char nDir[22] = "/";                 // Default is nKeys in root folder /nKeysfile, if dirname must start AND end with "/" for strcat filename 
+char nDir[80] = "/";                 // Default is nKeys in root folder /nKeysfile, if dirname must start AND end with "/" for strcat filename 
 byte nDirX = 0;                      // 0 = Not changed 1 = Default "/"  2 = /dirname/  3 = /nChar/ 
 char nDirXMsg[4][30] = {"Use /0-20-char dir-name or //", "nKeys default dir /", "nKeys special dir /x/", "nKeys dir changed" };
 bool NumKeys = false;                // Numeric Keyboard
@@ -3125,10 +3125,10 @@ void WriteConfig1(bool Option)
                   Config1[36] = KeyRepeat;
                   Config1[37] = NormVal; 
                   Config1[38] = DimVal; 
-                  Config1[39] = nKeys34;                  
-                  strcpy((char *)&Config1[40], nDir); // 40-59 60=nDirZ=0                    
+                  Config1[39] = nKeys34;
+                  if (strlen(nDir)<21) strcpy((char *)&Config1[40], nDir);  // 40-59 60=nDirZ=0                                                       
                   for (n=1; n<11; n++) Config1[60+n] = nKeysLnkChar[n-1];   // Config1[61-70] 
-                  nDirX       = Config1[71];
+                  nDirX       = Config1[71]; 
                   Config1[72] = MLabel; Config1[73] = SLabel; Config1[74] = TLabel;  
                   Config1[75] = DelayTimeVal; 
                   Config1[76] = Vol1; Config1[77] = Vol3; Config1[78] = Vol4; // If = 1 then enable Volume Up/Dwn in Layouts 1, 3, 4 
@@ -4016,8 +4016,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 52: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x79 *0x* nKeys34          
        { nKeys34 = !nKeys34; Config1[39] = nKeys34; WriteConfig1(0); // nKeys count n00-n99,n100-n999, n0000-n9996 else count n0000-n9996
          if (nKeys34) status("nKeys n01-n99 n100-n999 n1000-n9996"); else status ("nKeys n0001-n9996"); NumKeysChange(); StarOk = true; break; }  
-         case 53: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x64 *0d*/20-char-max or default mode if *0d*/ or *0d*
-       { nDirX=0; if (knum>4) { for (n=0; n<knum-4; n++) nDir[n] = KeyBrdByte[4+n]; 
+         case 53: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x64 *0d*/20-char-max or default mode *0d* note that *0d*/ gives nDir=// *0d* gives nDir=/
+       { nDirX=0; if (knum>4) { for (n=0; n<knum-4; n++) nDir[n] = KeyBrdByte[4+n];                       
                                      if (k5=='/') { nDir[1]=nChar; nDir[2]='/'; nDir[3]=0x00; nDirX=2; }  // 2: /nChar/
                                              else { nDir[n]='/'; nDir[n+1]=0x00; nDirX=1+(n>1)*2; }  }    // 3: normal /dirname/ 1: default /filename
          if (knum==4) { nDir[0]='/'; nDir[1]=0x00; nDirX=0; }                                             // 0: default /filename but nDirX=0
@@ -4152,11 +4152,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { StarOk = GetStartEnd (1, 0, c999); break; } 
          case 85: ////////////////////// KeyBrdByte[1]=='2'&&KeyBrdByte[2]=='e' *2e*ssseee Serial Start Markers as sss = eee 0-255 or as ssee = 00-FF hex
        { StarOk = GetStartEnd (1, 1, c999); break; }                                                                                          
-         case 86: ////////////////////// KeyBrdByte[1]=='a'&&KeyBrdByte[2]=='p' *ap*appname as max 12 chars or *ap*n n=1,3,4 Layout M S T keys or *ap* = App Switch off
+         case 86: ////////////////////// KeyBrdByte[1]=='a'&&KeyBrdByte[2]=='p' *ap*appname or *ap*n n=1,3,4 Layout M S T keys or *ap* = App Switch off
        { if (knum==4) { AppState = 0; AppDir[0] = AppName[0] = 0x00; status("App Switch OFF"); StarOk = true; break; } 
          if (knum==5) { if (k4=='1'||k4=='3'||k4=='4') { AppL134 = k4-48; AppState = 2; strcpy(NameStr1, "App Switch Layer  "); NameStr1[17] = k4; status(NameStr1); StarOk = true; } break; }
-         if (KeyBrdByte[knum-2]=='=' && knum>5) { for (n=0; n<knum-6; n++) AppDir[n+1] = AppName[n] = KeyBrdByte[n+4]; AppDir[0] = '/'; AppDir[n+1] = '/'; AppDir[n+2] = AppName[n] = 0x00; 
-         AppL134 = KeyBrdByte[knum-1]-48; StarOk = DoAppDir(); if (StarOk) if (AppL134!=0) status(AppDir); else status("No App Switch"); } break; }                                                                                               
+         if (KeyBrdByte[knum-2]=='=' && knum>5) { for (n=0; n<knum-6; n++) AppDir[n+1] = AppName[n] = KeyBrdByte[n+4]; AppDir[0] = '/'; AppDir[n+1] = '/'; 
+                                                  AppDir[n+2] = AppName[n] = 0x00; AppL134 = KeyBrdByte[knum-1]-48; StarOk = DoAppDir(); 
+                                                  if (AppL134==0) { strcpy(nDir, "/"); nDirX=0; } else { strcpy(nDir, AppDir); nDirX=3; }
+                                                  if (StarOk) if (AppL134!=0) status(AppDir); else status("No App Switch");  
+                                                } break; }                                                                                                
       } return StarOk;     
 }
 
@@ -5204,8 +5207,18 @@ void showKeyData()
          SerPr2; }
 
    SerPr2;
-   Serial.print("App Switcher AppName Folder State Layer:" ); Serial.print(AppName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);      
-   SerPr2;        
+   Serial.print("App Switcher AppName Folder State Layer: " ); Serial.print(AppName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);      
+   SerPr2;
+   
+   SerPr2;
+   Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
+   Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
+   SerPr2;
+   Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
+   Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
+   Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
+   Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
+   Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;       
         
    SerPr2;
    Serial.print(" Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
@@ -5267,4 +5280,4 @@ void showKeyData()
  }
 
  
-/************* EOF line 5261 *****************/
+/************* EOF line 5283 *****************/
