@@ -8,13 +8,13 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad424.ino.elf"
-Sketch uses 258700 bytes (24%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 62880 bytes (23%) of dynamic memory, leaving 199264 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 259116 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 62944 bytes (24%) of dynamic memory, leaving 199200 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
-Converting to uf2, output size: 589824, start address: 0x2000
+Converting to uf2, output size: 590848, start address: 0x2000
 Scanning for RP2040 devices
 Flashing E: (RPI-RP2)
-Wrote 589824 bytes to E:/NEW.UF2
+Wrote 590848 bytes to E:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -27,7 +27,7 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
                                                           #define SPI_READ_FREQUENCY 15000000  // 20 MHz also ok
 
 New changes:
-1. Fixed Labels Folder switching in Star Codes function
+1. Fixed Labels Folder switching in Star Codes function and added nDir = AppDir switch. Reset nDir to / after App Switch closed.
 2. Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App internal list (wip)
    *ap*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in Layout 1,3,4. Pressing the keys M1-M24 or *S1-S24 or 
    T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder /appname/. *ap*appname=0 switches appname app switch off. 
@@ -90,7 +90,7 @@ to change the name used or path where files are saved - but these setting are no
 larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal for uploading a set of nKeys - for example first upload a set of 9 keys where you used 
 <*sx*n0> to set the base filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset between uploads unless you use <*sx*>. To reset 
 filename to null use *sx*** and use *sx*// to set foldername to null.
-10. *wa* Wakeup dimmed LCD.  
+10. *wa* Wakeup dimmed LCD.   
 
 
 
