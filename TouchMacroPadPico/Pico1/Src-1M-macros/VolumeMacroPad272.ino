@@ -3413,41 +3413,7 @@ void GetSysInfo(int Action)
   
   DisplayClocks(false);
 
-  SerPr2;
-  Serial.print("Serial Comms Start and End Markers: "); 
-  Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);
-
-  SerPr2;
-  Serial.print("App Switcher AppName Folder State Layer:" ); Serial.print(AppName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);      
-  SerPr2;
-  
-  SerPr2;
-  ReadTimers(1);
-  Serial.printf("LCD Blank Timeout: %d seconds\n\r", TimePeriod/1000);     // make sure this is never 0 
-
-  b = (DimVal*100)/255;
-  Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
-
-  b = (NormVal*100)/255; if (b==0) b = 100;
-  Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
-      
-  Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
-  Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
-
-  Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
-  Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
-
-  Serial.print("nKeys Page Maximum: ");  Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
-  Serial.print("nKeys Directory Path: "); Serial.print(nDir); Serial.print(" Size: "); Serial.print(strlen(nDir)); 
-  Serial.print(" nKeys Dir Mode: "); Serial.print(nDirX); SerPr2;
-  Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
-  Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;
-
-  Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
-
-  Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); }
-   
-  //showKeyData();   
+  showKeyData(0);  
 }
 ////////////////////
 void ResetTimers(byte Option)
@@ -3809,8 +3775,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 15: //////////////////// KeyBrdByte[1]==0x6b&&KeyBrdByte[2]==0x73 *ks* Skip first key pressed in LCD in dimmed state  
       { KeySkip = !KeySkip; Config1[0] = KeySkip; WriteConfig1(0);
         if (!KeySkip) status("Wakeup Key disabled"); else status("Wakeup Key enabled"); StarOk = true; break; }
-        case 16: //////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x64 *ld* List Data Links and Macros via serial port
-      { showKeyData(); status("Links Data Sent"); StarOk = true; break; }
+        case 16: //////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x64 *ld*n List Data Links and Macros via serial port
+      { if (knum==4) b = 1; showKeyData(b); status("Macropad Data Sent"); StarOk = true; break; }
         case 17: //////////////////// KeyBrdByte[1]==0x64&&KeyBrdByte[2]==0x66 "*df*" = delete all SDCard files
       { status("SDCard Files deleted"); ListSDFiles(1, 0); StarOk = true; break; }
         case 70: //////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]=='Z' *mZ*nn = Mouse 0,0 position 0=LB 1=LT 2=RT 3=RB Saved in Config1 MouseZ
@@ -4028,11 +3994,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
        { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
          // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3 To save thes must do [Cfg]->[Sav]
-         strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); // label1,2,3 is default text in files LabelM,S,T          
-         if (k2==0x6D) { if (knum==4) Config1[72] = MLabel = !MLabel; if (knum>5); { NameStr2[5] = 'M'; NameStr1[5] = '1'; } if (MLabel) strcpy(NameStr3, " ON"); m = 1; }
-         if (k2==0x73) { if (knum==4) Config1[73] = SLabel = !SLabel; if (knum>5); { NameStr2[5] = 'S'; NameStr1[5] = '2'; } if (SLabel) strcpy(NameStr3, " ON"); m = 3; }
-         if (k2==0x74) { if (knum==4) Config1[74] = TLabel = !TLabel; if (knum>5); { NameStr2[5] = 'T'; NameStr1[5] = '3'; } if (TLabel) strcpy(NameStr3, " ON"); m = 4; }
-         if (knum>4)   { if (knum>5) { for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n]; NameStr1[n] = 0x00; } // default is NameStr1 = label1,2,3
+         // If number 0 or 1 added after *lm,s,t* such as *lm,s,t*0,1 then labels Off/On To save thes must do [Cfg]->[Sav]
+         strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); if (knum==4 || (knum==5&&b<2)) a=1; else a=0; // label1,2,3 is default text in files LabelM,S,T            
+         if (k2==0x6D) { if (knum==4) Config1[72]=MLabel=!MLabel; if (knum>=5) { NameStr2[5]='M'; NameStr1[5]='1'; if (knum==5&&b<2) Config1[72]=MLabel=b; } if (MLabel) strcpy(NameStr3," ON"); m=1; }
+         if (k2==0x73) { if (knum==4) Config1[73]=SLabel=!SLabel; if (knum>=5) { NameStr2[5]='S'; NameStr1[5]='2'; if (knum==5&&b<2) Config1[73]=SLabel=b; } if (SLabel) strcpy(NameStr3," ON"); m=3; }
+         if (k2==0x74) { if (knum==4) Config1[74]=TLabel=!TLabel; if (knum>=5) { NameStr2[5]='T'; NameStr1[5]='3'; if (knum==5&&b<2) Config1[74]=TLabel=b; } if (TLabel) strcpy(NameStr3," ON"); m=4; }         
+         if (a==0)     { if (knum>5) { for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n]; NameStr1[n] = 0x00; } // default is NameStr1 = label1,2,3
                          if (LayerAxD) f1 = SDFS.open(NameStr2, "w"); else f1 = LittleFS.open(NameStr2, "w"); 
                          f1.print(NameStr1); f1.print('\0'); f1.close();  }         
          DoMSTLabel(0, m); WriteConfig1Change = true; strcat(NameStr2, NameStr3); status(NameStr2); StarOk = true; break; }
@@ -5168,9 +5135,9 @@ void touch_calibrate()
 
 }
 
-////////////////////////
-void showKeyData() 
-////////////////////////
+/////////////////////////////////
+void showKeyData(byte Option) 
+/////////////////////////////////
 {  byte p, n, m, b;
    char c; 
    File f1, f2, f3;
@@ -5190,41 +5157,61 @@ void showKeyData()
    if (TLabel) Serial.print("On  Target: "); else Serial.print("Off Target: ");
    if (LayerAxD) f3 = SDFS.open("LabelT", "r"); else f3 = LittleFS.open("LabelT", "r"); 
    n = f3.size(); f3.readBytes(NameStr3, n); f3.close(); Serial.print(NameStr3);
-   SerPr2; 
-
+   SerPr2;
+   
    SerPr2;
    Serial.println("Config1: " );
-   for ( m = 0; m<90; m++ ) { Serial.print(Config1[m], HEX); SerPr1; }
-   SerPr2;  
+   for ( m = 0; m<90; m++ ) { Serial.print(Config1[m], HEX); SerPr1; if (m==20||m==40||m==60) SerPr2; }
+   SerPr2;
 
    SerPr2;
-   Serial.print("Macro InstructionList :" ); Serial.print(iList); 
-   SerPr2;
    for ( m = 0; m<3; m++ ) 
-       { Serial.print("Macro InstructionList " ); Serial.print(m); Serial.print(": ");
+       { Serial.print("MacroInstructionList " ); Serial.print(m); Serial.print(": ");
          for ( n = 0; n < iListMax; n++) 
              { b =  MacroInstructionList[m][n]; Serial.print(b); SerPr1; }
          SerPr2; }
 
-   SerPr2;
-   Serial.print("App Switcher AppName Folder State Layer: " ); Serial.print(AppName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);      
-   SerPr2;
-   
-   SerPr2;
-   Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
-   Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
-   SerPr2;
-   Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
-   Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
-   Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
-   Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
-   Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;       
+  SerPr2;
+  Serial.print("Serial Comms Start and End Markers: "); 
+  Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);
+
+  SerPr2;
+  Serial.print("App Switcher Folder State Layer:" ); Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);
+    
+  SerPr2;
+  ReadTimers(1);
+  Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
+
+  b = (DimVal*100)/255;
+  Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
+
+  b = (NormVal*100)/255; if (b==0) b = 100;
+  Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
+      
+  Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
+  Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
+
+  Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
+  Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
+
+  Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
+  Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
+  
+  Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
+  Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
+  Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
+  Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
+  Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;
+
+  Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
+
+  Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); }
         
    SerPr2;
-   Serial.print(" Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
+   Serial.print("Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
           for ( n = 0; n <= 20; n++) 
               { b =  MacroBuff[n]; Serial.print(b, HEX); SerPr1; }
-          SerPr2; 
+   SerPr2;     
 
    SerPr2;
    Serial.println("K Keys BSD:" ); 
@@ -5233,18 +5220,18 @@ void showKeyData()
                 b =  BsDCode1[n]; Serial.print(b, HEX); SerPr1;
                 b =  BsDCode2[n]; Serial.print(b, HEX); SerPr1;
                 b =  BsDCode3[n]; Serial.print(b, HEX); SerPr1; }
-          SerPr2;
+   SerPr2;       
 
    SerPr2;
    Serial.print("Macro Buffer Assigment M S T Keys:" ); 
-                b =  Bank123[0];  Serial.print("  M "); Serial.print(b);
-                b =  Bank123[1];  Serial.print("  S "); Serial.print(b);
-                b =  Bank123[2];  Serial.print("  T "); Serial.print(b); 
-          SerPr2;
+   b =  Bank123[0];  Serial.print("  M "); Serial.print(b);
+   b =  Bank123[1];  Serial.print("  S "); Serial.print(b);
+   b =  Bank123[2];  Serial.print("  T "); Serial.print(b); 
+   SerPr2;
 
-    SerPr2;
-    n = 0;
-    Serial.println("MacroTimers1-8 MST1 Option1 SDCard Link Names:" ); 
+   SerPr2;
+   n = 0;
+   Serial.println("MacroTimers1-8 MST1 Option1 SDCard Link Names:" ); 
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr1[m]); SerPr1; } Serial.print(TimerName[0]); SerPr2;
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr2[m]); SerPr1; } Serial.print(TimerName[1]); SerPr2;
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr3[m]); SerPr1; } Serial.print(TimerName[2]); SerPr2;
@@ -5252,32 +5239,29 @@ void showKeyData()
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr5[m]); SerPr1; } Serial.print(TimerName[4]); SerPr2;
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr6[m]); SerPr1; } Serial.print(TimerName[5]); SerPr2; 
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr7[m]); SerPr1; } Serial.print(TimerName[6]); SerPr2;
-    for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr8[m]); SerPr1; } Serial.print(TimerName[7]); SerPr2;
-    SerPr2;          
+    for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr8[m]); SerPr1; } Serial.print(TimerName[7]); SerPr2;  
 
-    SerPr2;
-    for ( m = 0; m<24; m++ ) 
-         { Serial.print(m); Serial.print(" Mxx 20bytes " ); Serial.print(MacroSizeM1M12[m]); Serial.print(" Mtr Status " ); Serial.print(MacroM1M12[m]); SerPr1;
-          for ( n = 0; n < 20; n++) 
-              { b =  Mtr1to12[m][n]; Serial.print(b, HEX); SerPr1; }
-          SerPr2; }
 
-   SerPr2;
-   for ( m = 0; m<24; m++ ) 
-         { Serial.print(m); Serial.print(" Sxx 20bytes Size " ); Serial.print(MacroSizeS1S12[m]); Serial.print(" Str Status " ); Serial.print(MacroS1S12[m]); SerPr1;
-          for ( n = 0; n < 20; n++) 
-              { b =  Str1to12[m][n]; Serial.print(b, HEX); SerPr1; }
-          SerPr2; }
-
-   SerPr2;
-   for ( m = 0; m<24; m++ ) 
-         { Serial.print(m); Serial.print(" Txx 20bytes Size " ); Serial.print(MacroSizeT1T12[m]); Serial.print(" Ttr Status "); Serial.print(MacroT1T12[m]); SerPr1;
-          for ( n = 0; n < 20; n++) 
-              { b =  Ttr1to12[m][n]; Serial.print(b, HEX); SerPr1; }
-         SerPr2;  }        
+   if (Option==0) return;
    
+   SerPr2;
+   for ( m = 0; m<24; m++ ) 
+       { Serial.print(m); Serial.print(" Mxx 20bytes " ); Serial.print(MacroSizeM1M12[m]); Serial.print(" Mtr Status " ); Serial.print(MacroM1M12[m]); SerPr1;
+         for ( n = 0; n < 20; n++) { b =  Mtr1to12[m][n]; Serial.print(b, HEX); SerPr1; }
+         SerPr2; }
+
+   SerPr2;
+   for ( m = 0; m<24; m++ ) 
+       { Serial.print(m); Serial.print(" Sxx 20bytes Size " ); Serial.print(MacroSizeS1S12[m]); Serial.print(" Str Status " ); Serial.print(MacroS1S12[m]); SerPr1;
+         for ( n = 0; n < 20; n++) { b =  Str1to12[m][n]; Serial.print(b, HEX); SerPr1; }
+         SerPr2; }
+
+   SerPr2;
+   for ( m = 0; m<24; m++ ) 
+       { Serial.print(m); Serial.print(" Txx 20bytes Size " ); Serial.print(MacroSizeT1T12[m]); Serial.print(" Ttr Status "); Serial.print(MacroT1T12[m]); SerPr1;
+         for ( n = 0; n < 20; n++) { b =  Ttr1to12[m][n]; Serial.print(b, HEX); SerPr1; }
+         SerPr2;  } 
          
  }
-
  
-/************* EOF line 5283 *****************/
+/************* EOF line 5267 *****************/
