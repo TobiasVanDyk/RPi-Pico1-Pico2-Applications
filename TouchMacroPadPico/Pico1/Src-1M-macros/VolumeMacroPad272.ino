@@ -4053,12 +4053,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
       case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
-      { if (knum==4) { for (n=0; n<6; n++)            Serial.write(XNum[n]);  Serial.write(BsDNum);   Serial.write(RetNum);    // write raw data, print converts number to text
-        Serial.write(Layout);  Serial.write(LayerAD); Serial.write(LayerAxD);                                                  // PC receives 0E 0F 10 0E 0.....0 01 01 00 0D 0A 
-        Serial.write(VolOn);   Serial.write(MuteOn);  Serial.write(ToneOn);   Serial.write(MediaCfg); Serial.write(Media); 
-        Serial.write(Vol1);    Serial.write(Vol3);    Serial.write(Vol4);     Serial.write(MathSet); 
-        byte* bytePtr = (byte*)&TimePeriod;           Serial.write(bytePtr, sizeof(TimePeriod)); // Serial.write(TimePeriod / 256);  Serial.write(TimePeriod % 256);
-        Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
+      { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); Serial.println("EOC"); status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
         Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
         Serial.println(ToneOn);      Serial.println(MediaConfig[0]);    Serial.println(Media);             Serial.println(Vol1);              Serial.println(Vol3);          
@@ -4067,7 +4062,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
-        Serial.println("EOC");             
+        Serial.println(MLabel);      Serial.println(SLabel);            Serial.println(TLabel);            Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -5264,4 +5259,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 5267 *****************/
+/************* EOF line 5262 *****************/
