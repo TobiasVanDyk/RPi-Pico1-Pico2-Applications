@@ -8,7 +8,7 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad424.ino.elf"
-Sketch uses 258476 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Sketch uses 258348 bytes (24%) of program storage space. Maximum is 1044480 bytes.
 Global variables use 62944 bytes (24%) of dynamic memory, leaving 199200 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
 Converting to uf2, output size: 589312, start address: 0x2000
@@ -27,14 +27,15 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
                                                           #define SPI_READ_FREQUENCY 15000000  // 20 MHz also ok
 
 New changes:
-1. Added Custom Labels Off/On *lm,s,t*0,1 switch custem labels off/on - *lm,s,t*x <> 0,1 toggle state on/off
-2. Fixed Labels Folder switching in Star Codes function and added nDir = AppDir switch. Reset nDir to / after App Switch closed.
-3. Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App internal list (wip)
+1, Added Custom Labels M,S,T to config  data sent to PC App.
+2. Added Custom Labels Off/On *lm,s,t*0,1 switch custem labels off/on - *lm,s,t*x <> 0,1 toggle state on/off
+3. Fixed Labels Folder switching in Star Codes function and added nDir = AppDir switch. Reset nDir to / after App Switch closed.
+4. Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App internal list (wip)
    *ap*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in Layout 1,3,4. Pressing the keys M1-M24 or *S1-S24 or 
    T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder /appname/. *ap*appname=0 switches appname app switch off. 
    *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys. 
    *ap* disables App Switch function
-4. Fixed WriteTimers error. Fixed Pico 2 hhmm format it now triggers when using Macro Timers [R-C] and [O-C] using both long format and short format. Fixed mistake in using old 
+5. Fixed WriteTimers error. Fixed Pico 2 hhmm format it now triggers when using Macro Timers [R-C] and [O-C] using both long format and short format. Fixed mistake in using old 
 function WriteMacroTimers() instead of new WriteTimers().
 The set of Macro Timers have been mostly completed. What is left is to assign a function to the [Rep]eat key, decide on how to handle repeating-clock timers (i.e. should they 
 ignore the date and only use the time etc), and to decide how to differentiate meaningfully between the [RcT], [R-C], [OcT], and [O-C] timers. (Note that the Time and Clock handlers 
@@ -60,7 +61,7 @@ choice of using shorter time-set options hours and minutes as hhmm (i.e. 24 hour
 time using PC App then [Cfg]->[ROf] type in top grey box below [R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both 
 MST and Other Keys are checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. After the first enter the LCD will display "Restart Clock ON" 
 and after [R-C] pressed it will display "Restart on Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command.
-5. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
+6. Can list files in folders with *lf*sdcardfolder or *lf*sdcardfolder+flashfolder. From the PC App use the two comboboxes in the Config tab to enter the folders or use / for the
 root. Can select the listed /folder/filename and Delete or View content from the Comms tab. Use for example from the PC App Send List: 
 <*lf*> lists all flash files and all sdcard files 
 <*lf*/store/> lists all flash files and the sdcard files in folder /store.
@@ -69,8 +70,8 @@ root. Can select the listed /folder/filename and Delete or View content from the
 <*lf*/+/> lists all flash files and all the sdcard files (the folder for both is now root /).
 To change the serial start/stop markers to 02hex/03hex type 0x02 and 0x03 into the Comms Tab of the PC App and press [Change] then close the app, reopen and check if the values
 shown are 02 and o3. Then change it on the Pico macropad using the macroEditor - enter *1s*002 [EXE], and also *1e*003, [EXE], exit the Editor and press [Cfg]->[Sav>].
-6. Added S1-S24 keys double-spacing printng filter - use *cr*0-3 to filter i.e. remove, CR 0D \n and LF 0A \r during sending nKeys or the S1-S24 keys large SDCard text files.
-7. Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 0-255 from the Pico and also on the PC App also to any byte value 
+7. Added S1-S24 keys double-spacing printng filter - use *cr*0-3 to filter i.e. remove, CR 0D \n and LF 0A \r during sending nKeys or the S1-S24 keys large SDCard text files.
+8. Serial Comms Start and End Markers can now be changed to a different ASCII character or to any value 0-255 from the Pico and also on the PC App also to any byte value 
 between 0 and 255 such as using 0x02 and 0x03 for Hex values, or enter < or > as text, in the textboxes in the new Change Start and End Marker section on the Config Tab. 
 Use *1s*char for the Start marker and *1e^char for the End marker, or use *1s*charchar or *1e*charchar to change both start and end characters, or use *1s* or *1e* to reset 
 both to the <> pair, or use *1s,e*000-255 to set to any value between 0 and 255 such as the 02/03 hexadecimal start/stop transmission pair. When it is changed on the Pico change
@@ -78,10 +79,10 @@ it on the PC App before syncing, and when changed on the PC App via <*1s,e*char>
 the translation to the new start char is done automatically when sending the *command to change the end character. Because the Pico Start and End marker settings are saved in 
 the Config1 file, the values will be 0 after loading the new firmware - this condition where both are 0x00 are handled by setting them to the default < and >. Otherwiae use the 
 Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] config button, before opening the PC App, or enter as *1s*< and *1e*> and save.
-8. Added <f filecontent > to <F filecontent > from using the [Select and Send Files] multi-file select button on the bKeys tab with nKeys checked - this then saves as nChar+0+1-9 if<10 or 
+9. Added <f filecontent > to <F filecontent > from using the [Select and Send Files] multi-file select button on the bKeys tab with nKeys checked - this then saves as nChar+0+1-9 if<10 or 
 nChar+10-999. Sending MST files using <1-6 data > to the SDCard is now limited to 6144 bytes instead of 200 bytes.
-9. Fixed *sx*filename and *sx*folder code.
-10. *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber to 1. One or many files can be copied from the PC App to the 
+10. Fixed *sx*filename and *sx*folder code.
+11. *sx*name where name = filename or /foldername/ or // folder = "" or ** filename = "" or if no name reset filenumber to 1. One or many files can be copied from the PC App to the 
 Pico Macropad using the [Select and Send Files] button on the Comms tab. This button has a dual-function: After an intial selection of one or more files, the combobox next to the 
 button is filled with the list of files sent. If one of these are selected, or a new file and its path typed into the combobox, the button when pressed will not first open a dialog 
 box to select files but will send the single file selected immediately to the MacroPad.  The Pico macropad will name these files numerically as file1 to file 9999. A filename sync 
@@ -91,7 +92,7 @@ to change the name used or path where files are saved - but these setting are no
 larger files (maximum size is 6144 bytes), copy less than five at a time. This functionality is ideal for uploading a set of nKeys - for example first upload a set of 9 keys where you used 
 <*sx*n0> to set the base filename, then upload the rest (up to about 980 more), with a base filename <*sx*n>. The filecount will not reset between uploads unless you use <*sx*>. To reset 
 filename to null use *sx*** and use *sx*// to set foldername to null.
-11. *wa* Wakeup dimmed LCD.   
+12. *wa* Wakeup dimmed LCD.  
 
 
 
