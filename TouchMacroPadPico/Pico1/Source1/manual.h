@@ -707,8 +707,9 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (j) *br* = toggle brightness controls up/down replace volume up/dwn for Layouts 1, 3, 4 (not in Layout 2 Cfg). The
     brightness slider usually only has an effect when used in notebook computers not desktops.
 (k) *tt* *ta* *tp* *tw* Use *tx*yymmddwhhmm -> *tx*22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w
-    t = Main Time/Clock a  = Macro Clock Repeat-Oneshot [R-C][O-C] p = Macro Clock Countdown [RcT][OcT] 
-    w = Power Clock [O-C][R-C]. if using [*Cm] only add the numbers yymmddwhhmm w = weekday 0 = Sunday 6 = Saturday  
+    t = Main Time/Clock a  = Macro Clock Repeat-Oneshot [R-C][O-C] w = Macro Clock Countdown [RcT][OcT] 
+    p = Power Clock [O-C][R-C]. if using [*Cm] only add the numbers yymmddwhhmm w = weekday 0 = Sunday 6 = Saturday
+    (If a Pico 2 used then Sunday=1 Saturday=7 as in TimeLib.h)   
 (l) *xn*number n = 0,1 - 8, 9 number = 1-54. Top row 3 keys cX-Cut, cC-Copy, cV-Paste: Programmable as x1, x2, x3 
     Layout 1, and x4, x5, x6 for Layout 3 and 4. *x0*0 clear all 8 keys, *xn*0 clear all 6 top-row keys. 54 options 
     are: Del Bks Tab aTb Ins Esc PrS aPr Ret Snp Osk UnD ReD caD Cut Cpy Pst Tsk Run wX CPi Ts1 Ts6  K1 - K24 Num 
@@ -854,13 +855,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     Default is 'n','o','p','q','u','v','w','x','y','z'. Alternative could be '0','1','2','3','4','5','6','7','8','9'.
     Cannot use dD rR lL as nKeys in stringlist as they are reserved for delay, repeat, link. 
     Considering alternative choices of w (wait) for d (delay), and x (times) in DoLinkStr()
-(K) Toggle custom key labels for keys M,S,T 1-24 ON/OFF - use *lm* *ls* *lt* + optional filename (which contains 24 key
-    labels seperated by a NULL character). For example *lt*label1 -> LabelT now has content label1 and keys T1-T24 will 
-    have the labels defined in file1 where file1 can have a path before it such as /app1/label1. If only one char added 
-    after *lm,s,t* such as *lm,s,t*x then the files FileM,S,T are reset with the default custom text filename label1,2,3.
-    When using the Macroeditor make sure the A-D indicator is brown when working with the SCard custom label files and 
-    white when working with the Flash custom label files. If a label definition filename is added after the *lm,s,t* the
-    custom label enable is always made ON - i.e. normally it is toggled between ON and OFF.
+(K) Custom Labels Off/On *lm,s,t*0,1 switch custem labels off/on - *lm,s,t*x <> 0,1 toggle state on/off. Use *lm* *ls* 
+    *lt* + optional filename (which contains 24 key labels seperated by a NULL character). For example *lt*label1 -> 
+    LabelT now has content label1 and keys T1-T24 will have the labels defined in file1 where file1 can have a path 
+    before it such as /app1/label1. If only one char but not 0 or 1, added after *lm,s,t* such as *lm,s,t*x then the 
+    files FileM,S,T are reset with the default custom text filename label1,2,3. When using the Macroeditor make sure 
+    the A-D indicator is brown when working with the SCard custom label files and white when working with the Flash 
+    custom label files. If a label definition filename is added after the *lm,s,t* the custom label state is not changed.
       
     Alternatively, use Layout 2 keys [Cfg][[Opt][ M,S,T ] Custom Label and press Pad (o) for ON/OFF. Can also send a new 
     custom label filename  by using <m,s,tfilename> via serial port making sure that A-D is brown when sent, i.e it is 
@@ -929,7 +930,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     the new firmware - this condition where both are 0x00 are handled by setting them to the default < and >. Otherwiae
     use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] config button, before opening the 
     PC App, or enter as *1s*< and *1e*> and save.
-      
+(X) Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App
+    list of App Switches:
+    *ap*appname creates a folder /appname/ if it does not exist on the SDCard
+    *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys and enables App Switch. Pressing the keys M1-M24 or 
+    *S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder appname
+    folder /appname/
+    *ap* disables App Switch function      
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
