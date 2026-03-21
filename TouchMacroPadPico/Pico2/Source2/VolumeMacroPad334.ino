@@ -98,7 +98,7 @@ uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 0   KeySkip 1  CheckSerial 0  KeyHeldEnable  1           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
+// 0   KeySkip 1  CheckSerial 1  KeyHeldEnable  1           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
 // 7     nKeys 1       nChar  n      nKeysPage  8  nKeysCharSet[10] c         CRLF 0                    crlf1 0x0D             crlf2 0x0A
 // 23    iList 0       MuteOn 0           VolOn 1          LayerAxD 0        Media 0                   XFiles 0           Brightness 0           
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
@@ -110,10 +110,10 @@ uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 // Note only first 20 bytes of nDir are saved else nDir = "/"
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
-byte Config1[Config1Size]          = {1,  0,  1,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
+byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
                                      'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };
-cSt byte Config1Reset[Config1Size] = {1,0,1,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
+cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
                                      'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
@@ -1512,6 +1512,7 @@ void DoKeyMST(byte Num, bool Timers)
   LayerAxDSave = LayerAxD;
   if (!Timers) DoMSTLinkName(Num, Layout);      // Layout -> M S T filename such as M01Link
   if (AppState==2 && Layout==AppL134) { strcpy(NameStr1, AppDir); strcat(NameStr1, MSTLinkName); } else strcpy(NameStr1, MSTLinkName);  // MxxLink + 0x00 length = 8               
+  // SerPr2; Serial.print("DoKeyMST"); SerPr1; Serial.print(NameStr1); SerPr1; Serial.print(MSTLinkName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(nDir); SerPr2;   
   
   do { if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
@@ -1714,14 +1715,15 @@ bool MacroKeys(byte c, byte Option)
   if (Option==2) 
      {DoMSTName(c, Layout);
       if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTName); } else strcpy(AppStr, MSTName); // Key [T7] executes file /AppDir/ + t07 = /AppDir/m11 always SDCard         
-      BPtr = MacroBuff;       
+      BPtr = MacroBuff;   
+      // SerPr2; Serial.print("MacroKeys2"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(MSTAName); SerPr1; Serial.print(nDir); SerPr2;      
       MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);        
       if (MacroBuffSize==0) return MacroKeysOK;  }   
 
   if (Option==3)          // DonKeys go here with MSTAName includes /nDir
      {BPtr = MacroBuff;   // SendBytes if (macroA) also comes here
       if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTAName); } else strcpy(AppStr, MSTAName); // Key [M11] executes file /AppDir/ + m11 = /AppDir/m11 always SDCard  
-      // SerPr2; Serial.print("MacroKeys"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(MSTAName); SerPr1; Serial.print(nDir); SerPr2;     
+      // SerPr2; Serial.print("MacroKeys3"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(MSTAName); SerPr1; Serial.print(nDir); SerPr2;     
       MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);   
       if (MacroBuffSize==0) return MacroKeysOK; }
   
@@ -3963,11 +3965,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
        { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
          // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3 To save thes must do [Cfg]->[Sav]
-         strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); // label1,2,3 is default text in files LabelM,S,T          
-         if (k2==0x6D) { if (knum==4) Config1[72] = MLabel = !MLabel; if (knum>5); { NameStr2[5] = 'M'; NameStr1[5] = '1'; } if (MLabel) strcpy(NameStr3, " ON"); m = 1; }
-         if (k2==0x73) { if (knum==4) Config1[73] = SLabel = !SLabel; if (knum>5); { NameStr2[5] = 'S'; NameStr1[5] = '2'; } if (SLabel) strcpy(NameStr3, " ON"); m = 3; }
-         if (k2==0x74) { if (knum==4) Config1[74] = TLabel = !TLabel; if (knum>5); { NameStr2[5] = 'T'; NameStr1[5] = '3'; } if (TLabel) strcpy(NameStr3, " ON"); m = 4; }
-         if (knum>4)   { if (knum>5) { for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n]; NameStr1[n] = 0x00; } // default is NameStr1 = label1,2,3
+         // If number 0 or 1 added after *lm,s,t* such as *lm,s,t*0,1 then labels Off/On To save thes must do [Cfg]->[Sav]
+         strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); if (knum==4 || (knum==5&&b<2)) a=1; else a=0; // label1,2,3 is default text in files LabelM,S,T            
+         if (k2==0x6D) { if (knum==4) Config1[72]=MLabel=!MLabel; if (knum>=5) { NameStr2[5]='M'; NameStr1[5]='1'; if (knum==5&&b<2) Config1[72]=MLabel=b; } if (MLabel) strcpy(NameStr3," ON"); m=1; }
+         if (k2==0x73) { if (knum==4) Config1[73]=SLabel=!SLabel; if (knum>=5) { NameStr2[5]='S'; NameStr1[5]='2'; if (knum==5&&b<2) Config1[73]=SLabel=b; } if (SLabel) strcpy(NameStr3," ON"); m=3; }
+         if (k2==0x74) { if (knum==4) Config1[74]=TLabel=!TLabel; if (knum>=5) { NameStr2[5]='T'; NameStr1[5]='3'; if (knum==5&&b<2) Config1[74]=TLabel=b; } if (TLabel) strcpy(NameStr3," ON"); m=4; }         
+         if (a==0)     { if (knum>5) { for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n]; NameStr1[n] = 0x00; } // default is NameStr1 = label1,2,3
                          if (LayerAxD) f1 = SD.open(NameStr2, "w"); else f1 = LittleFS.open(NameStr2, "w"); 
                          f1.print(NameStr1); f1.print('\0'); f1.close();  }         
          DoMSTLabel(0, m); WriteConfig1Change = true; strcat(NameStr2, NameStr3); status(NameStr2); StarOk = true; break; }
@@ -4021,12 +4024,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
       case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
-      { if (knum==4) { for (n=0; n<6; n++)            Serial.write(XNum[n]);  Serial.write(BsDNum);   Serial.write(RetNum);    // write raw data, print converts number to text
-        Serial.write(Layout);  Serial.write(LayerAD); Serial.write(LayerAxD);                                                  // PC receives 0E 0F 10 0E 0.....0 01 01 00 0D 0A 
-        Serial.write(VolOn);   Serial.write(MuteOn);  Serial.write(ToneOn);   Serial.write(MediaCfg); Serial.write(Media); 
-        Serial.write(Vol1);    Serial.write(Vol3);    Serial.write(Vol4);     Serial.write(MathSet); 
-        byte* bytePtr = (byte*)&TimePeriod;           Serial.write(bytePtr, sizeof(TimePeriod)); // Serial.write(TimePeriod / 256);  Serial.write(TimePeriod % 256);
-        Serial.println();      status("Raw Data sent to PC"); StarOk = true; break; }  
+      { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); Serial.println("EOC"); status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
         Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
         Serial.println(ToneOn);      Serial.println(MediaConfig[0]);    Serial.println(Media);             Serial.println(Vol1);              Serial.println(Vol3);          
@@ -4035,7 +4033,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
-        Serial.println("EOC");                 
+        Serial.println(MLabel);      Serial.println(SLabel);            Serial.println(TLabel);            Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
