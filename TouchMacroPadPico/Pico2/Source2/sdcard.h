@@ -7,7 +7,7 @@
 // LittleFS Filenames are case sensitive
 //
 // Could therefore use STRname, MTRname, TTRname instead of SDNameS SDNameM SDNameT 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SDCard File Names:
 // Note that 3char text filenames are required for use in X01Link strings => cannot add .txt to all the files here
 // 3-Char filenames produced by *sd*4-9 (UVWXYZ U01-U24) *sd*mst (MST M01-M24) *sd*abcdef (A01-A24)
@@ -17,14 +17,14 @@
 // SDnum 10-12  MST mst 01-24 = M01-M24 S01-S24 T01-T24                           *sd*m,s,t *sd*M,S,T
 // SDNum 13-19  A-G a-g 01-24 = A01-A24 - G01-D24                                 *sd*A-G   *sd*a-g     check Dnn for delay in Link()
 // SDNum 20-21  K,k  K=K01Link-K24Link k = K01-K24                                *sd*K,k
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-char SD1[23]   = { " 123UVWXYZMSTABCDEFGKK" }; // Not a set 0
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+char SD1[23]   = { " 123UVWXYZMSTABCDEFGKK" }; // Select SD1 (Uppercase XYZ) or SD2 (Lowercase xyz) using Pad [n] after [Cfg][Opt][SDBank]
 char SD2[23]   = { " 123uvwxyzmstabcdefgKk" }; // 1-3, 4-9 = U V W X Y Z, 10 = M m 11 = S s 12 = T t 13-19 A-G 20 = K 21 = k
 bool sdShow = false;                           // SDFleList sent to Serial Port
 bool SDNumChange = false;          // If 1 save SCard Set with [Cfg][Sav]
 File SDFile;                       // File object instance
 byte SDByte;                       // Byte from File read from SDCard
-byte SDNum = 1;                    // 1 - 9 10 - 12 13-19 20,21 1-3 U-Z A-G M,S,T k,K Select 22 groups of 24 files SDCard size limited to its capacity 
+byte SDNum = 1;                    // 1 - 9 10 - 12 13-19 20,21 1-3 Uu-Zz Aa-Gg Mm,Ss,Tt k,K Select 22 groups of 24 files SDCard size limited to its capacity 
                                    // SDnum=0 => SDCard file read disabled
 byte SDCardArr[4] = {1,0,0,0};     // [0] Store/Retrieve SDnum  [1] = char 0 = " ", 1-3, 4-9 = U V W X Y Z, k K m s t  [2] 0=Uppercase 1=Lowercase Filename 
 char SDName [24][10];              // Current Filename choice - see comments below other ways to do this

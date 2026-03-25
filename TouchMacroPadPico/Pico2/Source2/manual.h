@@ -6,6 +6,10 @@ manual.h
 On First Start: 
 
 There is a PC Windows-based app for an easy way of controlling and configuring the Touch MacroPad - Serial2Pico.
+To use it serial comms must be enabled on the Pico - press Pad [k] in Layout L2, and then press and hold key [*Cm]
+until *se* shows then press [EXE]. Start the PC App, answer ok on any message boxes, press the Config tab and select
+where your json files are located. In the Comms tab select the COM port for the Pico and press Open port. Then close
+and re-open the app and press [Open Port].
 
 If asked to do so, do a four-arrow corner calibration - press at the TIP of each arrow just ONCE. If you make a 
 mistake and press the same corner twice it is likely that you will need a reset with the nuke.uf2 file (provided 
@@ -279,8 +283,8 @@ storage (Flash or SDCard), to be executed.
     Green Colour ->   Macro Mode  - 4-Cycle combinations of Source and Destination SDCard (Orange) or Flash (White) 
                       NumPad Mode - Switch between 3 NumPad pages.
                       [Opt] Mode  - Macro Upper/Lower case files, [L1-4][VolMute]Long-Press On/Off, StartupLayout L1-L4,
-                                    Select M S T MacroBanks 1-5, Select SDCard File Set 1-21, Send SD+Flash File lists
-                                    Custom Key Labels On/Off for Keys M,S,T 
+                                    Select M S T MacroBanks 1-5, Select SDCard File Set 1-21 use Pads [o] and [n], 
+                                    Send SD+Flash File lists,  Custom Key Labels On/Off for Keys M,S,T 
                       [Key] Mode  - Select 24 options for [Del], [Ret], [Cut,Copy,Paste] keys
 -----------------------------------------------------------------------------------------------------------------------
 Layout 2 - Full Media Mode - Play Controls On - Volume Controls On - Tone Controls On 
@@ -589,15 +593,15 @@ Example 3: Using the K1-K24 keys for both KxxLink macros and short 3byte BSD mac
            already - a50 but we need two other files a51 = "notepad+C/R" and a52 = "Hello". Create these two files 
            in the macroeditor and check the filelist using *lf*. 
            
-           As an additional exercise we are then going to copy the three files from flash to SDCard as a30, a31 and 
-           a32. In the Macroeditor setup SrcDst = aa A50(white) A30(orange). (Press the red Pad key to change the 
-           colours of the Source and Destination numbers.) Then press [Cpy]. Increase the numbers to A51 and A31 
-           and again press [Cpy]. Then do it for A52 and A32. Check the filelist for files a31, a32, a33 on the 
-           SDCard (Note that the file size should increase by one because 0x00 was added to the end.) Now press 
-           [Cfg][Opt] until SDCard Files 1-21 is shown. Then press the red Pad [o] until "SDCard Set K" - uppercase K
-           - shows. Make sure the A-D indicator is orange - if it is white press key [A-D] until it is orange - then 
-           press [L2] or [V2] for Layout 3  - the S1-S6 keys - and then from a serial terminal send the string
-           <3a30a31d01r05a32> the status bar will show K03Link. Pressing [K3] will now open notepad and type hello 5x.
+           As an additional exercise copy the three files from flash to SDCard as a30, a31 and a32. In the Macroeditor
+           setup SrcDst = aa A50(white) A30(orange). (Press the red Pad key to change the colours of the Source and 
+           Destination numbers.) Then press [Cpy]. Increase the numbers to A51 and A31 and again press [Cpy]. Then 
+           do it for A52 and A32. Check the filelist for files a31, a32, a33 on the SDCard (Note that the file size 
+           should increase by one because 0x00 was added to the end.) Now press [Cfg][Opt] until SDCard Files 1-21 
+           is shown. Then press the red Pad [o] until "SDCard Set K" - uppercase K shows. Make sure the A-D indicator
+           is orange - if it is white press key [A-D] until it is orange - then press [L2] or [V2] for Layout 3  -
+           the S1-S6 keys - and then from a serial terminal send the string <3a30a31d01r05a32> the status bar will 
+           show K03Link. Pressing [K3] will now open notepad and type hello 5x.
 
            The Macroeditor [Cpy] can also be used to directly define the short BSD macros for the k keys. For example 
            setup the Destination as K01, then enter GUI Tab and press [EXE] - a file K01 will be created with a 
@@ -859,14 +863,18 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     Default is 'n','o','p','q','u','v','w','x','y','z'. Alternative could be '0','1','2','3','4','5','6','7','8','9'.
     Cannot use dD rR lL as nKeys in stringlist as they are reserved for delay, repeat, link. 
     Considering alternative choices of w (wait) for d (delay), and x (times) in DoLinkStr()
-(K) Toggle custom key labels for keys M,S,T 1-24 on/off - use *lm* *ls* *lt* + optional filename that contains 24 key
-    labels seperated by a NULL character. For example *lt*label1 -> LabelT now has content label1 and keys T1-T24 will 
-    have the labels defined in file1 where file1 can have a path before it such as /app1/label1. If only one char added 
-    after *lm,s,t* such as *lm,s,t*x then the three files FileM,S,T are reset with default custom text files label1,2,3.    
-    Can also use [Cfg][[Opt][ M,S,T ] Custom Label and press Pad (o) to toggle it on/off. Can also send a new custom 
-    label filename  by using <m,s,tfilename> via serial port - if A-D is brown when sent, i.e it is saved on SDCard. 
-    If it is needed on the Flash FS, not SDCard, then copy it to the Flash FS as explained at the end of this
-    section, and then if not needed on the Flash FS delete the file.
+(K) Custom Labels Off/On *lm,s,t*0,1 switch custem labels off/on - *lm,s,t*x <> 0,1 toggle state on/off. Use *lm* *ls* 
+    *lt* + optional filename (which contains 24 key labels seperated by a NULL character). For example *lt*label1 -> 
+    LabelT now has content label1 and keys T1-T24 will have the labels defined in file1 where file1 can have a path 
+    before it such as /app1/label1. If only one char but not 0 or 1, added after *lm,s,t* such as *lm,s,t*x then the 
+    files FileM,S,T are reset with the default custom text filename label1,2,3. When using the Macroeditor make sure 
+    the A-D indicator is brown when working with the SCard custom label files and white when working with the Flash 
+    custom label files. If a label definition filename is added after the *lm,s,t* the custom label state is not changed.
+      
+    Alternatively, use Layout 2 keys [Cfg][[Opt][ M,S,T ] Custom Label and press Pad (o) for ON/OFF. Can also send a new 
+    custom label filename  by using <m,s,tfilename> via serial port making sure that A-D is brown when sent, i.e it is 
+    saved on the SDCard. If it is needed on the Flash FS, not SDCard, then copy it to the Flash FS as explained at the end
+    of this section, and then if not needed on the Flash FS delete the file.
 
     All custom label files can be saved to the SDCard and/or Flash FS's, namely files LabelM, LabelS, LabelT which 
     contains the path as a folder+filename of the file that has the custom key labels - by default this is label1, label2, 
@@ -878,7 +886,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     [Cfg][[Opt][M] Custom Label+ press Pad (o) to switch the labels for keys M on/off. Without a filename in LabelM such
     as label1, and without a key label definition in file label1, Keys M1-M24 will be without any labels if the custom 
     label option is switched on. Use the Macro Editor to copy labelfiles FileM,S,T or label1, 2, 3 from the 
-    SDCard -> Flash by setting the source/destination brown/white, enter name1=name2, and then press [Cpy]. 
+    SDCard -> Flash by setting the source/destination brown/white, enter name1=name2, and then press [Cpy].
 (L) Layout, Layer, and storage changes  via starcodes *ad*, *ae*, and *lx* - also via serial <*ad* > <*ae* > <*lx* >
     *ad*xs with x = a,b,c,d (change layers A-D) s = s,f (change SDCard or Flash)
     *ad* toggle SDCard <-> Flash
