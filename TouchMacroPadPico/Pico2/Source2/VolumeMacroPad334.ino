@@ -302,7 +302,7 @@ TFT_eSPI tft = TFT_eSPI();
 #define SerPr2 Serial.println()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// if MLabel SLabel TLabel > 0 use 5-char max labels in files MLabel SLabel TLabel instead of M,S,T 1 - M,S,T 24
+// if MLabel SLabel TLabel > 0 use 5-char max labels in files LabelM LabelS LabelT instead of M,S,T 1 - M,S,T 24
 // Also MathKeys label can be up to 5 chars
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 char keyLabel[12][6] = {""};               //  Size = 144 at 5 characters max n0000 - n9999
@@ -1003,7 +1003,7 @@ void WriteDateTime()              // Alternative Date Time - only displayed not 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DoMSTLabel(byte Option, byte mst)  // Pointer to LabelArrM,S.T [24][6] Size 192
+void DoMSTLabel(byte Option, byte mst)  // Pointer to LabelArrM,S.T [24][6] Size 144
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // If change to labels does not reflect or keys are blank use [Cfg][Opt]MST Key Label On/Off to force refresh
 { char LabelFile[7] = "LabelM";
@@ -2579,7 +2579,7 @@ void ConfigMacroButtons() {  // Only updates six macro buttons - reduce screen f
   
   for (n=4; n<11; n++)  { keyColor[n] = Colours[b][n]; strcpy(keyLabel[n], Labels[LayerAD][b][n]); } 
 
-  if (MLabel+SLabel+TLabel>0) DoMSTLabel(1, Layout);
+  if (MLabel || SLabel || TLabel) DoMSTLabel(1, Layout);
               
   for (row = 1; row < rows; row++)   {     // 2 rows 1,2 
        for (col = 0; col < 3; col++) {     // 3 columns 0,1,2
@@ -2636,7 +2636,7 @@ void ConfigButtons(uint8_t rowcount) {  // rowcount=0 all 4 rows rowcount=2 last
   for (n=0; n<12; n++) strcpy(keyLabel[n], Labels[LayerAD][b][n]); // label = 3 chars max except nKeys 5 chars   
   for (n=0; n<12; n++) keyColor[n] = Colours[b][n];
 
-  if (Layout!=2 && MLabel+SLabel+TLabel>0) DoMSTLabel(1, Layout);
+  if (Layout!=2 && (MLabel || SLabel || TLabel)) DoMSTLabel(1, Layout);
   
   if (!VolOn) for (m=0; m<3; m++) { keyLabel[3][m]  = BsDLabel[BsDNum][m]; 
                                     keyLabel[11][m] = BsDLabel[RetNum][m];  }                     
@@ -3967,7 +3967,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
        { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
          // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3 To save thes must do [Cfg]->[Sav]
-         // If number 0 or 1 added after *lm,s,t* such as *lm,s,t*0,1 then labels Off/On To save thes must do [Cfg]->[Sav]
+         // If number 0 or 1 added after *lm,s,t* such as *lm,s,t*0,1 then labels Off/On To save must do [Cfg]->[Sav]
          strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); if (knum==4 || (knum==5&&b<2)) a=1; else a=0; // label1,2,3 is default text in files LabelM,S,T            
          if (k2==0x6D) { if (knum==4) Config1[72]=MLabel=!MLabel; if (knum>=5) { NameStr2[5]='M'; NameStr1[5]='1'; if (knum==5&&b<2) Config1[72]=MLabel=b; } if (MLabel) strcpy(NameStr3," ON"); m=1; }
          if (k2==0x73) { if (knum==4) Config1[73]=SLabel=!SLabel; if (knum>=5) { NameStr2[5]='S'; NameStr1[5]='2'; if (knum==5&&b<2) Config1[73]=SLabel=b; } if (SLabel) strcpy(NameStr3," ON"); m=3; }
@@ -4035,7 +4035,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
-        Serial.println(MLabel);      Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(SDCardArr[2]);      Serial.println("EOC");                 
+        Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
