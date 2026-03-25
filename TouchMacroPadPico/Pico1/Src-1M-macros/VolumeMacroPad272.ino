@@ -109,21 +109,22 @@ byte EndMarker2   = 0x03;         // Or use backtick/grave ` Change with *2e*cha
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 0   KeySkip 1  CheckSerial 0  KeyHeldEnable  1           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
+// 0   KeySkip 1  CheckSerial 1  KeyHeldEnable  1           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
 // 7     nKeys 1       nChar  n      nKeysPage  8  nKeysCharSet[10] c         CRLF 0                    crlf1 0x0D             crlf2 0x0A
 // 23    iList 0       MuteOn 0           VolOn 1          LayerAxD 0        Media 0                   XFiles 0           Brightness 0           
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
 // 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
 // 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
-// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03
+// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Currently last used entry EndMarker = Config1[84]; Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+// Currently last used entry MacroUL = Config1[85] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+// Note only nDir only saved if 20 bytes max in size excluding last 0x00 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
-byte Config1[Config1Size]          = {1,  0,  1,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
+byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
                                      'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };
-cSt byte Config1Reset[Config1Size] = {1,0,1,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
+cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
                                      'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
@@ -224,7 +225,7 @@ const static char VarStatus[9][31] = {"", /*
 const static char OptStatus[13][38] = {"",                                                                          // OptStatus[1]-[9] used
 "Select nKeys Character use Pad (o)",   "VolMute long-press OnOff use Pad (o)",  "L1 - L4 Startup Select use Pad (o)", 
 "[ M ] Keys MacroBank 1-5 use Pad (o)", "[ S ] Keys MacroBank 1-5 use Pad (o)",  "[ T ] Keys MacroBank 1-5 use Pad (o)",
-"Macro U/L Case Filenames use Pad (o)", "Select SDCard FileSet use Pad (o)",     "File List SDCard + Flash use Pad (o)",
+"Macro U/L Case Filenames use Pad (o)", "SDCard FileSet use Pad (o) + Pad (n)",     "File List SDCard + Flash use Pad (o)",
 "[ M ] Custom Label press Pad (o)",     "[ S ] Custom Label press Pad (o)",      "[ T ] Custom Label press Pad (o)"   };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1124,9 +1125,13 @@ bool GetMatch(byte a)
 ///////////////////////////////////////////////////////////////////////////////////////
 // Check and save new SDCard file strings SDFilename is in sdcard.h select with *sd*n
 // These are limited size Bytesize = 250 - sensible here because wait until written
-// Directly written to SDCard files with PC only limited by SDCard capacity
+// Directly written to SDCard files with PC App only limited by SDCard capacity
 ///////////////////////////////////////////////////////////////////////////////////////
 void DoNewSDCard()
+///////////////////////////////////////////////////////////////////////////////////////
+// Filenames from SDBank selected SD1 (Uppercase XYZ) or SD2 (Lowercase xyz) 
+// Using Pad [n] SD1 or SD2 after [Cfg][Opt][SDBank] Pad [o]
+///////////////////////////////////////////////////////////////////////////////////////
 { int n;   
   bool Found = false;
   byte a, c = 0;  
@@ -1139,17 +1144,18 @@ void DoNewSDCard()
   Found = GetMatch(a); if (!Found) return;          
   a = a - 48;
    
-  if (Found){ if (a>0) c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24 -> 1-24 used  
-                                                   // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23                                                   
-              if (Layout!=2) {if (a>0) { ByteOK = true; status((char *)SDName[c]); }  }    // SDCard file 1-21 x 1-24
-              for (n=1; n<=NumBytes; n++) { RecBytes[n-1] = RecBytes[n]; }                 // Skip 1 # = char <#               
-              if (RecBytes[n]!=0x00) { RecBytes[n] = 0x00; NumBytes++; }                   // Add null incase file = text string
-            }                            
+  if (a>6 || a==0) { status("Use <1 to <6 only"); NumBytes = 0; return; }
+  if (SDNum == 0)  { status("Select SDBank first [Cfg][Opt] Pads[o][n]"); NumBytes = 0; return; }
+  
+  c = a + (LayerAD)*6 - 1;    // S1-S6=>S19-S24 T1-T6=>T19=T24 M1-M6=>M19=M24 -> 1-24 used c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23                                                   
+  if (Layout!=2) {if (a>0) { ByteOK = true; status((char *)SDName[c]); }  }    // SDCard file 1-21 x 1-24
+  for (n=1; n<=NumBytes; n++) { RecBytes[n-1] = RecBytes[n]; }                 // Skip 1 # = char <#               
+  if (RecBytes[n]!=0x00) { RecBytes[n] = 0x00; NumBytes++; }                   // Add null incase file = text string                            
     
-   if ((Found)&&(ByteOK))   { File f = SDFS.open(SDName[c], "w");   // Filename set with *sd*1-9,(13-19), k,K,M,S,T
-                              f.write(RecBytes, NumBytes);        // (13-19=A-G must be directly copied to SDCard
-                              //f.print('\0');                    // 4-9=U-Z can be written here    
-                              f.close();    }                                        
+  if ((Found)&&(ByteOK))   { File f = SDFS.open(SDName[c], "w");   // Filename set with *sd*1-9,(13-19), k,K,M,S,T
+                             f.write(RecBytes, NumBytes);        // (13-19=A-G must be directly copied to SDCard
+                             //f.print('\0');                    // 4-9=U-Z can be written here    
+                             f.close();    }                                        
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1169,20 +1175,21 @@ void DoNewData()
   Found = GetMatch(a); if (!Found) return;                     // a not 1-6 but mst,fF,tT etc 
   if (NumBytes>MaxBytes) { status("File too large"); return; } // Max 250 bytes here else use SDCard   
   a = a - 48;                                                  // a=1-6
-    
-  if (Found) { if (a>0) c = a + (LayerAD)*6 - 1;    // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23
-  
-               DoMSTName(c, Layout);                // Filenames from DoMST() 0mcst0MCST0  
-               if (Layout!=2) ByteOK = true; 
 
-               if (Layout==3) {if (a>0) { BytePtr = Str1to12[c]; MacroS1S12[c] = 1; MacroSizeS1S12[c] = NumBytes; status("Saved [Sx]"); }  }  // Keys S1-S24                                  
-               if (Layout==4) {if (a>0) { BytePtr = Ttr1to12[c]; MacroT1T12[c] = 1; MacroSizeT1T12[c] = NumBytes; status("Saved [Tx]"); }  }  // Keys T1-T24                                  
-               if (Layout==1) {if (a>0) { BytePtr = Mtr1to12[c]; MacroM1M12[c] = 1; MacroSizeM1M12[c] = NumBytes; status("Saved [Mx]"); }  }  // Keys M1-M24
-                  
-               for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; }  // Skip 1,2 = char <#  
-             }                          
+  if (a>6 || a==0) { status("Use <1 to <6 only"); NumBytes = 0; return; }
     
-   if ((Found)&&(ByteOK)) { ASize = DoFileBytes(ByteOK, MSTName, BytePtr, NumBytes, 0); }  // Save to Flash                                         
+  c = a + (LayerAD)*6 - 1;    // c = 0 to 23 for every Layout M S T c=1+0x6-1=0 c=6+3x6-1=23
+  
+  DoMSTName(c, Layout);                // Filenames from DoMST() 0mcst0MCST0  
+  if (Layout!=2) ByteOK = true; 
+  
+  if (Layout==3) { BytePtr = Str1to12[c]; MacroS1S12[c] = 1; MacroSizeS1S12[c] = NumBytes; status("Saved [Sx]"); }  // Keys S1-S24                                  
+  if (Layout==4) { BytePtr = Ttr1to12[c]; MacroT1T12[c] = 1; MacroSizeT1T12[c] = NumBytes; status("Saved [Tx]"); }  // Keys T1-T24                                  
+  if (Layout==1) { BytePtr = Mtr1to12[c]; MacroM1M12[c] = 1; MacroSizeM1M12[c] = NumBytes; status("Saved [Mx]"); }  // Keys M1-M24
+                  
+  for (n=1; n<=NumBytes; n++) { BytePtr[n-1] = RecBytes[n]; }  // Skip 1,2 = char <1 to <6               }                          
+    
+  if ((Found)&&(ByteOK)) { ASize = DoFileBytes(ByteOK, MSTName, BytePtr, NumBytes, 0); }  // Save to Flash                                         
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3088,7 +3095,8 @@ void ReadConfig1()
   MouseZ =         Config1[81];                                // 0-3 Screen 0,0 position corner LB LT RT RB  
   MediaConfig[0] = Config1[82];                                // 0-6 Media keys Volume Mute Tonecontrol combinations
   StartMarker =    Config1[83];                                // Serial Comms start was < now 0x02       
-  EndMarker  =     Config1[84];                                // Serial Comms end was > now 0x03   
+  EndMarker  =     Config1[84];                                // Serial Comms end was > now 0x03  
+  MacroUL =        Config1[85];                                // Upper or lower case filenames for macros on Flash only 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3137,7 +3145,8 @@ void WriteConfig1(bool Option)
                   Config1[81] = MouseZ;                                       // 0-3 Screen 0,0 position corner LB LT RT RB       
                   Config1[82] = MediaConfig[0];                               // 0-6 Media keys Volume Mute Tonecontrol combinations
                   Config1[83] = StartMarker;                                  // Serial Comms start was < now 0x02       
-                  Config1[84] = EndMarker;                                    // Serial Comms end was > now 0x03                                                      
+                  Config1[84] = EndMarker;                                    // Serial Comms end was > now 0x03   
+                  Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only                                                     
                 }
   
   File f1 = LittleFS.open("Config1", "w"); 
@@ -3159,16 +3168,16 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
   
   if (Option) {
 
-      if (!SDFS.exists("Math0"))                SaveMath(0);                                            // Save default Symbols values
-      
-      if (LittleFS.exists("Config1"))           ReadConfig1(); else WriteConfig1(2);                    // Read Config1 else write default values
-      if (StartMarker==0x00 && EndMarker==0x00) { StartMarker=0x3C; EndMarker=0x3E; }                   // Mainly for 1st run can remove later
+      if (!SDFS.exists("Math0"))                SaveMath(0);                                            // Save default Symbols values      
+
+      if (LittleFS.exists("Config1"))           ReadConfig1(); else WriteConfig1(2);   // Read Config1 else write default values
+      if (StartMarker==0x00 && EndMarker==0x00) { StartMarker=0x3C; EndMarker=0x3E; }  // Mainly for 1st run can remove later
+      if (MacroUL) SwitchMacroUL(0);    
       
       if (LittleFS.exists("SDCardArr"))         ReadSDCardArr();
       if (LittleFS.exists("MouseCfg"))          ReadMouse();
       if (LittleFS.exists("iList"))             ReadInstructionList();                                  // iList -> MacroInstructionList
       if (LittleFS.exists("DoCal"))             DoCal    = true; else DoCal = false;                    // 1 -> Run calibration on start
-      if (LittleFS.exists("MacroUL"))           MacroUL  = true; SwitchMacroUL(0);                      // Upper/Lower case filenames
       if (LittleFS.exists("x1x6"))              Readx1x6();                                             // always read if exists
       if (LittleFS.exists("Bank123File"))       ReadBank123();                                          // always read if exists
   }    
@@ -3379,17 +3388,15 @@ void GetSysInfo(int Action)
   int tHeap = rp2040.getTotalHeap();
   int fCPU  = rp2040.f_cpu();
   
-  if (Action>0) 
-     { if (SaveLayout>0) { SaveLayoutConfig(); }        
-       if (Action==4) { Savex1x6(); SaveX1X6 = false; Config1[28] = XFiles; WriteConfig1(1); }
-  return; } // if (Action>0)
+  if (Action>0) { if (Action==4) { Savex1x6(); SaveX1X6 = false; Config1[28] = XFiles; WriteConfig1(1); WriteConfig1Change = false; }
+                  if (SaveLayout>0) SaveLayoutConfig(); return; }  // SaveLayoutConfig sets WriteConfig1Change = true;
 
-  if (WriteConfig1Change) { WriteConfig1(1); WriteConfig1Change = false; }
+  if (WriteConfig1Change) { WriteConfig1(1); SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
   if (SDNumChange) { SaveSDCardArr(); SDNumChange = false; }  
   if (Bank123Change) { File f = LittleFS.open("Bank123File", "w"); if (f) {f.write(Bank123, 3); f.close(); } Bank123Change = false; }
   if (LayerADChange) { if ( LayerAxD!=Config1[26] || LayerAD!=Config1[32] ) WriteConfig1(1); LayerADChange = false; }
   if (SaveVar) { WriteConfig1(1); SaveVar = false; }  
-  if (MediaChange) { if (VolOn!=Config1[25] || MuteOn!=Config1[24] || Media!=Config1[27] || ToneOn!=Config1[79]) { WriteConfig1(1); MediaChange = false; } }     
+  if (MediaChange) { if (VolOn!=Config1[25] || MuteOn!=Config1[24] || Media!=Config1[27] || ToneOn!=Config1[79]) { WriteConfig1(1); MediaChange = false; } }  
   if (SaveOptionOS) { WriteConfig1(1); SaveOptionOS = false; }  
   
   Serial.println("Version: VolumeMacro272 1-million-macros - Tobias van Dyk February 2026 License GPL3");
@@ -3403,17 +3410,12 @@ void GetSysInfo(int Action)
   
   Serial.println("Flash Files (Number Name Size):");
   ListFiles(0);
-  Serial.print("\n");
+  SerPr2;
   Serial.println("SDCard Files (Number Name Size):");
   ListSDFiles(0, 0);
-
-  Serial.print("SDCard Set: "); Serial.print(SDNum); SerPr1;   
-  Serial.print("SDCard Element 0: "); n=0; while (SDName[0][n]!=0x00 && n<20) { Serial.print(SDName[0][n]); n++; }
-  Serial.println("\n");
   
   DisplayClocks(false);
-
-  showKeyData(0);  
+  // showKeyData(0);   // If included slows Save - use *ld*0,1 for data list   
 }
 ////////////////////
 void ResetTimers(byte Option)
@@ -3606,12 +3608,9 @@ void SwitchMacroUL(bool Option)
  byte n;
    
  for (n=0; n<20; n++) { if (MacroUL) padLabel[n][0]=Ucase[n]; else padLabel[n][0]=Lcase[n]; }
-
- if (Option) { if (MacroUL)  { File f = LittleFS.open("MacroUL", "w"); if (f) {f.print(MacroUL); f.close(); 
-                               strcat(MacroULStatus, "Upper"); status(MacroULStatus); } } 
-               if (!MacroUL) { LittleFS.remove("MacroUL"); 
-                    strcat(MacroULStatus, "Lower"); status(MacroULStatus); } 
-             }
+ 
+ if (Option) { Config1[85] = MacroUL; WriteConfig1Change = 1; if (MacroUL)  { strcat(MacroULStatus, "Upper"); status(MacroULStatus); } 
+                                                             if (!MacroUL) { strcat(MacroULStatus, "Lower"); status(MacroULStatus); }  }             
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -3863,9 +3862,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
             {for (m=0; m<3; m++) {MST1 = m; for (n=0; n<24; n++) { Option1 = n; SaveMacro(0); } } status("[All MST1-24] saved"); StarOk = true; break;} } 
          case 29: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]==0x64 *sd*n = 1-9 or mM sS tT or aA-gG or K,k Select SDCard Files 
        { if (knum>5) break;                  // SDNum = single digits or char only after *sd* or *sd*= sdShow = true 
-         if (knum==4) { sdShow = !sdShow; 
-                                 if (sdShow) status("SDFileNames Listed ON"); else status("SDFileNames Listed OFF"); StarOk = true; break; }        
-         SDNum = KeyBrdByte[4];                       // Use the [ADD]ed number to assign 1 - 9 or calc 10 - 21 next       
+         if (knum==4) { sdShow = !sdShow; if (sdShow) status("SDFileNames Listed ON"); else status("SDFileNames Listed OFF"); StarOk = true; break; }        
+         SDNum = KeyBrdByte[4];              // Use the [ADD]ed number to assign 1 - 9 or calc 10 - 21 next       
          SDCardSelectFiles(1); SDNumChange = true; optionsindicators(0); StarOk = true; break; }
          case 30: ////////////////////// KeyBrdByte[1]==0x73&&KeyBrdByte[2]==0x65 *se* Switch off serial monitor - default is off - state is saved  
        { CheckSerial = !CheckSerial; Config1[1] = CheckSerial; WriteConfig1(0); 
@@ -3939,8 +3937,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (knum>4)  { int len; if (m == -1) len = knum-4; else len = m-4; if (len>0) { for (n=0; n<len; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[len] = 0x00; d++; }  }
          if (m!=-1)   { int len = knum - (m + 1); if (len>0) { for (n=0; n<len; n++) NameStr1[n] = KeyBrdByte[m+1+n]; NameStr1[len] = 0x00; d++; }  }
          DoFileList(d); StarOk = true; break; } 
-         case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* Upper/Lowercase macrokeys filenames
-       { MacroUL = !MacroUL; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
+         case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* or *ul*0,1 off/on Upper/Lowercase macrokeys filenames
+       { if (knum==4) MacroUL = !MacroUL; if (knum==5) MacroUL = b; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
          case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-9
        { if (k2==0x78) { iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // or use WriteConfig1(0);
                          if (iList) status("Instruction List ON"); else status("Instruction List OFF"); StarOk = true; break; }       
@@ -4062,8 +4060,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
-        Serial.println(MLabel);      Serial.println(SLabel);            Serial.println(TLabel);            Serial.println("EOC");                 
-        status("Text Data sent to PC"); StarOk = true; break; } }  
+        Serial.println(MLabel);      Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(SDCardArr[2]);      Serial.println("EOC");    
+        status("Text Data sent to PC"); StarOk = true; break; } } 
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
             else for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
@@ -4177,7 +4175,8 @@ void DoFileList(int d)
 { char s[50] = "SDCard Files (Number Name Size): ";
   char f[50] = "Flash Files (Number Name Size): ";
   status("SDCard and Flash Filelist Sent"); 
-  if (d==2) strcat(f, NameStr1);
+  if (d==2) strcat(f, NameStr1); 
+  SerPr2;
   Serial.println(f);    
   ListFiles(d); 
   Serial.print("\n"); 
@@ -5156,7 +5155,7 @@ void showKeyData(byte Option)
    
    SerPr2;
    Serial.println("Config1: " );
-   for ( m = 0; m<90; m++ ) { Serial.print(Config1[m], HEX); SerPr1; if (m==20||m==40||m==60) SerPr2; }
+   for ( m = 0; m<90; m++ ) { Serial.print(Config1[m], HEX); SerPr1; if (m==20||m==40||m==60||m==80) SerPr2; }
    SerPr2;
 
    SerPr2;
@@ -5165,42 +5164,49 @@ void showKeyData(byte Option)
          for ( n = 0; n < iListMax; n++) 
              { b =  MacroInstructionList[m][n]; Serial.print(b); SerPr1; }
          SerPr2; }
+         
+   SerPr2;
+   Serial.print("SDCard Set: "); Serial.print(SDNum); SerPr1;   
+   Serial.print("SDCard 0-3: "); Serial.print(SDName[0]); SerPr1;Serial.print(SDName[1]); SerPr1;Serial.print(SDName[2]); SerPr1;
+   SerPr2; 
 
-  SerPr2;
-  Serial.print("Serial Comms Start and End Markers: "); 
-  Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);
-
-  SerPr2;
-  Serial.print("App Switcher Folder State Layer:" ); Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);
-    
-  SerPr2;
-  ReadTimers(1);
-  Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
-
-  b = (DimVal*100)/255;
-  Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
-
-  b = (NormVal*100)/255; if (b==0) b = 100;
-  Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
-      
-  Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
-  Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
-
-  Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
-  Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
-
-  Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
-  Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
+   SerPr2;
+   FSInfo fs_info; SDFS.info(fs_info);
+   Serial.print("SDCard Total MB:"); Serial.print(fs_info.totalBytes/(1024*1024)); Serial.print(" Used kB:"); Serial.println(fs_info.usedBytes/1024); 
   
-  Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
-  Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
-  Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
-  Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
-  Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;
-
-  Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
-
-  Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); }
+   SerPr2;
+   Serial.print("Serial Comms Start and End Markers: "); 
+   Serial.print(StartMarker, HEX); SerPr1; Serial.println(EndMarker, HEX);  
+  
+   SerPr2;
+   Serial.print("App Switcher Folder State Layer:" ); Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);
+   SerPr2;
+    
+   SerPr2;
+   ReadTimers(1);
+   Serial.printf("LCD Blank Timeout: %d seconds\n", TimePeriod/1000);     // make sure this is never 0 
+   b = (DimVal*100)/255;
+   Serial.printf("LCD Dimmed: %d percent (%d/255)\n", b, DimVal);  
+   b = (NormVal*100)/255; if (b==0) b = 100;
+   Serial.printf("LCD Brightness: %d percent (%d/255)\n", b, NormVal);
+   SerPr2;    
+   Serial.printf("Restart Time  (seconds): %d %d\n", timeRestart/1000,  TimeRestart/1000);
+   Serial.printf("PowerOff Time (seconds): %d %d\n", timePowerOff/1000, TimePowerOff/1000);
+   Serial.printf("Macro Oneshot Time (seconds): %d %d\n", timeOnceof/1000, TimeOnceof/1000);
+   Serial.printf("Macro Repeat Time  (seconds): %d %d\n", timeRepeat/1000, TimeRepeat/1000);
+   SerPr2;
+   Serial.print("CR LF Filter Mode Char 1 Char 2: "); 
+   Serial.print(CRLF); SerPr1; Serial.print(crlf1, HEX); SerPr1; Serial.println(crlf2, HEX);
+   SerPr2;
+   Serial.print("nKeys Page Maximum: ");   Serial.print(nKeysPage);  Serial.print(" nKeys Numbers: "); Serial.print(12*nKeysPage); SerPr2; 
+   Serial.print("nKeys Directory Path: "); Serial.print(nDir);       Serial.print(" Size: ");          Serial.print(strlen(nDir)); 
+   Serial.print(" nKeys Dir Mode: ");      Serial.print(nDirX); SerPr2;
+   Serial.print("nKeys Quick-Access:  "); for (int i = 0; i < 10; i++) Serial.print(nKeysCharSet[i]); SerPr2;
+   Serial.print("nKeys Link-String:   "); for (int i = 0; i < 10; i++) Serial.print(nKeysLnkChar[i]); SerPr2;
+   SerPr2;
+   Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
+   SerPr2;
+   Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); }
         
    SerPr2;
    Serial.print("Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
@@ -5236,7 +5242,6 @@ void showKeyData(byte Option)
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr7[m]); SerPr1; } Serial.print(TimerName[6]); SerPr2;
     for ( m = 0; m<4; m++ ) { Serial.print(MacroTimerArr8[m]); SerPr1; } Serial.print(TimerName[7]); SerPr2;  
 
-
    if (Option==0) return;
    
    SerPr2;
@@ -5255,8 +5260,7 @@ void showKeyData(byte Option)
    for ( m = 0; m<24; m++ ) 
        { Serial.print(m); Serial.print(" Txx 20bytes Size " ); Serial.print(MacroSizeT1T12[m]); Serial.print(" Ttr Status "); Serial.print(MacroT1T12[m]); SerPr1;
          for ( n = 0; n < 20; n++) { b =  Ttr1to12[m][n]; Serial.print(b, HEX); SerPr1; }
-         SerPr2;  } 
-         
+         SerPr2;  }          
  }
  
-/************* EOF line 5262 *****************/
+/************* EOF line 5266 *****************/

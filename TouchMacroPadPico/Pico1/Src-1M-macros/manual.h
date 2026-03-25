@@ -156,7 +156,7 @@ taskbar, and are indicated by GuiL + Key0 - Key9 etc in macroBanks.h WinMacro co
 
 The keys in Layouts 1, 3, and 4 (M, S, and T 1-24 each) are linked to either a lowercase (m01-m23. s01-s24, t02-t24)
 or uppercase (M01-M24, S01-S24, T01-T24), group of 24 files containg macros and/or text strings. Use the [Cf][Opt] 
-keys to toggle between Upper and Lower case names or use the [*Cm] key to send *up*. 
+keys to toggle between Upper and Lower case names or use the [*Cm] key to send *up*, or use *up*0,1 off/on.  
 
 The 8-cycle [A-D] key in Layout 2: If the A-D indicator shows a white A, B. C, or D then the Layouts 
 Mx Sx Tx use FlashMem macrofiles or linkfiles, or the actions assigned with *fm* *fs* *ft* strings. If the indicator
@@ -271,17 +271,17 @@ n985-n996 are available. They can be stored on both the Flash memory or the SDCa
 the Number-Pad mode by using *09*. The n01-n996 files are therefore neither macros, textstrings, or linkfiles. They only
 point to another file which has a a path - i.e. folder and name, of any length less than 250 characters, on the same 
 storage (Flash or SDCard), to be executed.
-[n] Green Number Pad:  Number-Keypad on/off - then use red Pad [o] to scroll through NumberPad pages.
-                       Macro Mode - Pressing grey Pad 4 [n] toggles KeyBoard Direct to PC Mode On/Off - show "d" in  
-                       Macro Editor instead of Src/Dst macros. This sends single enries to PC when [EXE] pressed.
-                       SDCard Select Set Mode: Switch Upper/Lower-case filenames for SDCard Filesets 1-21
-[o] Red Options Pad:   Config Mode - Toggle Capslock and Numlock on/off in combinations
-    (Colour Green)     Macro Mode  - 4-Cycle combinations of Source and Destination SDCard (Orange) or Flash (White) 
-                       NumPad Mode - Switch between 3 NumPad pages.
-                       [Opt] Mode  - Macro Upper/Lower case files, [L1-4][VolMute]Long-Press On/Off, StartupLayout L1-L4,
-                                    Select M S T MacroBanks 1-5, Select SDCard File Set 1-21, Send SD+Flash File lists
-                                    Custom Key Labels On/Off for Keys M,S,T 
-                       [Key] Mode  - Select 24 options for [Del], [Ret], [Cut,Copy,Paste] keys
+[n] Grey Number Pad:  Number-Keypad on/off - then use red Pad [o] to scroll through NumberPad pages.
+                      Macro Mode - Pressing grey Pad 4 [n] toggles KeyBoard Direct to PC Mode On/Off - show "d" in  
+                      Macro Editor instead of Src/Dst macros. This sends single enries to PC when [EXE] pressed.
+                      SDCard Select Set Mode: Switch Upper/Lower-case filenames for SDCard Filesets 1-21
+[o] Red Options Pad:  Config Mode - Toggle Capslock and Numlock on/off in combinations
+    Green Colour ->   Macro Mode  - 4-Cycle combinations of Source and Destination SDCard (Orange) or Flash (White) 
+                      NumPad Mode - Switch between 3 NumPad pages.
+                      [Opt] Mode  - Macro Upper/Lower case files, [L1-4][VolMute]Long-Press On/Off, StartupLayout L1-L4,
+                                    Select M S T MacroBanks 1-5, Select SDCard File Set 1-21 use Pads [o] and [n], 
+                                    Send SD+Flash File lists,  Custom Key Labels On/Off for Keys M,S,T 
+                      [Key] Mode  - Select 24 options for [Del], [Ret], [Cut,Copy,Paste] keys
 -----------------------------------------------------------------------------------------------------------------------
 Layout 2 - Full Media Mode - Play Controls On - Volume Controls On - Tone Controls On 
 -----------------------------------------------------------------------------------------------------------------------
@@ -806,7 +806,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *lf* /store/+/new/ lists all flash files in the folder /new and the sdcard files in folder /store.
     *lf* /+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
     *lf* /+/ lists all flash files and all the sdcard files (the folder for both is now root /).
-(y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names.
+(y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names, or use *up*0,1 off/on. 
 (z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-d. Can add less
     than 12 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
     *ld* when a serial terminal is connected to the TouchLCD.
