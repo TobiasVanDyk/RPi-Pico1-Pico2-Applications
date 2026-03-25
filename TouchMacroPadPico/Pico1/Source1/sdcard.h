@@ -17,10 +17,10 @@
 // SDnum 10-12  MST mst 01-24 = M01-M24 S01-S24 T01-T24                           *sd*m,s,t *sd*M,S,T
 // SDNum 13-19  A-G a-g 01-24 = A01-A24 - G01-D24                                 *sd*A-G   *sd*a-g     check Dnn for delay in Link()
 // SDNum 20-21  K,k  K=K01Link-K24Link k = K01-K24                                *sd*K,k
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-char SD1[23]   = { " 123UVWXYZMSTABCDEFGKK" }; // Not a set 0
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+char SD1[23]   = { " 123UVWXYZMSTABCDEFGKK" }; // Select SD1 (Uppercase XYZ) or SD2 (Lowercase xyz) using Pad [n] after [Cfg][Opt][SDBank]
 char SD2[23]   = { " 123uvwxyzmstabcdefgKk" }; // 1-3, 4-9 = U V W X Y Z, 10 = M m 11 = S s 12 = T t 13-19 A-G 20 = K 21 = k
-bool sdShow = false;                           // SDFleList sent to Serial Port
+bool sdShow = false;                           // SDFileList sent to Serial Port
 bool SDNumChange = false;          // If 1 save SCard Set with [Cfg][Sav]
 File SDFile;                       // File object instance
 byte SDByte;                       // Byte from File read from SDCard
