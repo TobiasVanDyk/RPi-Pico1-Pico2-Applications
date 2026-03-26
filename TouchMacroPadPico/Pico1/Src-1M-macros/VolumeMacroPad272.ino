@@ -2616,7 +2616,7 @@ void ConfigMacroButtons() {  // Only updates six macro buttons - reduce screen f
   
   for (n=4; n<11; n++)  { keyColor[n] = Colours[b][n]; strcpy(keyLabel[n], Labels[LayerAD][b][n]); } 
 
-  if (Layout!=2 && MLabel+SLabel+TLabel>0) DoMSTLabel(1, Layout);
+  if (MLabel || SLabel || TLabel) DoMSTLabel(1, Layout);
               
   for (row = 1; row < rows; row++)   {     // 2 rows 1,2 
        for (col = 0; col < 3; col++) {     // 3 columns 0,1,2
@@ -2673,7 +2673,7 @@ void ConfigButtons(uint8_t rowcount) {  // rowcount=0 all 4 rows rowcount=2 last
   for (n=0; n<12; n++) strcpy(keyLabel[n], Labels[LayerAD][b][n]); // label = 3 chars max except nKeys 5 chars   
   for (n=0; n<12; n++) keyColor[n] = Colours[b][n];
 
-  if (Layout!=2 && MLabel+SLabel+TLabel>0) DoMSTLabel(1, Layout);
+  if (Layout!=2 && (MLabel || SLabel || TLabel)) DoMSTLabel(1, Layout);
   
   if (!VolOn) for (m=0; m<3; m++) { keyLabel[3][m]  = BsDLabel[BsDNum][m]; 
                                     keyLabel[11][m] = BsDLabel[RetNum][m];  }                     
@@ -3415,7 +3415,7 @@ void GetSysInfo(int Action)
   ListSDFiles(0, 0);
   
   DisplayClocks(false);
-  // showKeyData(0);   // If included slows Save - use *ld*0,1 for data list   
+  // showKeyData(0);   // If included slows Save - use *ld*0,1,2 for data list   
 }
 ////////////////////
 void ResetTimers(byte Option)
@@ -3992,7 +3992,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
        { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
          // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3 To save thes must do [Cfg]->[Sav]
-         // If number 0 or 1 added after *lm,s,t* such as *lm,s,t*0,1 then labels Off/On To save thes must do [Cfg]->[Sav]
+         // If number 0 or 1 added after *lm,s,t* such as *lm,s,t*0,1 then labels Off/On To save must do [Cfg]->[Sav]
          strcpy(NameStr3, " OFF"); strcpy(NameStr1, "labelx"); strcpy(NameStr2, "LabelX"); if (knum==4 || (knum==5&&b<2)) a=1; else a=0; // label1,2,3 is default text in files LabelM,S,T            
          if (k2==0x6D) { if (knum==4) Config1[72]=MLabel=!MLabel; if (knum>=5) { NameStr2[5]='M'; NameStr1[5]='1'; if (knum==5&&b<2) Config1[72]=MLabel=b; } if (MLabel) strcpy(NameStr3," ON"); m=1; }
          if (k2==0x73) { if (knum==4) Config1[73]=SLabel=!SLabel; if (knum>=5) { NameStr2[5]='S'; NameStr1[5]='2'; if (knum==5&&b<2) Config1[73]=SLabel=b; } if (SLabel) strcpy(NameStr3," ON"); m=3; }
@@ -4050,7 +4050,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { n = CopySDCardFiles2Flash(); Timer2Str(FileCopy, 2, n); strcat(FileRestoreMsg, FileCopy); status(FileRestoreMsg); StarOk = true; break; }  
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
-      case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
+        case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
       { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); Serial.println("EOC"); status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
         Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
@@ -4060,7 +4060,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
-        Serial.println(MLabel);      Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(SDCardArr[2]);      Serial.println("EOC");    
+        Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } } 
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -5170,9 +5170,9 @@ void showKeyData(byte Option)
    Serial.print("SDCard 0-3: "); Serial.print(SDName[0]); SerPr1;Serial.print(SDName[1]); SerPr1;Serial.print(SDName[2]); SerPr1;
    SerPr2; 
 
-   SerPr2;
-   FSInfo fs_info; SDFS.info(fs_info);
-   Serial.print("SDCard Total MB:"); Serial.print(fs_info.totalBytes/(1024*1024)); Serial.print(" Used kB:"); Serial.println(fs_info.usedBytes/1024); 
+   if (Option==2) { SerPr2; FSInfo fs_info; SDFS.info(fs_info);
+                    Serial.print("SDCard Total MB:"); Serial.print(fs_info.totalBytes/(1024*1024)); 
+                    Serial.print(" Used kB:"); Serial.println(fs_info.usedBytes/1024); } 
   
    SerPr2;
    Serial.print("Serial Comms Start and End Markers: "); 
@@ -5260,7 +5260,8 @@ void showKeyData(byte Option)
    for ( m = 0; m<24; m++ ) 
        { Serial.print(m); Serial.print(" Txx 20bytes Size " ); Serial.print(MacroSizeT1T12[m]); Serial.print(" Ttr Status "); Serial.print(MacroT1T12[m]); SerPr1;
          for ( n = 0; n < 20; n++) { b =  Ttr1to12[m][n]; Serial.print(b, HEX); SerPr1; }
-         SerPr2;  }          
+         SerPr2;  } 
+         
  }
  
-/************* EOF line 5266 *****************/
+/************* EOF line 5267 *****************/
