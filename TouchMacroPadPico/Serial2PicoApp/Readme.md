@@ -26,7 +26,7 @@ File n01 in the root of the SDCard has the text “S01” in it. I also have a f
 which contains the text “mygmail” (not “myid”) to /winword/S01. 
 
 Now when I press n01 on the Pico it tells me it cannot find the file n01. The reason is because nDir = “/winword” and it
-expects a file n01 in /winword i.e. path = “winword/n01”.
+expects a file n01 in /winword i.e. path = “/winword/n01”.
 
 When I copy the n01 file with the text “S01” from the SDCard root to the folder /winword and then press n01 it prints myid
 and not my mygmail => it does not use /winword/ to find S01 it uses /S01 => for n01 to use /winword/S01 it must have
