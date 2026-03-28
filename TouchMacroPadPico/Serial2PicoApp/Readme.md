@@ -15,19 +15,27 @@ Serial2Pico is a configuration and control app for the Pico Touch LCD developed 
 **Testing:** Layouts 1, 3, and 4 (keys M S T) are available for custom labels and app-switching - currently only one active layout at a time - but every active layout can have many active apps. If more than one layout with App->Checked then it will use L4 before L3 before L1. Use with custom labels enabled, which can be switched on/off from the L1 L3 L4 tab of each layout. Added nKeys switching and open and close commands when an app is opened or closed. The new apprules.json has six additional editable fields for these. For example when MSWord is opened the nKeys will change to nKeys set w01 to w996, and a star \<\*xy\*z\> or \<x \> command can be sent when it opens and when it closes. The original nKeys set is restored after the last app closes. Remember to put macro files inside the /app/ folder that matches the layout i.e. not T01 but S01 or M01 etc. 
 
 ```
-Explanation: Difference in file name pointer behaviour between link-files (filenames such as K01Link, M24Link etc.) and nkeys (filename such as n01, H976, y003, 5560 etc), when application switching is active.
+Explanation: Difference in file name pointer behaviour between link-files (filenames such as K01Link, M24Link etc.) and nkeys
+(filename such as n01, H976, y003, 5560 etc), when application switching is active.
 
-Current state of Pico macropad is nDir = /winword/ and nChar = ‘n’. File S01 in rootfolder has the text “myid” in it. That means when key S1 is pressed with a brown A (SDCard not Flash) my “myid” is typed into Word.
+Current state of Pico macropad is nDir = /winword/ and nChar = ‘n’. File S01 in rootfolder has the text “myid” in it. That means
+when key S1 is pressed with a brown A (SDCard not Flash) my “myid” is typed into Word.
 
-File n01 in the root of the SDCard has the text “S01” in it. I also have a folder /winword/ and I copied
-another file S01 with which contains the text “mygmail” (not “myid”) to /winword/S01. 
+File n01 in the root of the SDCard has the text “S01” in it. I also have a folder /winword/ and I copied another file S01 which
+contains the text “mygmail” (not “myid”) to /winword/S01. 
 
-Now when I press n01 on the Pico it tells me it cannot find the file n01. The reason is because nDir = “/winword” and it expects a file n01 in /winword i.e. path = “winword/n01”.
+Now when I press n01 on the Pico it tells me it cannot find the file n01. The reason is because nDir = “/winword” and it expects
+a file n01 in /winword i.e. path = “winword/n01”.
 
-When I copy the n01 file with the text “S01” from the SDCard root to the folder /winword and then press n01 it prints myid and not my mygmail => it does not use /winword/ to find S01 it uses /S01.
-=> for n01 to use /winword/S01 it must have /winword/S01 in the n01 file that is inside /winword.
+When I copy the n01 file with the text “S01” from the SDCard root to the folder /winword and then press n01 it prints myid and
+not my mygmail => it does not use /winword/ to find S01 it uses /S01 => for n01 to use /winword/S01 it must have /winword/S01
+in the n01 file that is inside /winword.
 
-BUT when n01 has the name of a linkfile say K01Link with the content “S01”, that is placed inside /winword, and n01 now has /winword/K01Link as its content, then when I press n01 then K01Link executes the S01 file that is inside /winword – i.e. it wil print mygmail provided Word is open and the active app, because the active app path = /winword/ is inserted before the text in K01Link i.e. it uses “/winword/S01”. When Word is closed, nDir is still = “/winword”, then pressing n01 will execute S01 in the root folder – i.e. prints myid because the app-switching path is now just “/” and not /winword” anymore.
+BUT when n01 has the name of a linkfile say K01Link with the content “S01”, that is placed inside /winword, and n01 now has
+/winword/K01Link as its content, then when I press n01 then K01Link executes the S01 file that is inside /winword – i.e. it
+wil print mygmail provided Word is open and the active app, because the active app path = /winword/ is inserted before the
+text in K01Link i.e. it uses “/winword/S01”. When Word is closed, nDir is still = “/winword”, then pressing n01 will execute
+S01 in the root folder – i.e. prints myid because the app-switching path is now just “/” and not /winword” anymore.
 ```
 
 **Installion and first use:** Note that after unzipping the app, running the executable the first time will download and install .Net 8 run times. Start the app by selecting the Pico COM port, then press Open port, press ok twice for the json MathSets, open the Config Tab and browse to the location where the apprules.json and Math0 and Math1-9 JSON symbol sets are located, select one of the mathset.json files - make sure the start and end markers are correct for your macropad (to use hex values enter it as 0xhh for example 0x02 and 0x03, and then change) - and then close and reopen the App. Pressing [Open Port] should then load the Pico's current configuration into the app. After this first start it will remember the COM port and Math location used, and it will then automatically load this configuration every time after the Open port button is pressed. Pressing keys on the PC app can either press the same key on the TouchLCD, which then through USB HID, send the keypress back to the PC, or execute many of the actions directly from the PC App itself - to switch focus from the app to the PC application when pressing keys, select the two options in Layout L2 and make sure star \* is shown in the delay box - for media controls such as volume use a zero instead of the  star. 
