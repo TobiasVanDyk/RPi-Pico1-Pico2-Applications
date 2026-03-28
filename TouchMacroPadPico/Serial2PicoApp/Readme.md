@@ -35,10 +35,11 @@ and not my mygmail => it does not use /winword/ to find S01 it uses /S01 => for 
 BUT when n01 has the name of a linkfile say K01Link with the content “S01”, that is placed inside /winword, and n01 now has
 /winword/K01Link as its content, then when I press n01 then K01Link executes the S01 file that is inside /winword – i.e. it
 wil print mygmail provided Word is open and the active app, because the active app path = /winword/ is inserted before the
-text in K01Link i.e. it uses “/winword/S01”. When Word is closed, nDir is still = “/winword”, then pressing n01 will
-execute S01 in the root folder – i.e. prints myid because the app-switching path is now just “/” and not /winword” anymore.
+text in K01Link i.e. it uses “/winword/S01”. When the PC App is closed, then Word is closed, and the PC App restarted, nDir
+is still = “/winword”, and pressing n01 will execute S01 in the root folder – i.e. prints myid because the app-switching
+path is now just “/” and not /winword” anymore.
 
-When the PC App is closed before Word is closed then it will retail the folder /winword/ as the nKeys folder.
+Note: When the PC App is closed before Word is closed then it will retail the folder /winword/ as the nKeys folder.
 ```
 
 **Installion and first use:** Note that after unzipping the app, running the executable the first time will download and install .Net 8 run times. Start the app by selecting the Pico COM port, then press Open port, press ok twice for the json MathSets, open the Config Tab and browse to the location where the apprules.json and Math0 and Math1-9 JSON symbol sets are located, select one of the mathset.json files - make sure the start and end markers are correct for your macropad (to use hex values enter it as 0xhh for example 0x02 and 0x03, and then change) - and then close and reopen the App. Pressing [Open Port] should then load the Pico's current configuration into the app. After this first start it will remember the COM port and Math location used, and it will then automatically load this configuration every time after the Open port button is pressed. Pressing keys on the PC app can either press the same key on the TouchLCD, which then through USB HID, send the keypress back to the PC, or execute many of the actions directly from the PC App itself - to switch focus from the app to the PC application when pressing keys, select the two options in Layout L2 and make sure star \* is shown in the delay box - for media controls such as volume use a zero instead of the  star. 
