@@ -18,9 +18,9 @@ Serial2Pico is a configuration and control app for the Pico Touch LCD developed 
 Explanation: Difference in file name pointer behaviour between link-files (filenames such as K01Link, M24Link etc.) and nkeys
 (filename such as n01, H976, y003, 5560 etc), when application switching is active.
 
-Current state of Pico macropad is nDir = /winword/ and nChar = ‘n’. MSWord is open and active. File S01 in rootfolder has
-the text “myid” in it. That means when key S1 is pressed with a brown A (SDCard not Flash) the text “myid” is typed into
-Word.
+Current state of Pico macropad is nDir = /winword/ and nChar = ‘n’. MSWord is open and active on Layout 4 i.e it uses
+the T1-T24 key-set. File S01 in the SDCard root folder has the text “myid” in it. That means when key S1 is pressed with
+a brown A (SDCard not Flash) the text “myid” is typed into Word.
 
 File n01 in the root of the SDCard has the text “S01” in it. I also have a folder /winword/ and I copied another file S01
 which contains the text “mygmail” (not “myid”) to /winword/S01. 
