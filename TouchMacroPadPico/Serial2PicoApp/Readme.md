@@ -19,7 +19,7 @@ Explanation: Difference in file name pointer behaviour between link-files (filen
 (filename such as n01, H976, y003, 5560 etc), when application switching is active.
 
 Current state of Pico macropad is nDir = /winword/ and nChar = ‘n’. File S01 in rootfolder has the text “myid” in it. That
-means when key S1 is pressed with a brown A (SDCard not Flash) my “myid” is typed into Word.
+means when key S1 is pressed with a brown A (SDCard not Flash) the text “myid” is typed into Word.
 
 File n01 in the root of the SDCard has the text “S01” in it. I also have a folder /winword/ and I copied another file S01
 which contains the text “mygmail” (not “myid”) to /winword/S01. 
