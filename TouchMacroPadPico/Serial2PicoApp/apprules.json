@@ -5,7 +5,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*c>",
+    "nKeysLst": "<*0t*nopeufwxuc>"
   },
   {
     "App": "msedge",
@@ -13,7 +19,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*e>",
+    "nKeysLst": "<*0t*nopeufwxuc>"
   },
   {
     "App": "devenv",
@@ -21,7 +33,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*v>",
+    "nKeysLst": "<*0t*nvpeufwxuc>"
   },
   {
     "App": "notepad",
@@ -29,7 +47,13 @@
     "Layout": "4",
     "Enabled": true,
     "AppLabel": true,
-    "Label": "labelnotepad"
+    "Label": "labelnotepad",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*n>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "text",
@@ -37,7 +61,13 @@
     "Layout": "4",
     "Enabled": true,
     "AppLabel": true,
-    "Label": "labeltext"
+    "Label": "labeltext",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": true,
+    "nKeysChr": "<*0n*x>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "winword",
@@ -45,7 +75,13 @@
     "Layout": "4",
     "Enabled": true,
     "AppLabel": true,
-    "Label": "labelword1"
+    "Label": "labelword1",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": true,
+    "nKeysChr": "<*0n*w>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "foobar2000",
@@ -53,7 +89,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*f>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "xnviewmp",
@@ -61,7 +103,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*x>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "notepro",
@@ -69,7 +117,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*n>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "sumatrapdf",
@@ -77,7 +131,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*u>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "excel",
@@ -85,7 +145,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*e>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "outlook",
@@ -93,7 +159,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*o>",
+    "nKeysLst": "<*0t*nopeufwxuc>"   
   },
   {
     "App": "firefox",
@@ -101,7 +173,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*f>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "mspaint",
@@ -109,7 +187,13 @@
     "Layout": "4",
     "Enabled": false,
     "AppLabel": false,
-    "Label": ""
+    "Label": "",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": false,
+    "nKeysChr": "<*0n*p>",
+    "nKeysLst": "<*0t*nopeufwxuc>"    
   },
   {
     "App": "vlc",
@@ -117,6 +201,12 @@
     "Layout": "3",
     "Enabled": true,
     "AppLabel": true,
-    "Label": "label3"
+    "Label": "label3",
+    "cmdEnable": false,
+    "cmdOpen": "",
+    "cmdClose": "",
+    "nKeysEnable": true,
+    "nKeysChr": "<*0n*v>",
+    "nKeysLst": "<*0t*nopeufwxuc>"   
   }
 ]
