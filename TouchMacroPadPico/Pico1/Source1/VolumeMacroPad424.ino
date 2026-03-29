@@ -1893,7 +1893,7 @@ void DoNKeys(int Button)
   DoneM = ExecuteCode(1); if (DoneM) return;
    
   if (MacroBuff[0]<0x80) StrLen = DoLargeFile(nFile);     // Can do both large and ByteSize files on both SDCard and Flash
-  if (StrLen==0) { if (LayerAxD) status("nKeys File not found on SDCard"); else status("nKeys File not found on Flash"); }
+  if (StrLen==0) { if (LayerAxD) status("nKeys File not found on SDCard"); else status("nKeys File not found on Flash"); } else LinkOk = true;
                                    
 }
 
@@ -5158,6 +5158,8 @@ void showKeyData(byte Option)
    SerPr2;
 
    SerPr2;
+   if (iList) Serial.print("Instruction List ON"); else Serial.print("Instruction List OFF");
+   SerPr2;
    for ( m = 0; m<3; m++ ) 
        { Serial.print("MacroInstructionList " ); Serial.print(m); Serial.print(": ");
          for ( n = 0; n < iListMax; n++) 
@@ -5263,4 +5265,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 5266 *****************/
+/************* EOF line 5268 *****************/
