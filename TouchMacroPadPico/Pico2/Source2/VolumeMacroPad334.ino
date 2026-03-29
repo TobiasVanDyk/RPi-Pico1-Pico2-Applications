@@ -1847,7 +1847,7 @@ void DoNKeys(int Button)
   DoneM = ExecuteCode(1); if (DoneM) { return; }
    
   if (MacroBuff[0]<0x80) SerPr2; { StrLen = DoLargeFile(nFile); }    // Can do both large and ByteSize files on both SDCard and Flash
-  if (StrLen==0) { if (LayerAxD) status("nKeys File not found on SDCard"); else status("nKeys File not found on Flash"); }
+  if (StrLen==0) { if (LayerAxD) status("nKeys File not found on SDCard"); else status("nKeys File not found on Flash"); } else LinkOk = true;
                                    
 }
 
@@ -4026,7 +4026,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
       case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
-      { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); Serial.println("EOC"); status("Raw Data sent to PC"); StarOk = true; break; }  
+      { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
         Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
         Serial.println(ToneOn);      Serial.println(MediaConfig[0]);    Serial.println(Media);             Serial.println(Vol1);              Serial.println(Vol3);          
@@ -5135,6 +5135,8 @@ void showKeyData(byte Option)
    SerPr2;
 
    SerPr2;
+   if (iList) Serial.print("Instruction List ON"); else Serial.print("Instruction List OFF");
+   SerPr2;
    for ( m = 0; m<3; m++ ) 
        { Serial.print("MacroInstructionList " ); Serial.print(m); Serial.print(": ");
          for ( n = 0; n < iListMax; n++) 
@@ -5143,7 +5145,7 @@ void showKeyData(byte Option)
          
    SerPr2;
    Serial.print("SDCard Set: "); Serial.print(SDNum); SerPr1;   
-   Serial.print("SDCard 0-3: "); Serial.print(SDName[0]); SerPr1;Serial.print(SDName[1]); SerPr1;Serial.print(SDName[2]); SerPr1;
+   Serial.print("Set 1-5: "); for (n=0; n<5; n++) { Serial.print(SDName[n]); SerPr1; }
    SerPr2; 
 
    // SerPr2;                            
