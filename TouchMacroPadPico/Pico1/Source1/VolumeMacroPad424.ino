@@ -3156,10 +3156,12 @@ void WriteConfig1(bool Option)
                   Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only                                                    
                 }
   
+  if (AppState>0) return;
+  
   File f1 = LittleFS.open("Config1", "w"); 
   if (Option==2) f1.write(Config1Reset, Config1Size);   // Reset all to default - could be Rotate180 problem
             else f1.write(Config1,      Config1Size);   // Write current Config1 values if Option = 0 or 1
-  f1.close();  
+  f1.close(); 
 }
 
 ///////////////////////////////////////////////////////////////
@@ -3399,7 +3401,7 @@ void GetSysInfo(int Action)
   if (Action>0) { if (Action==4) { Savex1x6(); SaveX1X6 = false; Config1[28] = XFiles; WriteConfig1(1); WriteConfig1Change = false; }
                   if (SaveLayout>0) SaveLayoutConfig(); return; }  // SaveLayoutConfig sets WriteConfig1Change = true;
 
-  if (WriteConfig1Change) { WriteConfig1(1); SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
+  if (WriteConfig1Change && AppState==0) { WriteConfig1(1); SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
   if (SDNumChange) { SaveSDCardArr(); SDNumChange = false; }  
   if (Bank123Change) { File f = LittleFS.open("Bank123File", "w"); if (f) {f.write(Bank123, 3); f.close(); } Bank123Change = false; }
   if (LayerADChange) { if ( LayerAxD!=Config1[26] || LayerAD!=Config1[32] ) WriteConfig1(1); LayerADChange = false; }
@@ -3989,10 +3991,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                      if (k5=='/') { nDir[1]=nChar; nDir[2]='/'; nDir[3]=0x00; nDirX=2; }  // 2: /nChar/
                                              else { nDir[n]='/'; nDir[n+1]=0x00; nDirX=1+(n>1)*2; }  }    // 3: normal /dirname/ 1: default /filename
          if (knum==4) { nDir[0]='/'; nDir[1]=0x00; nDirX=0; }                                             // 0: default /filename but nDirX=0
-         Config1[60] = nDirX; status(nDirXMsg[nDirX]); WriteConfig1Change = StarOk = true; break; }
+         Config1[60] = nDirX; status(nDirXMsg[nDirX]); if (AppState==0) WriteConfig1Change = true; StarOk = true; break; }
          case 54: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x74 *0t*10char = set of 10 char in Linkstring to execute as nKeys 
        { if (knum>5) { status("nKeys LinkString characters changed");
-                       for (n=0; n<knum-4; n++) nKeysLnkChar[n] = KeyBrdByte[4+n]; WriteConfig1(1); StarOk = true; break; } }  
+                       for (n=0; n<knum-4; n++) nKeysLnkChar[n] = KeyBrdByte[4+n]; if (AppState==0) WriteConfig1Change = true; StarOk = true; break; } } 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
        { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
          // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3 To save thes must do [Cfg]->[Sav]
