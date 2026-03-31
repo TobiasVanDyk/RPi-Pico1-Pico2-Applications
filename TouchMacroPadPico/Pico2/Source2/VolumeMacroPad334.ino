@@ -104,18 +104,18 @@ uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
 // 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
 // 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
-// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0
+// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0            nKeysL134  1
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Currently last used entry MacroUL = Config1[85] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+// Currently last used entry nKeysL134 = Config1[86] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
 // Note only nDir only saved if 20 bytes max in size excluding last 0x00 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
 byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,   0, 0, 0  };
 cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };                                    
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,   0, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -350,7 +350,7 @@ char nDir[80] = "/";                 // Default is nKeys in root folder /nKeysfi
 byte nDirX = 0;                      // 0 = Not changed 1 = Default "/"  2 = /dirname/  3 = /nChar/ 
 char nDirXMsg[4][30] = {"Use /0-20-char dir-name or //", "nKeys default dir /", "nKeys special dir /x/", "nKeys dir changed" };
 bool NumKeys = false;                // Numeric Keyboard
-bool nKeysShow = false;              // Pressing Pad[s] toggles thsi, if on pressing nKey displays its content not execute it - not saved
+bool nKeysShow = false;              // Pressing Pad[s] toggles this, if on pressing nKey displays its content not execute it - not saved
 bool nKeys34 = true;                 // nKeys count n00-n99,n100-n996 if true (default), else n000-n996 use different n01-n99 files n001-n099
 char nKeysCharSet[10] = {'n','o','p','q','r','s','t','m','a','k'};  // preferred list of 10 nKeys first char
 char nKeysAllChar[63] = {"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"};  // List of all NKeys first char
@@ -358,6 +358,7 @@ char nKeysLnkChar[10] = {'n','o','p','q','u','v','w','x','y','z'};  // DoLinkStr
 int  nCharNum = 0;                   // Current position into nKeysCharSet[nCharNum] when pressing Option (o) Pad
 int  nCharAll = 0;                   // Current position into nKeysAllChar[nCharAll] when [s] active and pressing Pads (+)(-)
 char nKeysCurr[] = {"x is current nKeys char"}; 
+bool nKeysL134 = true;               // nChar replaces L in L1, L3, L4
 byte CRLF = 0;                       // Filter CR 0D \n and LF 0A \r in large text files. 1=Filter CR=0x0D 2=Filter LF=0x0A 3=Filter both CR and LF
 byte crlf1 = 0x0D, crlf2 = 0x0A;     // Two Nkeys text filter chars default = 0x0D 0x0A 
 
@@ -2704,6 +2705,8 @@ void ConfigButtons(uint8_t rowcount) {  // rowcount=0 all 4 rows rowcount=2 last
   /////////////
   KeyBrdsDone:
   /////////////
+  if (Layout!=2 && nKeysL134 && !MuteOn) keyLabel[7][0] = nChar;
+  
   b = Layout - 1;                               // reset b to 0 - 3
               
   for (row = 0 + rowcount; row < rows; row++) {   // 3 rows 0,1,2 => b = 0+(0*4)=0 1+(0*4)=1 ... 0+(1*4)=4 ....
@@ -3067,6 +3070,7 @@ void ReadConfig1()
   StartMarker =    Config1[83];                                // Serial Comms start was < now 0x02       
   EndMarker  =     Config1[84];                                // Serial Comms end was > now 0x03  
   MacroUL =        Config1[85];                                // Upper or lower case filenames for macros on Flash only
+  nKeysL134 =      Config1[86];                                // nChar replaces L in L1, L3, L4  
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3116,7 +3120,8 @@ void WriteConfig1(bool Option)
                   Config1[82] = MediaConfig[0];                               // 0-6 Media keys Volume Mute Tonecontrol combinations
                   Config1[83] = StartMarker;                                  // Serial Comms start was < now 0x02       
                   Config1[84] = EndMarker;                                    // Serial Comms end was > now 0x03   
-                  Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only                                                   
+                  Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only    
+                  Config1[86] = nKeysL134;                                    // nChar replaces L in L1, L3, L4                                                  
                 }
   
   if (AppState>0) return;
@@ -3930,9 +3935,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
        { nKeys = !nKeys; Config1[7] = nKeys; WriteConfig1(0); 
          if (nKeys) status("n-Keys n01-n996 On"); else status("NumPad pages 1-8 On"); Numkeys123 = 0; NumKeysChange(); StarOk = true; break; }
          case 46: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x6e *0n*char = 1-9 or aA - zZ Select nKeys Char 
-       { if (knum>5) break; // Single digits or char only after *0n* no filename validity checks
+       { if (knum==4) { nKeysL134  = !nKeysL134; if (nKeysL134) status("L1 L3 L4 L=nChar"); else status("L1 L3 L4"); if (AppState==0) WriteConfig1Change = true; StarOk = true; break; }
+         if (knum>5) break; // Single digits or char only after *0n* or use *0n* for nKeysL134 on/off replaces L in L1,L3,L4
          if (knum==5) { if (AppState==0) status("nKeys character changed"); Config1[8] = nChar = KeyBrdByte[4]; 
-         WriteConfig1(1); NumKeysChange(); StarOk = true; break; } }
+         if (AppState==0) WriteConfig1(1); NumKeysChange(); StarOk = true; break; } }
          case 47: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x70 *0p*pages = 1-83 Select pages number 
        { if (knum>6) break; // 1-83 only after *0p* 
          if (knum==5) { Config1[9] = nKeysPage = b;   if (b==0||b>9) { status("Use 1-9 Pages"); break; } }
@@ -4037,7 +4043,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
-        Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println("EOC");                 
+        Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println(nKeysL134);
+        Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
