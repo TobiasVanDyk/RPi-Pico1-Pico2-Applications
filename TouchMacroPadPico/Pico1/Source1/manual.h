@@ -823,7 +823,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     between the 1-83 pages of each mode. 
 (B) *0n*char The nKeys first character (default n), can be changed with with *0n*char - for example *0n*p will change
     the keys, and filenames used to p01 - p996. Any character or digit can be used - but not all will yield valid 
-    filenames.  
+    filenames. Use *0n* for nKeysShow on/off replaces L in L1,L3,L4.
 (C) *0p*pages withe pages = 1 to 83 set the number of pages for nKeys or the NumPad. Enter as *0p*n n=1-9 pages
     or use *0p*nn nn=01-83 pages nKeys per first character. Note that 83 pages is the maximum because 12x83=996 nKeys.
 (D) *0s*list-of-10-characters - these are displayd when pressing [Cfg][Opt] then select nKeys character woth Pad[o]
