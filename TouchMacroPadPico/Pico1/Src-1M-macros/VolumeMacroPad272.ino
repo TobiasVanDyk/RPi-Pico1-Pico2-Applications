@@ -115,18 +115,18 @@ byte EndMarker2   = 0x03;         // Or use backtick/grave ` Change with *2e*cha
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
 // 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
 // 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
-// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0
+// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0           nKeysL134  1
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Currently last used entry MacroUL = Config1[85] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+// Currently last used entry nKeysL134 = Config1[86] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
 // Note only nDir only saved if 20 bytes max in size excluding last 0x00 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
 byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,   0, 0, 0  };
 cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   0, 0, 0  };                                    
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,   0, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 static const unsigned long int tHr  = 60*60*1000; // hour
@@ -371,6 +371,7 @@ byte nDirX = 0;                      // 0 = Not changed 1 = Default "/"  2 = /di
 char nDirXMsg[4][30] = {"Use /0-20-char dir-name or //", "nKeys default dir /", "nKeys special dir /x/", "nKeys dir changed" };
 bool NumKeys = false;                // Numeric Keyboard
 bool nKeysShow = false;              // Pressing Pad[s] toggles thsi, if on pressing nKey displays its content not execute it - not saved
+bool nKeysL134 = true;               // nChar replaces L in L1, L3, L4
 bool nKeys34 = true;                 // nKeys count n00-n99,n100-n996 if true (default), else n000-n996 use different n01-n99 files n001-n099
 char nKeysCharSet[10] = {'n','o','p','q','r','s','t','m','a','k'};  // preferred list of 10 nKeys first char
 char nKeysAllChar[63] = {"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"};  // List of all NKeys first char
@@ -2741,6 +2742,8 @@ void ConfigButtons(uint8_t rowcount) {  // rowcount=0 all 4 rows rowcount=2 last
   /////////////
   KeyBrdsDone:
   /////////////
+  if (Layout!=2 && nKeysL134 && !MuteOn) keyLabel[7][0] = nChar;
+  
   b = Layout - 1;                               // reset b to 0 - 3
               
   for (row = 0 + rowcount; row < rows; row++) {   // 3 rows 0,1,2 => b = 0+(0*4)=0 1+(0*4)=1 ... 0+(1*4)=4 ....
@@ -3097,6 +3100,7 @@ void ReadConfig1()
   StartMarker =    Config1[83];                                // Serial Comms start was < now 0x02       
   EndMarker  =     Config1[84];                                // Serial Comms end was > now 0x03  
   MacroUL =        Config1[85];                                // Upper or lower case filenames for macros on Flash only 
+  nKeysL134 =      Config1[86];                                // nChar replaces L in L1, L3, L4   
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3146,8 +3150,11 @@ void WriteConfig1(bool Option)
                   Config1[82] = MediaConfig[0];                               // 0-6 Media keys Volume Mute Tonecontrol combinations
                   Config1[83] = StartMarker;                                  // Serial Comms start was < now 0x02       
                   Config1[84] = EndMarker;                                    // Serial Comms end was > now 0x03   
-                  Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only                                                     
+                  Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only  
+                  Config1[86] = nKeysL134;                                    // nChar replaces L in L1, L3, L4                                                                       
                 }
+                
+  if (AppState>0) return;
   
   File f1 = LittleFS.open("Config1", "w"); 
   if (Option==2) f1.write(Config1Reset, Config1Size);   // Reset all to default - could be Rotate180 problem
@@ -3391,7 +3398,7 @@ void GetSysInfo(int Action)
   if (Action>0) { if (Action==4) { Savex1x6(); SaveX1X6 = false; Config1[28] = XFiles; WriteConfig1(1); WriteConfig1Change = false; }
                   if (SaveLayout>0) SaveLayoutConfig(); return; }  // SaveLayoutConfig sets WriteConfig1Change = true;
 
-  if (WriteConfig1Change) { WriteConfig1(1); SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
+  if (WriteConfig1Change && AppState==0) { WriteConfig1(1); SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
   if (SDNumChange) { SaveSDCardArr(); SDNumChange = false; }  
   if (Bank123Change) { File f = LittleFS.open("Bank123File", "w"); if (f) {f.write(Bank123, 3); f.close(); } Bank123Change = false; }
   if (LayerADChange) { if ( LayerAxD!=Config1[26] || LayerAD!=Config1[32] ) WriteConfig1(1); LayerADChange = false; }
@@ -3950,10 +3957,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 45: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x39 *09* Number-Pad or 96 n-Keys n01-n96
        { nKeys = !nKeys; Config1[7] = nKeys; WriteConfig1(0); 
          if (nKeys) status("n-Keys n01-n996 On"); else status ("NumPad pages 1-8 On"); Numkeys123 = 0; NumKeysChange(); StarOk = true; break; }
-         case 46: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x6e *0n*char = 0-9 or aA - zZ Select nKeys Char 
-       { if (knum>5) break; // Single digits or char only after *0n* no filename validity checks
-         if (knum==5) { status("nKeys character changed"); Config1[8] = nChar = KeyBrdByte[4]; 
-         WriteConfig1(1); NumKeysChange(); StarOk = true; break; } }
+         case 46: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x6e *0n*char = 1-9 or aA - zZ Select nKeys Char 
+       { if (knum==4) { nKeysL134  = !nKeysL134; if (nKeysL134) status("L1 L3 L4 L=nChar"); else status("L1 L3 L4"); if (AppState==0) WriteConfig1Change = true; StarOk = true; break; }
+         if (knum>5) break; // Single digits or char only after *0n* or use *0n* for nKeysL134 on/off replaces L in L1,L3,L4
+         if (knum==5) { if (AppState==0) status("nKeys character changed"); Config1[8] = nChar = KeyBrdByte[4]; 
+         if (AppState==0) WriteConfig1(1); NumKeysChange(); StarOk = true; break; } }
          case 47: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x70 *0p*pages = 1-99 Select pages number 
        { // Serial.print(knum);  SerPr1; Serial.print(b);  SerPr1; Serial.print(c999);
          if (knum>7) break;        // 1-983 only after *0p* 
@@ -3985,10 +3993,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                      if (k5=='/') { nDir[1]=nChar; nDir[2]='/'; nDir[3]=0x00; nDirX=2; }  // 2: /nChar/
                                              else { nDir[n]='/'; nDir[n+1]=0x00; nDirX=1+(n>1)*2; }  }    // 3: normal /dirname/ 1: default /filename
          if (knum==4) { nDir[0]='/'; nDir[1]=0x00; nDirX=0; }                                             // 0: default /filename but nDirX=0
-         Config1[60] = nDirX; status(nDirXMsg[nDirX]); WriteConfig1Change = StarOk = true; break; }
-         case 54: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x74 *0t*10char = set of 10 char in Linkstring to execute as nKeys 
-       { if (knum>5) { status("nKeys LinkString characters changed");
-                       for (n=0; n<knum-4; n++) nKeysLnkChar[n] = KeyBrdByte[4+n]; WriteConfig1(1); StarOk = true; break; } }
+         Config1[60] = nDirX; if (AppState==0) { status(nDirXMsg[nDirX]); WriteConfig1Change = true; } StarOk = true; break; }
+         case 54: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x74 *0t*10char = set of 10 char in Linkstring to execute as nKeys
+       { if (knum>5) { if (AppState==0) status("nKeys LinkString characters changed");
+                       for (n=0; n<knum-4; n++) nKeysLnkChar[n] = KeyBrdByte[4+n]; if (AppState==0) WriteConfig1Change = true; StarOk = true; break; } } 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
        { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
          // If one char added after *lm,s,t* such as *lm,s,t*x then file FileM,S,T reset with default text label1,2,3 To save thes must do [Cfg]->[Sav]
@@ -4000,7 +4008,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (a==0)     { if (knum>5) { for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n]; NameStr1[n] = 0x00; } // default is NameStr1 = label1,2,3
                          if (LayerAxD) f1 = SDFS.open(NameStr2, "w"); else f1 = LittleFS.open(NameStr2, "w"); 
                          f1.print(NameStr1); f1.print('\0'); f1.close();  }         
-         DoMSTLabel(0, m); WriteConfig1Change = true; strcat(NameStr2, NameStr3); status(NameStr2); StarOk = true; break; }
+         DoMSTLabel(0, m); WriteConfig1Change = true; strcat(NameStr2, NameStr3); if (AppState==0) status(NameStr2); StarOk = true; break; }
         case 56: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x66 *cf*number or *cf*src=dst - copy file source=destination
       { byte cfoption = 0;          // *cf*0 or *cf*00 -> Copy all six default label files from SDCard to Flash, *cf*1 or *cf*01 is Flash to SDCard
         if (knum==4) { status("Use *cf*number=0-9 or *cf*copyfrom=copyto"); StarOk = true; break; }  
@@ -4050,8 +4058,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { n = CopySDCardFiles2Flash(); Timer2Str(FileCopy, 2, n); strcat(FileRestoreMsg, FileCopy); status(FileRestoreMsg); StarOk = true; break; }  
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
-        case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
-      { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); Serial.println("EOC"); status("Raw Data sent to PC"); StarOk = true; break; }  
+      case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
+      { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
         Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
         Serial.println(ToneOn);      Serial.println(MediaConfig[0]);    Serial.println(Media);             Serial.println(Vol1);              Serial.println(Vol3);          
@@ -4060,8 +4068,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(CapsLock);    Serial.println(NumLock);           Serial.println(ScrollLock);        Serial.println(OptionOS);          Serial.println(CheckSerial); 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
-        Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println("EOC");                 
-        status("Text Data sent to PC"); StarOk = true; break; } } 
+        Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println(nKeysL134);
+        Serial.println("EOC");                 
+        status("Text Data sent to PC"); StarOk = true; break; } }
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
             else for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
@@ -5266,4 +5275,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 5269 *****************/
+/************* EOF line 5278 *****************/
