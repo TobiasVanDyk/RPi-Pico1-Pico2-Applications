@@ -3931,7 +3931,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (nKeys) status("n-Keys n01-n996 On"); else status("NumPad pages 1-8 On"); Numkeys123 = 0; NumKeysChange(); StarOk = true; break; }
          case 46: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x6e *0n*char = 1-9 or aA - zZ Select nKeys Char 
        { if (knum>5) break; // Single digits or char only after *0n* no filename validity checks
-         if (knum==5) { status("nKeys character changed"); Config1[8] = nChar = KeyBrdByte[4]; 
+         if (knum==5) { if (AppState==0) status("nKeys character changed"); Config1[8] = nChar = KeyBrdByte[4]; 
          WriteConfig1(1); NumKeysChange(); StarOk = true; break; } }
          case 47: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x70 *0p*pages = 1-83 Select pages number 
        { if (knum>6) break; // 1-83 only after *0p* 
@@ -3962,9 +3962,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                      if (k5=='/') { nDir[1]=nChar; nDir[2]='/'; nDir[3]=0x00; nDirX=2; }  // 2: /nChar/
                                              else { nDir[n]='/'; nDir[n+1]=0x00; nDirX=1+(n>1)*2; }  }    // 3: normal /dirname/ 1: default /filename
          if (knum==4) { nDir[0]='/'; nDir[1]=0x00; nDirX=0; }                                             // 0: default /filename but nDirX=0
-         Config1[60] = nDirX; status(nDirXMsg[nDirX]); if (AppState==0) WriteConfig1Change = true; StarOk = true; break; }
+         Config1[60] = nDirX; if (AppState==0) { status(nDirXMsg[nDirX]); WriteConfig1Change = true; } StarOk = true; break; }
          case 54: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x74 *0t*10char = set of 10 char in Linkstring to execute as nKeys 
-       { if (knum>5) { status("nKeys LinkString characters changed");
+       { if (knum>5) { if (AppState==0) status("nKeys LinkString characters changed");
                        for (n=0; n<knum-4; n++) nKeysLnkChar[n] = KeyBrdByte[4+n]; if (AppState==0) WriteConfig1Change = true; StarOk = true; break; } } 
          case 55: ////////////////////// KeyBrdByte[1]==0x6c&&KeyBrdByte[2]==0x6D,0x73,0x74 *lm* *ls* *lt* + optional filename that contains 24 keylabels
        { // Keylabels On/Off + optional filename that contains 24 keylabels for example *lt*label1 -> LabelT now has content label1 also *lt* *lS* *lm* toggles labels On/Off
@@ -3977,7 +3977,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (a==0)     { if (knum>5) { for (n=0; n<knum-4; n++) NameStr1[n] = KeyBrdByte[4+n]; NameStr1[n] = 0x00; } // default is NameStr1 = label1,2,3
                          if (LayerAxD) f1 = SD.open(NameStr2, "w"); else f1 = LittleFS.open(NameStr2, "w"); 
                          f1.print(NameStr1); f1.print('\0'); f1.close();  }         
-         DoMSTLabel(0, m); WriteConfig1Change = true; strcat(NameStr2, NameStr3); status(NameStr2); StarOk = true; break; }
+         DoMSTLabel(0, m); WriteConfig1Change = true; strcat(NameStr2, NameStr3); if (AppState==0) status(NameStr2); StarOk = true; break; }
         case 56: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x66 *cf*number or *cf*src=dst - copy file source=destination
       { byte cfoption = 0;          // *cf*0 or *cf*00 -> Copy all six default label files from SDCard to Flash, *cf*1 or *cf*01 is Flash to SDCard
         if (knum==4) { status("Use *cf*number=0-9 or *cf*copyfrom=copyto"); StarOk = true; break; }  
@@ -4095,7 +4095,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (KeyBrdByte[knum-2]=='=' && knum>5) { for (n=0; n<knum-6; n++) AppDir[n+1] = AppName[n] = KeyBrdByte[n+4]; AppDir[0] = '/'; AppDir[n+1] = '/'; 
                                                   AppDir[n+2] = AppName[n] = 0x00; AppL134 = KeyBrdByte[knum-1]-48; StarOk = DoAppDir(); 
                                                   if (AppL134==0) { strcpy(nDir, "/"); nDirX=0; } else { strcpy(nDir, AppDir); nDirX=3; }
-                                                  if (StarOk) if (AppL134!=0) status(AppDir); else status("No App Switch");  
+                                                  if (StarOk) if (AppState!=0) status(AppName); else status("No App Switch");  
                                                 } break; }                                                                                                
       } return StarOk;                
 }
