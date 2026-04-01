@@ -1933,20 +1933,20 @@ void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons
   return;     // iList = true;  
   iListOff:   // iList = false;
   
-  if (Layout==3)                                                                                        // Keys S1-S24
+  if (Layout==3)                                                                                        // Keys S1-S24   = 1 2 5 9
     { if (LayerAxD) if (ReadSDCard(c)) return;                                                          // If orange A-D first do any SDCard Textfiles 
       if (MacroS1S12[c]==2) Do2 = 0;                                                                    // S key(s) FillStr done execute first
       if (!LayerAxD) {if (MacroKeys(c, Do2))   return;  else { DoKeyMST(c, 0); if (LinkOk) return; } }  // FlashMem A-D 1st Macro then MacroLink
       if (LayerAxD)  {DoKeyMST(c, 0); if (LinkOk) return;  else if (MacroKeys(c, Do2))     return; }    // SDCard A-D 1st MacroLink then Macro              
       Bank123Select(1, c, Button);    }                                             
                
- if (Layout==4)                                                                                         // Keys T1-T24   
+ if (Layout==4)                                                                                         // Keys T1-T24   = 2 5 9 
  {    if (MacroT1T12[c]==2) Do2 = 0;                                                                    // T key(s) FillStr done execute first
       if (!LayerAxD) {if (MacroKeys(c, Do2))   return;  else { DoKeyMST(c, 0); if (LinkOk) return; } }  // FlashMem A-D 1st Macro then MacroLink
       if (LayerAxD)  {DoKeyMST(c, 0); if (LinkOk) return;  else if (MacroKeys(c, Do2))     return; }    // SDCard A-D 1st MacroLink then Macro              
       Bank123Select(2, c, Button);    }                                          
   
- if (Layout==1)                                                                                         // Keys M1-M24
+ if (Layout==1)                                                                                         // Keys M1-M24   = 2 5 6 7 9
     { if (!LayerAxD) {if (MacroKeys(c, Do2))   return;  else { DoKeyMST(c, 0); if (LinkOk) return; } }  // FlashMem A-D 1st Macro then MacroLink
       if (LayerAxD)  {DoKeyMST(c, 0); if (LinkOk) return;  else if (MacroKeys(c, Do2))     return; }    // SDCard A-D 1st MacroLink then Macro              
       if (Option==1) {if (LayerAD==0) { DoAdminCmd(); return;        }  }
@@ -3924,7 +3924,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* or *ul*0,1 off/on Upper/Lowercase macrokeys filenames
        { if (knum==4) MacroUL = !MacroUL; if (knum==5) MacroUL = b; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
          case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-9
-       { if (k2==0x78) { iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // or use WriteConfig1(0);
+       { if (k2==0x78) { if (knum==5 && b<2) iList = b; else iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // *ix* toggle or *ix*0,1 off/on
                          if (iList) status("Instruction List ON"); else status("Instruction List OFF"); StarOk = true; break; }       
          if (k2==0x73) i = 1; if (k2==0x74) i = 2; if (k2==0x6d) i = 0;                        // *is*, *it*, *im* 
          if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-52 - max iListMax=12 entries
@@ -4044,7 +4044,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
         Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println(nKeysL134);
-        Serial.println("EOC");                 
+        Serial.println(iList);       for (i=0; i<3; i++) for (n=0; n<iListMax; n++) Serial.println(MacroInstructionList[i][n]);               Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         

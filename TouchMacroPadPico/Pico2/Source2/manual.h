@@ -825,7 +825,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
                 2 5 9 0     is the same as Layout=4 previously 
                 2 5 6 7 9 0 is the same as Layout=1 previously
     Use *im* *is* *it* to reset to default i.e. when no numbers added after *im*, *is*, *it* 
-    Use *ix* to select between the new instruction-list or the old coded section 
+    Use *ix* toggle instruction list or *ix*0,1 instruction list off/on - if use coded part.
 (A) *09* toggles between NumPad and nKey n01-n996 mode when Pad [n] is pressed in the Config page. Use Pad [o] to move
     between the 1-83 pages of each mode. 
 (B) *0n*char The nKeys first character (default n), can be changed with with *0n*char - for example *0n*p will change
