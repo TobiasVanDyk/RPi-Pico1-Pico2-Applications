@@ -502,6 +502,7 @@ bool MacroTimerOK = false;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                         
 // const static char hex16[16][2] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};  // Unused 
 static const char* digits = "0123456789ABCDEF";                                                         // dec 2 hex digits positional map used in [Lst] list file contents
+static const char* b2Hex  = "0123456789abcdef";                                                         // Instruction list used
 char Int2HexStr[64] = "  ";
 char HexString[2] = { '0', '0' };
                         
@@ -4044,7 +4045,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
         Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println(nKeysL134);
-        Serial.println(iList);       for (i=0; i<3; i++) for (n=0; n<iListMax; n++) Serial.println(MacroInstructionList[i][n]);               Serial.println("EOC");                 
+        Serial.println(iList);       for (i=0; i<3; i++) { for (n=0; n<iListMax; n++)  Serial.print(b2Hex[MacroInstructionList[i][n]]);       Serial.println(); }    
+        Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -5117,7 +5119,7 @@ void touch_calibrate()
 /////////////////////////////////
 void showKeyData(byte Option) 
 /////////////////////////////////
-{  byte p, n, m, b;
+{  byte i, p, n, m, b;
    char c; 
    File f1, f2, f3;
    
