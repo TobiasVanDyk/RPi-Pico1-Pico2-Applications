@@ -4046,7 +4046,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
         Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println(nKeysL134);
         Serial.println(iList);       for (i=0; i<3; i++) { for (n=0; n<iListMax; n++)  Serial.print(b2Hex[MacroInstructionList[i][n]]);       Serial.println(); }    
-        Serial.println("EOC");                 
+        for (n=0; n<10; n++)         Serial.print(nKeysCharSet[n]);     Serial.println();                  for (n=0; n<10; n++)               Serial.print(nKeysLnkChar[n]);          
+        Serial.println();            Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
