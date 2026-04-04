@@ -12,7 +12,7 @@
 // shares a similar layout approach to what is used here - their design dates back to early 2021. 
 // https://learn.adafruit.com/touch-deck-diy-tft-customized-control-pad?view=all
 //
-// Adapted by Tobias van Dyk August 2022 - March 2026 for Pico 1 RP2040 and ILI9488 480x320 LCD
+// Adapted by Tobias van Dyk August 2022 - April 2026 for Pico 1 RP2040 and ILI9488 480x320 LCD
 // This use the Waveshare 3.5inch Touch Display Module for Raspberry Pi Pico 1 and 2 with included SDCard module:
 // https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 //
@@ -521,6 +521,7 @@ const static char mTArrayStr[10][10]       = {"300 hrs", "2 hrs", "3 hrs",   "5 
                          
 // const static char hex16[16][2] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};  // Unused 
 static const char* digits = "0123456789ABCDEF";                                                         // dec 2 hex digits positional map used in [Lst] list file contents
+static const char* b2Hex  = "0123456789abcdef";                                                         // Instruction list used
 char Int2HexStr[64] = "  ";
 char HexString[2] = { '0', '0' };
                         
@@ -1979,26 +1980,25 @@ void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons
   return;     // iList = true;  
   iListOff:   // iList = false;
   
-  if (Layout==3)                                                                                        // Keys S1-S24
+  if (Layout==3)                                                                                        // Keys S1-S24   = 1 2 5 9
     { if (LayerAxD) if (ReadSDCard(c)) return;                                                          // If orange A-D first do any SDCard Textfiles 
       if (MacroS1S12[c]==2) Do2 = 0;                                                                    // S key(s) FillStr done execute first
       if (!LayerAxD) {if (MacroKeys(c, Do2))   return;  else { DoKeyMST(c, 0); if (LinkOk) return; } }  // FlashMem A-D 1st Macro then MacroLink
       if (LayerAxD)  {DoKeyMST(c, 0); if (LinkOk) return;  else if (MacroKeys(c, Do2))     return; }    // SDCard A-D 1st MacroLink then Macro              
       Bank123Select(1, c, Button);    }                                             
                
- if (Layout==4)                                                                                         // Keys T1-T24   
+ if (Layout==4)                                                                                         // Keys T1-T24   = 2 5 9 
  {    if (MacroT1T12[c]==2) Do2 = 0;                                                                    // T key(s) FillStr done execute first
       if (!LayerAxD) {if (MacroKeys(c, Do2))   return;  else { DoKeyMST(c, 0); if (LinkOk) return; } }  // FlashMem A-D 1st Macro then MacroLink
       if (LayerAxD)  {DoKeyMST(c, 0); if (LinkOk) return;  else if (MacroKeys(c, Do2))     return; }    // SDCard A-D 1st MacroLink then Macro              
       Bank123Select(2, c, Button);    }                                          
   
- if (Layout==1)                                                                                         // Keys M1-M24
+ if (Layout==1)                                                                                         // Keys M1-M24   = 2 5 6 7 9
     { if (!LayerAxD) {if (MacroKeys(c, Do2))   return;  else { DoKeyMST(c, 0); if (LinkOk) return; } }  // FlashMem A-D 1st Macro then MacroLink
       if (LayerAxD)  {DoKeyMST(c, 0); if (LinkOk) return;  else if (MacroKeys(c, Do2))     return; }    // SDCard A-D 1st MacroLink then Macro              
       if (Option==1) {if (LayerAD==0) { DoAdminCmd(); return;        }  }
       if (Option==2) {if (LayerAD==0) { DoAdminPowershell(); return; }  }
-      Bank123Select(0, c, Button);    } 
-  
+      Bank123Select(0, c, Button);    }   
 }
 
 ////////////////////////////////
@@ -3953,7 +3953,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* or *ul*0,1 off/on Upper/Lowercase macrokeys filenames
        { if (knum==4) MacroUL = !MacroUL; if (knum==5) MacroUL = b; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
          case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-9
-       { if (k2==0x78) { iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // or use WriteConfig1(0);
+       { if (k2==0x78) { if (knum==5 && b<2) iList = b; else iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // *ix* toggle or *ix*0,1 off/on
                          if (iList) status("Instruction List ON"); else status("Instruction List OFF"); StarOk = true; break; }       
          if (k2==0x73) i = 1; if (k2==0x74) i = 2; if (k2==0x6d) i = 0;                        // *is*, *it*, *im* 
          if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-52 - max iListMax=12 entries
@@ -4062,7 +4062,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { n = CopySDCardFiles2Flash(); Timer2Str(FileCopy, 2, n); strcat(FileRestoreMsg, FileCopy); status(FileRestoreMsg); StarOk = true; break; }  
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false;
-      case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
+        case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
       { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
         Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
@@ -4073,7 +4073,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(SDNum);       Serial.println(MLabel);            Serial.println(SLabel);            Serial.println(TLabel);            Serial.println(NormVal);           
         Serial.println(DimVal);      Serial.println(TimePeriod);        Serial.println(TimeSet);           Serial.println(StartMarker);       Serial.println(EndMarker);
         Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println(nKeysL134);
-        Serial.println("EOC");                 
+        Serial.println(iList);       for (i=0; i<3; i++) { for (n=0; n<iListMax; n++)  Serial.print(b2Hex[MacroInstructionList[i][n]]);       Serial.println(); }    
+        for (n=0; n<10; n++)         Serial.print(nKeysCharSet[n]);     Serial.println();                  for (n=0; n<10; n++)               Serial.print(nKeysLnkChar[n]);          
+        Serial.println();            Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } } 
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -4131,9 +4133,9 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (KeyBrdByte[knum-2]=='=' && knum>5) { for (n=0; n<knum-6; n++) AppDir[n+1] = AppName[n] = KeyBrdByte[n+4]; AppDir[0] = '/'; AppDir[n+1] = '/'; 
                                                   AppDir[n+2] = AppName[n] = 0x00; AppL134 = KeyBrdByte[knum-1]-48; StarOk = DoAppDir(); 
                                                   if (AppL134==0) { strcpy(nDir, "/"); nDirX=0; } else { strcpy(nDir, AppDir); nDirX=3; }
-                                                  if (StarOk) if (AppL134!=0) status(AppDir); else status("No App Switch");  
+                                                  if (StarOk) if (AppState!=0) status(AppName); else status("No App Switch");  
                                                 } break; }                                                                                                
-      } return StarOk;                    
+      } return StarOk;                      
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5170,7 +5172,7 @@ void showKeyData(byte Option)
    if (iList) Serial.print("Instruction List ON"); else Serial.print("Instruction List OFF");
    SerPr2;
    for ( m = 0; m<3; m++ ) 
-       { Serial.print("MacroInstructionList " ); Serial.print(m); Serial.print(": ");
+       { Serial.print("MacroInstructionList " ); Serial.print(m+1+1*(m>0)); Serial.print(": ");
          for ( n = 0; n < iListMax; n++) 
              { b =  MacroInstructionList[m][n]; Serial.print(b); SerPr1; }
          SerPr2; }
