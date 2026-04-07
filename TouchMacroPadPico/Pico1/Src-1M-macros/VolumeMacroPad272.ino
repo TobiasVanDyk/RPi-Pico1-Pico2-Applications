@@ -1712,27 +1712,37 @@ bool ExecuteCode(byte Option)
                             while ( MacroBuff[n]!=0 && MacroBuffSize>n ) 
                                   { b = MacroBuff[n]; if (b>0xDF) { m = GetModNum(b, m);                  }      // m stays = 0 if no Shft,Alt,Ctrl.Gui r/L any combination at start
                                                              else { keycode[k] = b; k++; if (k==6) break; }      // keycode excludes Shft,Alt,Ctrl,Gui if added
-                                    n++; } 
+                                    n++; }                             
                             usb_hid.keyboardReport(HIDKbrd, m, keycode); delay(dt25); usb_hid.keyboardRelease(HIDKbrd); 
                             return true; }  
+
+  if (MacroBuff[0]==0xFE) {  m = MacroBuff[1];                                                                   // Use 0xFE at start byte[1] = m = modifier bitmap - all 6 keycodes available
+                             for (n=2;  n<6; n++) {keycode[n-2] = MacroBuff[n]; if (keycode[n]==0) break; }                                       
+                             usb_hid.keyboardReport(HIDKbrd, m, keycode);      delay(dt25); 
+                             usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25);                                                               
+                             return true;  }                                                                  
+
+  if (MacroBuff[0]==0xF4) { for (n=0;  n<5; n++) { keycode[n] = MacroBuff[n+1]; if (keycode[n]==0) break; }      // 0xF4 = Send A-Z,0-9 as HID values as is
+                            usb_hid.keyboardReport(HIDKbrd, 0, keycode); delay(dt25);                            // Could use 0xF0 as well
+                            usb_hid.keyboardRelease(HIDKbrd);            delay(dt25);  return true; }   
 
   // Tested with file a01 has Ctrl+Shft+Esc, file m07 has filename a01 but with F2 at start i.e. m07 content 0xF2 0x61 0x30 0x 31 when key [M7] pressed TaskManager opens
   // Construct m07 in macroeditor set source to M07 white, press [Fsp]3x[ADD] then a01 via [ADD] then [Sav]. File a01 is already saved in flash content 0xE0 0xE1 0x20 
   if (MacroBuff[0]==0xF2) { for (n=0;  n<MacroBuffSize; n++) { nFile[n] = MacroBuff[n+1]; } nFile[n+1] = 0x00;   // 0xF2 File content = Filename to be executed in NameStr3
-                            DoNKeys(20);  return true; }                                                         // Sort of Recursive call must test this properly 
+                            DoNKeys(20);  return true; }                                                         // DoNKeys(20) can ExecuteCode() again 
 
   if (MacroBuff[0]==0xF3) { for (n=1;  n<MacroBuffSize-1; n++) { keycode[0] = MacroBuff[n];                                   // keycode[1-5] = 0x00
                                                                  usb_hid.keyboardReport(HIDKbrd, 0, keycode); delay(dt25);    // Send codes 0x00 - 0xFF as is
                                                                  usb_hid.keyboardRelease(HIDKbrd);            delay(dt25); }  // cannot use keyboardPress
                                                                  return true; }                                                                     
 
-  if (MacroBuff[0]>=0xF0) { for (n=0;  n<5; n++) { keycode[n] = MacroBuff[n+1]; if (keycode[n]==0) break; }      // 0xF0 = Fnn keys as 1st char, 0xF1 = KeyPad keys as 1st char
+  if (MacroBuff[0]==0xF0) { for (n=0;  n<5; n++) { keycode[n] = MacroBuff[n+1]; if (keycode[n]==0) break; }      // 0xF0 = Fnn keys as 1st char, 0xF1 = KeyPad keys as 1st char
                             usb_hid.keyboardReport(HIDKbrd, 0, keycode); delay(dt25); 
                             usb_hid.keyboardRelease(HIDKbrd);            delay(dt25);  return true; }                             
 
   if (MacroBuff[0]>0x7F) { for (n=0;  n<6; n++) {keycode[n] = MacroBuff[n]; if (keycode[n]==0) break; }         // allow one 0x00 in keycode
                                                               usb_hid.keyboardReport(HIDKbrd, 0, keycode);      delay(dt25); 
-                                                              usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25); 
+                                                              usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25);                                                               
                                                               return true;}                                    // Repeat                                                      
 
   if (Option==1) return false;  // DoNKeys()
