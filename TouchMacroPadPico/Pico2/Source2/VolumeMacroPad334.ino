@@ -1676,17 +1676,17 @@ bool ExecuteCode(byte Option)
                             while ( MacroBuff[n]!=0 && MacroBuffSize>n ) 
                                   { b = MacroBuff[n]; if (b>0xDF) { m = GetModNum(b, m);                  }      // m stays = 0 if no Shft,Alt,Ctrl.Gui r/L any combination at start
                                                              else { keycode[k] = b; k++; if (k==6) break; }      // keycode excludes Shft,Alt,Ctrl,Gui if added
-                                    n++; } 
+                                    n++; }                             
                             usb_hid.keyboardReport(HIDKbrd, m, keycode); delay(dt25); usb_hid.keyboardRelease(HIDKbrd); 
                             return true; }  
 
-    if (MacroBuff[0]>0xFE) { m = MacroBuff[1]; 
-                             for (n=2;  n<6; n++) {keycode[n-2] = MacroBuff[n]; if (keycode[n]==0) break; }         // allow one 0x00 in keycode
-                                                                  usb_hid.keyboardReport(HIDKbrd, m, keycode);      delay(dt25); 
-                                                                  usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25);                                                               
-                                                                  return true;}                                     // Repeat                             
+  if (MacroBuff[0]==0xFE) {  m = MacroBuff[1];                                                                   // Use 0xFE at start byte[1] = m = modifier bitmap - all 6 keycodes available
+                             for (n=2;  n<6; n++) {keycode[n-2] = MacroBuff[n]; if (keycode[n]==0) break; }                                       
+                             usb_hid.keyboardReport(HIDKbrd, m, keycode);      delay(dt25); 
+                             usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25);                                                               
+                             return true;  }                                                                  
 
-  if (MacroBuff[0]>=0xF4) { for (n=0;  n<5; n++) { keycode[n] = MacroBuff[n+1]; if (keycode[n]==0) break; }      // 0xF4 = Send A-Z,0-9 as HID values as is
+  if (MacroBuff[0]==0xF4) { for (n=0;  n<5; n++) { keycode[n] = MacroBuff[n+1]; if (keycode[n]==0) break; }      // 0xF4 = Send A-Z,0-9 as HID values as is
                             usb_hid.keyboardReport(HIDKbrd, 0, keycode); delay(dt25);                            // Could use 0xF0 as well
                             usb_hid.keyboardRelease(HIDKbrd);            delay(dt25);  return true; }   
 
@@ -1700,7 +1700,7 @@ bool ExecuteCode(byte Option)
                                                                  usb_hid.keyboardRelease(HIDKbrd);            delay(dt25); }  // cannot use keyboardPress
                                                                  return true; }                                                                     
 
-  if (MacroBuff[0]>=0xF0) { for (n=0;  n<5; n++) { keycode[n] = MacroBuff[n+1]; if (keycode[n]==0) break; }      // 0xF0 = Fnn keys as 1st char, 0xF1 = KeyPad keys as 1st char
+  if (MacroBuff[0]==0xF0) { for (n=0;  n<5; n++) { keycode[n] = MacroBuff[n+1]; if (keycode[n]==0) break; }      // 0xF0 = Fnn keys as 1st char, 0xF1 = KeyPad keys as 1st char
                             usb_hid.keyboardReport(HIDKbrd, 0, keycode); delay(dt25); 
                             usb_hid.keyboardRelease(HIDKbrd);            delay(dt25);  return true; }                             
 
