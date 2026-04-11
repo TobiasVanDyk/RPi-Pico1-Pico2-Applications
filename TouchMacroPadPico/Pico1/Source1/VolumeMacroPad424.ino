@@ -726,6 +726,7 @@ char tTimeDateArr[mPlaySize]  = { " " };   // Not system time but time sent with
 unsigned long aMinute = 0;                 // Times 1 minute to stop repeating a clock timers firing for a minute before waiting for next 24 cycle
 unsigned long tMinute = 0;                 // Times 1 minute to stop repeating t clock timers firing for a minute before waiting for next 24 cycle
 unsigned long wMinute = 0;                 // Times 1 minute to stop repeating w clock timers firing for a minute before waiting for next 24 cycle
+unsigned long pMinute = 0;
 char datetime_buf[256];
 char *datetime_str = &datetime_buf[0]; 
 char alarm_buf[256];
@@ -838,13 +839,21 @@ void loop()
 { if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
                    else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
 
-  if (powerEnable||alarmEnable||timerEnable) rtc_get_datetime(&t); // Update time hhmm  
-  if (MacroTimer18) CheckMacroTimers();                            // Check Macro Timers 1-8 Oneshot Repeating Clocktime
-                                       
-  if (power_fired) { if (PowerClock==1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
-                     if (PowerClock==2) { DoPowerKeys('u', PowerKeysMenu, 10); } powerEnable = false; PowerClock = 0; power_fired = false; }
+  NowMillis = millis();
+  wiggleCheck = NowMillis;
+  
+  if (powerEnable || alarmEnable || timerEnable) { rtc_get_datetime(&t); }
+
+  if (powerEnable && setPower == 1 &&  t.hour == power.hour &&  t.min  == power.min &&  pMinute == 0) { power_fired = true; pMinute = NowMillis; }
+  if (alarmEnable && setAlarm == 1 &&  t.hour == alarm.hour &&  t.min  == alarm.min &&  aMinute == 0) { alarm_fired = true; aMinute = NowMillis; }
+  if (timerEnable && setTimer == 1 &&  t.hour == timer.hour &&  t.min  == timer.min &&  tMinute == 0) { timer_fired = true; tMinute = NowMillis; }
+
+  if (MacroTimer18) { CheckMacroTimers(); }
+
+  if (power_fired)  { if (PowerClock == 1) DoPowerKeys('r', PowerKeysMenu, 8);
+                      if (PowerClock == 2) DoPowerKeys('u', PowerKeysMenu, 10);
+                      powerEnable = false; PowerClock = 0; power_fired = false; }
                      
-  NowMillis = wiggleCheck = millis();                           // get the current "time" (number of milliseconds since started)
   if ((NowMillis - LastMillis) >= TimePeriod)                   // test whether the period has elapsed
       if (!BLOnOffToggle)                                       // Is toggled ON after Black Key Pressed for OFF state
          {if (DimVal==0) digitalWrite(LCDBackLight, LOW);       // Backlight Off
@@ -853,6 +862,8 @@ void loop()
           RepLast = RepNow = NowMillis;                         // Reset repeat key timer      
           if (!Kbrd) status("");                                // Clear the status line if KeyBrd not active
           OptNum = VarNum = 0;                                  // [Key] and [Opt] Keys reset to unpressed state
+          //Serial.println(t.hour); Serial.println(power.hour); Serial.println(t.min); Serial.println(power.min); Serial.println(NowMillis);  
+          //Serial.println(setPower); Serial.println(PowerClock); Serial.println(power_fired);
           BackLightOn = false;   }                              // Until keypress   
 
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  }                                      
@@ -887,22 +898,28 @@ void loop()
   if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                             
 } // main Loop
-/////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void DoCMTimers(byte TimerArr[], byte Num) // Num = 0-7 Timers = 1-8
-/////////////////////////////////////////////////////////////////////
-{ char N = nChar; int L = Layout; int A = LayerAxD; // Save state
+///////////////////////////////////////////////////////////////////////////////
+{ char savedChar = nChar; int savedLayout = Layout; int savedLayer = LayerAxD;
+
+  LayerAxD = TimerArr[2];
+
+  if (TimerArr[0] == 0 || TimerArr[0] == 5) Layout = 2; else Layout = TimerArr[0]; // Klink = 0  A = 2  n = 5 MST = 134
   
-  LayerAxD = TimerArr[2]; 
-  if (TimerArr[0]==0 || TimerArr[0]==5) Layout = 2; else Layout = TimerArr[0]; // Klink = 0  A = 2  n = 5 MST = 134
-  
-  if (TimerArr[0]==5) { strcpy(NameStr3, TimerName[Num]); nChar=TimerName[Num][0]; DoNKeys(30); }     // Tested ok <*mc*5b524> + R-C and <*mc*6b524> + O-C
-  else { if (TimerArr[3]==0) { strcpy(MSTAName,    TimerName[Num]); MacroKeys(TimerArr[1], 3);  }     // M S T A
-                       else  { strcpy(MSTLinkName, TimerName[Num]); DoKeyMST(TimerArr[1], 1);   }  }  // M S T A K Link
-                
-  Layout = L; LayerAxD = A; nChar=N;  // Restore           
+  if (TimerArr[0] == 5) { strcpy(NameStr3, TimerName[Num]); nChar = TimerName[Num][0]; DoNKeys(30); }      // K Link
+  else { if (TimerArr[3] == 0) { strcpy(MSTAName, TimerName[Num]); MacroKeys(TimerArr[1], 3); }            // M S T A
+                          else { strcpy(MSTLinkName, TimerName[Num]);  DoKeyMST(TimerArr[1], 1); }  }      // M S T A K Link
+ 
+  Layout = savedLayout; LayerAxD = savedLayer; nChar = savedChar;
   optionsindicators(0);
 }
-
+/////////////////////
+int parse2(int idx)
+/////////////////////
+{
+  return (RecBytes[idx] - '0') * 10 + (RecBytes[idx + 1] - '0');
+}
 /////////////////////////////////////////////////////////////////////////////////////
 // Check Macro Timers // TimerName[0-8] = Timer type Repeat T Repeat t Once T Once t
 // Timers 1 - 4 are incremented by millis() count Timers 5 - 8 are 0/1 Off/On=Active
@@ -911,13 +928,14 @@ void CheckMacroTimers()
 /////////////////////////////////////////////////////////////////////////////////////
 { unsigned long TimeNow = millis(); 
   int LayerAxDPrev;
-   
-  LayoutPrev = Layout;  LayerAxDPrev = LayerAxD;
-  if ((NowMillis-aMinute)>tMin) aMinute=0; if ((NowMillis-tMinute)>tMin) tMinute=0; // if ((NowMillis-wMinute)>tMin) wMinute=0; 
+
+  if (aMinute && (NowMillis - aMinute >= 60000)) aMinute = 0;
+  if (tMinute && (NowMillis - tMinute >= 60000)) tMinute = 0;
+  if (pMinute && (NowMillis - pMinute >= 60000)) pMinute = 0;
   
-  if (powerEnable && setPower==1) if (t.hour==power.hour && t.min==power.min) { power_fired = true; }  // hhmm Compare with timer                      
-  if (alarmEnable && setAlarm==1) if (t.hour==alarm.hour && t.min==alarm.min && aMinute == 0) { alarm_fired = true; }  // hhmm Compare with timer 
-  if (timerEnable && setTimer==1) if (t.hour==timer.hour && t.min==timer.min && tMinute == 0) { timer_fired = true; }  // hhmm Compare with timer                      
+  LayoutPrev = Layout;  LayerAxDPrev = LayerAxD;
+  
+  if ((NowMillis-aMinute)>tMin) aMinute=0; if ((NowMillis-tMinute)>tMin) tMinute=0; if ((NowMillis-pMinute)>tMin) pMinute=0; 
   
   if (MacroTimer1) { if ((TimeNow - TimeRepeatPrev) >= TimeRepeat)                           // Repeating MacroTimer1 still ON
                         { TimeRepeatPrev = TimeNow; DoCMTimers(MacroTimerArr1, 0);  } }
@@ -931,11 +949,13 @@ void CheckMacroTimers()
   if (Macrotimer4) { if ((TimeNow - timeOnceofPrev) >= timeOnceof)                           // Oneshot MacroTimer4 OFF
                         { Macrotimer4 = false; DoCMTimers(MacroTimerArr4, 3); } }
 
-  if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4); aMinute = millis(); alarm_fired = false;  }   // Repeating Clock MacroTimer5 ON 
-                     if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5); alarm_fired = false; } } // Oneshot Clock MacroTimer6 ON                    
+  if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4); aMinute = millis();  }   // Repeating Clock MacroTimer5 ON 
+                     if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5);  }  // Oneshot Clock MacroTimer6 ON   
+                     alarm_fired = false; }                  
                      
-  if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6); tMinute = millis(); timer_fired = false;   }   // Repeating Clock MacroTimer7 ON 
-                     if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); timer_fired = false; } } // Oneshot Clock MacroTimer8 ON                 
+  if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6); tMinute = millis();   }   // Repeating Clock MacroTimer7 ON 
+                     if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); }   // Oneshot Clock MacroTimer8 ON 
+                     timer_fired = false; }                                                                        
                                
   MacroTimer18 = MacroTimer8 || MacroTimer7 || MacroTimer6 || MacroTimer5 || Macrotimer4 || MacroTimer3 || Macrotimer2 || MacroTimer1; 
   
@@ -948,20 +968,41 @@ void GetTimeData(datetime_t *a, bool hm, int h, int m)
 // Note min is an Arduino reserved key word uses it as min() (macro) function  
 // Pico SDK rtc.h use it as minutes .min
 ///////////////////////////////////////////////////////////////////////////////
-{ if (hm) { a->hour = h; a->min = m; a->sec = 0; }
-     else { if (RecBytes[1]==0x2d)  a->year  = -1; else { a->year  = 2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48);  }
-            if (RecBytes[3]==0x2d)  a->month = -1; else { a->month = (RecBytes[3]-48)*10 + (RecBytes[4]-48); }
-            if (RecBytes[5]==0x2d)  a->day   = -1; else { a->day   = (RecBytes[5]-48)*10 + (RecBytes[6]-48); }
-            if (RecBytes[7]==0x2d)  a->dotw  = -1; else { a->dotw  = (RecBytes[7]-48); }
-            if (RecBytes[8]==0x2d)  a->hour  = -1; else { a->hour  = (RecBytes[8]-48)*10 + (RecBytes[9]-48); }       
-            if (RecBytes[10]==0x2d) a->min   = -1; else { a->min   = (RecBytes[10]-48)*10 + (RecBytes[11]-48); } 
-            a->sec = 0; }          
-   
-  // Serial.println(a->year);Serial.println(a->month);Serial.println(a->day);Serial.println(a->hour);Serial.println(a->min);
-  if (RecBytes[0]=='t'||RecBytes[0]=='T') { TimeSet = true;     optionsindicators(0); } 
-  if (RecBytes[0]=='a'||RecBytes[0]=='A') { alarmEnable = true; optionsindicators(0); setAlarm = 2-hm; }  // setAlarm = 1 if hm = true
-  if (RecBytes[0]=='p'||RecBytes[0]=='P') { powerEnable = true; optionsindicators(0); setPower = 2-hm; }  // setPower = 2 if hm is false  
-  if (RecBytes[0]=='w'||RecBytes[0]=='W') { timerEnable = true; optionsindicators(0); setTimer = 2-hm; }  // setTimer = 2 if hm is false  
+{ const char SKIP = '-';
+  if (hm) { a->hour = h; a->min  = m; a->sec  = 0; }
+  else { a->year  = (RecBytes[1]  == SKIP) ? -1 : 2000 + parse2(1);
+         a->month = (RecBytes[3]  == SKIP) ? -1 : parse2(3);
+         a->day   = (RecBytes[5]  == SKIP) ? -1 : parse2(5);
+         a->dotw  = (RecBytes[7]  == SKIP) ? -1 : (RecBytes[7] - '0');
+         a->hour  = (RecBytes[8]  == SKIP) ? -1 : parse2(8);
+         a->min   = (RecBytes[10] == SKIP) ? -1 : parse2(10);
+         a->sec   = 0; }
+
+  switch (RecBytes[0])
+  { case 't':
+    case 'T':
+      TimeSet = true;
+      optionsindicators(0);
+      break;
+    case 'a':
+    case 'A':
+      alarmEnable = true;
+      setAlarm = hm ? 1 : 2;
+      optionsindicators(0);
+      break;
+    case 'p':
+    case 'P':
+      powerEnable = true;
+      setPower = hm ? 1 : 2;
+      optionsindicators(0);
+      break;
+    case 'w':
+    case 'W':
+      timerEnable = true;
+      setTimer = hm ? 1 : 2;
+      optionsindicators(0);
+      break;
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
