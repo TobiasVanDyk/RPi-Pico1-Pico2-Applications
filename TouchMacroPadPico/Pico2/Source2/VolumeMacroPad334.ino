@@ -715,7 +715,7 @@ unsigned long RepNow = 0;              // Time when key still pressed
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned long aMinute = 0;                 // Times 1 minute to stop repeating a clock timers firing for a minute before waiting for next 24 cycle
 unsigned long tMinute = 0;                 // Times 1 minute to stop repeating t clock timers firing for a minute before waiting for next 24 cycle
-unsigned long wMinute = 0;                 // Times 1 minute to stop repeating w clock timers firing for a minute before waiting for next 24 cycle
+unsigned long pMinute = 0;                 // Times 1 minute to stop repeating w clock timers firing for a minute before waiting for next 24 cycle
 bool TimeSet = false;                      // true if Clock Time has been set for example <tyymmddwhhmm> through serial port
 bool tTimeDate = false;                    // Show Date and Time
 static const int tTimeDateSize = 48;       // Must check this Tuesday, May 16, 2023 11:27:51 AM
@@ -738,7 +738,7 @@ tmElements_t timer = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 3, .Day =
 static volatile bool alarm_fired = false;  // Set in callback triggers Macro Send xOne xMany based on Clock Time
 static volatile bool power_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Time
 static volatile bool timer_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Timer
-unsigned long pMinute = 0;
+
 ///////////////////////////////////////
 // Setup
 ///////////////////////////////////////
@@ -820,20 +820,22 @@ void loop()
   NowT = now();   // Time from TimeLib
   NowMillis = millis();
 
-  if (powerEnable) { if (setPower == 1) { if (hour() == power.Hour && minute() == power.Minute && pMinute == 0) { power_fired = true; pMinute = NowMillis; } }
+  if (powerEnable) { if (setPower == 1) { if (pMinute != 0 && (NowMillis - pMinute) > tMin) pMinute = 0;
+                                          if (hour() == power.Hour && minute() == power.Minute && pMinute == 0) { power_fired = true; pMinute = NowMillis; } }
                      if (setPower == 2) { if (NowT >= makeTime(power)) { power_fired = true; powerEnable = false; }  }  }
 
-  if (alarmEnable) { if (setAlarm == 1) { if (hour() == alarm.Hour && minute() == alarm.Minute && aMinute == 0) { alarm_fired = true; aMinute = NowMillis; } }
+  if (alarmEnable) { if (setAlarm == 1) { if (aMinute != 0 && (NowMillis - aMinute) > tMin) aMinute = 0;
+                                          if (hour() == alarm.Hour && minute() == alarm.Minute && aMinute == 0) { alarm_fired = true; aMinute = NowMillis; } }
                      if (setAlarm == 2) { if (NowT >= makeTime(alarm)) { alarm_fired = true; alarmEnable = false; }  }  }
  
-  if (timerEnable) { if (setTimer == 1) { if (hour() == timer.Hour && minute() == timer.Minute && tMinute == 0) { timer_fired = true; tMinute = NowMillis; } }
+  if (timerEnable) { if (setTimer == 1) { if (tMinute != 0 && (NowMillis - tMinute) > tMin) tMinute = 0;
+                                          if (hour() == timer.Hour && minute() == timer.Minute && tMinute == 0) { timer_fired = true; tMinute = NowMillis; } }
                      if (setTimer == 2) { if (NowT >= makeTime(timer)) { timer_fired = true; timerEnable = false;  }  }  }
 
   if (MacroTimer18) CheckMacroTimers();
 
-  if (power_fired) { if (PowerClock == 1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
-                     if (PowerClock == 2) { DoPowerKeys('u', PowerKeysMenu, 10); }
-                     powerEnable = false; PowerClock = 0;  power_fired = false;  }
+  if (power_fired) { power_fired = false; if (PowerClock == 1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
+                                          if (PowerClock == 2) { DoPowerKeys('u', PowerKeysMenu, 10); } }
                         
   NowMillis = wiggleCheck = millis();                           // get the current time (number of milliseconds since started)
   if ((NowMillis - LastMillis) >= TimePeriod)                   // test whether the period has elapsed
@@ -901,15 +903,9 @@ void DoCMTimers(byte TimerArr[], byte Num) // Num = 0-7 Timers = 1-8
 /////////////////////////////////////////////////////////////////////////////////////
 void CheckMacroTimers()
 /////////////////////////////////////////////////////////////////////////////////////
-{
-  unsigned long TimeNow = millis();
+{ unsigned long TimeNow = millis();
   int LayerAxDPrev;
-
   LayoutPrev = Layout; LayerAxDPrev = LayerAxD;
-
-  if (aMinute != 0 && (TimeNow - aMinute) > tMin) aMinute = 0;
-  if (tMinute != 0 && (TimeNow - tMinute) > tMin) tMinute = 0;
-  if (pMinute != 0 && (TimeNow - pMinute) > tMin) pMinute = 0;
 
   if (MacroTimer1) { if ((TimeNow - TimeRepeatPrev) >= TimeRepeat) { TimeRepeatPrev = TimeNow; DoCMTimers(MacroTimerArr1, 0); }  }
 
@@ -3345,27 +3341,46 @@ void DeleteFiles(byte Option)  // *de* delete text/number macros and config
 }
 
 ////////////////////////////////////////////////
-void DisplayClocks(bool DisplayOption)
+void DisplayClocks(byte DisplayOption)
 ////////////////////////////////////////////////
-{ SerPr2;
+{ if (DisplayOption==1)
+  { char powerStr[30];
+    SerPr2;
+    if (setPower == 1) { sprintf(powerStr, "Power Daily: %02d:%02d", power.Hour, power.Minute); } 
+    else if (setPower == 2) { sprintf(powerStr, "%02d/%02d %02d:%02d", power.Day, power.Month, power.Hour, power.Minute); } 
+         else { sprintf(powerStr, "Power OFF"); }
+    Serial.println(powerStr);
+
+    if (setAlarm  == 1) { sprintf(powerStr, "Alarm Daily: %02d:%02d", alarm.Hour, alarm.Minute); } 
+    else if (setAlarm  == 2) { sprintf(powerStr, "%02d/%02d %02d:%02d", alarm.Day, alarm.Month, alarm.Hour, alarm.Minute); } 
+         else { sprintf(powerStr, "Alarm OFF"); }
+    Serial.println(powerStr);
+
+    if (setTimer   == 1) { sprintf(powerStr, "Timer Daily: %02d:%02d", timer.Hour, timer.Minute); } 
+    else if (setTimer   == 2) { sprintf(powerStr, "%02d/%02d %02d:%02d", timer.Day, timer.Month, timer.Hour, timer.Minute); } 
+         else { sprintf(powerStr, "Timer OFF"); }
+    Serial.println(powerStr);
+    return; }  
+     
+  SerPr2;
   Serial.print("Date and Time <t>: ");
   Serial.print(tTimeDateArr);
-  if (DisplayOption) { status(tTimeDateArr); delay(3000); }
+  if (DisplayOption==2) { status(tTimeDateArr); delay(3000); }
   SerPr2;
 
   Serial.print("Alarm Macro [R-C][O-C] <a>: ");
   Serial.print(aTimeDateArr);
-  if (DisplayOption) { status(aTimeDateArr); delay(3000); }
+  if (DisplayOption==2) { status(aTimeDateArr); delay(3000); }
   SerPr2;
 
   Serial.print("Alarm Macro [RcT][OcT] <w>: ");
   Serial.print(wTimeDateArr);
-  if (DisplayOption) { status(wTimeDateArr); delay(3000); }
+  if (DisplayOption==2) { status(wTimeDateArr); delay(3000); }
   SerPr2;
 
   Serial.print("Alarm Power [R-C][O-C] <p>: ");
   Serial.print(pTimeDateArr);
-  if (DisplayOption) { status(pTimeDateArr); delay(3000); }
+  if (DisplayOption==2) { status(pTimeDateArr); delay(3000); }
   SerPr2; 
 
   Serial.print("Time in seconds since 1970: "); Serial.print(now());                   // Time in seconds since 1970
@@ -3415,7 +3430,7 @@ void GetSysInfo(int Action)
   Serial.println("SDCard Files (Number Name Size):");
   ListSDFiles(0, 0);
   
-  DisplayClocks(false);
+  DisplayClocks(1);
   // showKeyData(0);   // If included slows Save - use *ld*0,1 for data list 
 }
 
@@ -3737,7 +3752,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         case 7: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x6D *cm* or *cmnnXnn = copy macros MSTA -> MSTA + K
       { CopyMacro(0); SendBytesEnd(0); StarOk = true; break; }
         case 8: ///////////////////// KeyBrdByte[1]==0x63&&KeyBrdByte[2]==0x74 "*ct*" display clocks 4x 1 second delay *ct*hhmmR,O restart or Off on clock = hh:mm
-      { if (knum == 4) { DisplayClocks(true); StarOk = true; break; }
+      { if (knum == 4) { DisplayClocks(2); StarOk = true; break; }
         if (knum == 9) { power.Hour   = (k4-'0')*10 + (k5-'0'); power.Minute = (k6-'0')*10 + (k7-'0'); if (power.Hour > 23 || power.Minute > 59) { status("Enter *ct*hhmmR,O"); break; }
                          if (k8 == 'R') { PowerClock = 1; status("Restart Clock ON"); StarOk = true; setPower = 1; }
                          if (k8 == 'O') { PowerClock = 2; status("PowerOff Clock ON"); StarOk = true; setPower = 1; } } break; }
@@ -5190,6 +5205,8 @@ void showKeyData(byte Option)
    SerPr2;
    Serial.print("App Switcher Folder State Layer:" ); Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);
    SerPr2;
+
+   DisplayClocks(1);
     
    SerPr2;
    ReadTimers(1);

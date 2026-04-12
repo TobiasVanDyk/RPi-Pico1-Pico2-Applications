@@ -46,7 +46,7 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 
 New changes:
-1. Fixed regression errors for Timers and Clocks
+1. Fixed regression errors for Timers and Clocks + 1 minute switching threshold hysteresis
 2. Added 0xF4 and 0xF0 options to ExecuteCode()
 3. Macro Instruction List execution data sent to PC App iList tab where it can be edited and sent back to Pico.
 4. Labels L1, L3, L4 char L replaced by nKeys char - switch on/off with *0n*. Config1 only saved if App switching is not active (AppState==0)
