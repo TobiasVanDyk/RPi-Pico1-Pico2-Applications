@@ -8,7 +8,7 @@ Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local
 Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad424.ino.elf"
-Sketch uses 259628 bytes (24%) of program storage space. Maximum is 1044480 bytes.
+Sketch uses 259612 bytes (24%) of program storage space. Maximum is 1044480 bytes.
 Global variables use 62948 bytes (24%) of dynamic memory, leaving 199196 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
 Converting to uf2, output size: 591872, start address: 0x2000
@@ -27,7 +27,7 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
                                                           #define SPI_READ_FREQUENCY 15000000  // 20 MHz also ok
 
 New changes:
-1. Fixed regression errors for Timers and Clocks
+1. Fixed regression errors for Timers and Clocks + 1 minute lock fix
 2. Added 0xF4 and 0xF0 options to ExecuteCode()
 3. Macro Instruction List execution data sent to PC App iList tab where it can be edited and sent back to Pico.
 4. Labels L1, L3, L4 char L replaced by nKeys char - switch on/off with *0n*. Config1 only saved if App switching is not active (AppState==0)
