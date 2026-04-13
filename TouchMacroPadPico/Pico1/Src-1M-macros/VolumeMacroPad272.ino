@@ -845,15 +845,18 @@ void loop()
   
   if (powerEnable || alarmEnable || timerEnable) { rtc_get_datetime(&t); }
 
-  if (powerEnable && setPower == 1 &&  t.hour == power.hour &&  t.min  == power.min &&  pMinute == 0) { power_fired = true; pMinute = NowMillis; }
-  if (alarmEnable && setAlarm == 1 &&  t.hour == alarm.hour &&  t.min  == alarm.min &&  aMinute == 0) { alarm_fired = true; aMinute = NowMillis; }
-  if (timerEnable && setTimer == 1 &&  t.hour == timer.hour &&  t.min  == timer.min &&  tMinute == 0) { timer_fired = true; tMinute = NowMillis; }
+  if (powerEnable && setPower==1) { if (pMinute && (NowMillis - pMinute >= 60000)) pMinute = 0;
+                                    if (t.hour==power.hour &&  t.min==power.min &&  pMinute==0) { power_fired=true; pMinute=NowMillis; } }
+  if (alarmEnable && setAlarm==1) { if (aMinute && (NowMillis - aMinute >= 60000)) aMinute = 0;
+                                    if (t.hour==alarm.hour &&  t.min==alarm.min &&  aMinute==0) { alarm_fired=true; aMinute=NowMillis; } }
+  if (timerEnable && setTimer==1) { if (tMinute && (NowMillis - tMinute >= 60000)) tMinute = 0;
+                                    if (t.hour==timer.hour &&  t.min==timer.min &&  tMinute==0) { timer_fired=true; tMinute=NowMillis; } }
 
   if (MacroTimer18) { CheckMacroTimers(); }
 
   if (power_fired)  { if (PowerClock == 1) DoPowerKeys('r', PowerKeysMenu, 8);
                       if (PowerClock == 2) DoPowerKeys('u', PowerKeysMenu, 10);
-                      powerEnable = false; PowerClock = 0; power_fired = false; }                    
+                      if (setPower==2) powerEnable = false; power_fired = false; }               
 
   if ((NowMillis - LastMillis) >= TimePeriod)                   // test whether the period has elapsed
       if (!BLOnOffToggle)                                       // Is toggled ON after Black Key Pressed for OFF state
@@ -928,11 +931,6 @@ void CheckMacroTimers()
 /////////////////////////////////////////////////////////////////////////////////////
 { unsigned long TimeNow = millis(); 
   int LayerAxDPrev;
-
-  if (aMinute && (NowMillis - aMinute >= 60000)) aMinute = 0;
-  if (tMinute && (NowMillis - tMinute >= 60000)) tMinute = 0;
-  if (pMinute && (NowMillis - pMinute >= 60000)) pMinute = 0;
-  
   LayoutPrev = Layout;  LayerAxDPrev = LayerAxD;
   
   if ((NowMillis-aMinute)>tMin) aMinute=0; if ((NowMillis-tMinute)>tMin) tMinute=0; if ((NowMillis-pMinute)>tMin) pMinute=0; 
@@ -949,11 +947,11 @@ void CheckMacroTimers()
   if (Macrotimer4) { if ((TimeNow - timeOnceofPrev) >= timeOnceof)                           // Oneshot MacroTimer4 OFF
                         { Macrotimer4 = false; DoCMTimers(MacroTimerArr4, 3); } }
 
-  if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4); aMinute = millis();  }   // Repeating Clock MacroTimer5 ON 
+  if (alarm_fired) { if (MacroTimer5) { DoCMTimers(MacroTimerArr5, 4);  }                       // Repeating Clock MacroTimer5 ON 
                      if (MacroTimer6) { MacroTimer6 = false; DoCMTimers(MacroTimerArr6, 5);  }  // Oneshot Clock MacroTimer6 ON   
                      alarm_fired = false; }                  
                      
-  if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6); tMinute = millis();   }   // Repeating Clock MacroTimer7 ON 
+  if (timer_fired) { if (MacroTimer7) { DoCMTimers(MacroTimerArr7, 6);  }                        // Repeating Clock MacroTimer7 ON 
                      if (MacroTimer8) { MacroTimer8  = false; DoCMTimers(MacroTimerArr8, 7); }   // Oneshot Clock MacroTimer8 ON 
                      timer_fired = false; }                                                                        
                                
@@ -980,28 +978,13 @@ void GetTimeData(datetime_t *a, bool hm, int h, int m)
 
   switch (RecBytes[0])
   { case 't':
-    case 'T':
-      TimeSet = true;
-      optionsindicators(0);
-      break;
+    case 'T': TimeSet = true; optionsindicators(0); break;
     case 'a':
-    case 'A':
-      alarmEnable = true;
-      setAlarm = hm ? 1 : 2;
-      optionsindicators(0);
-      break;
+    case 'A': alarmEnable = true; setAlarm = hm ? 1 : 2; optionsindicators(0); break;
     case 'p':
-    case 'P':
-      powerEnable = true;
-      setPower = hm ? 1 : 2;
-      optionsindicators(0);
-      break;
+    case 'P': powerEnable = true; setPower = hm ? 1 : 2; optionsindicators(0); break;
     case 'w':
-    case 'W':
-      timerEnable = true;
-      setTimer = hm ? 1 : 2;
-      optionsindicators(0);
-      break;
+    case 'W': timerEnable = true; setTimer = hm ? 1 : 2; optionsindicators(0); break;
   }
 }
 
@@ -5243,6 +5226,8 @@ void showKeyData(byte Option)
    SerPr2;
    Serial.print("App Switcher Folder State Layer:" ); Serial.print(AppDir); SerPr1; Serial.print(AppState); SerPr1; Serial.print(AppL134);
    SerPr2;
+
+   DisplayClocks(false);
     
    SerPr2;
    ReadTimers(1);
