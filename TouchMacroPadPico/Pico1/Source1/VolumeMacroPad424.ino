@@ -40,6 +40,7 @@
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
 #include "hardware/rtc.h"
+#include "stringm24.h"    // M keys M1 - M24 load with *fm*[EXE] save to Flash/SDCard with *sm*[EXE]
 #include "strings24.h"    // S keys S1 - S24 load with *fs*[EXE] save to Flash/SDCard with *ss*[EXE]
 #include "stringt24.h"    // T keys T1 - T24 load with *ft*[EXE] save to Flash/SDCard with *st*[EXE]
 #include "stringRSL.h"    // Reboot or Shutdown or Logout strings for Windows, Linux, RaspiOS
@@ -521,7 +522,7 @@ const static char mTArrayStr[10][10]       = {"300 hrs", "2 hrs", "3 hrs",   "5 
                          
 // const static char hex16[16][2] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};  // Unused 
 static const char* digits = "0123456789ABCDEF";                                                         // dec 2 hex digits positional map used in [Lst] list file contents
-static const char* b2Hex  = "0123456789abcdef";                                                         // Instruction list used
+static const char* b2Hex  = "0123456789abcdefghijklmn";                                                 // Instruction list used 0-19 0-9,a-j currently 
 char Int2HexStr[64] = "  ";
 char HexString[2] = { '0', '0' };
                         
@@ -647,7 +648,9 @@ static const byte StrButton[48] = { 0, 0, 0, 0, 0, 1, 2, 0, 3, 4, 5,  0, 0, 0, 0
                                     0, 0, 0, 0, 12,13,14,0, 15,16,17, 0, 0, 0, 0, 0, 18,19,20, 0, 21,22,23, 0  };
                                     
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+char * mtr1to12[] = {mtr1, mtr2, mtr3, mtr4, mtr5, mtr6, mtr7, mtr8, mtr9, mtr10,mtr11,mtr12,
+                     mtr13,mtr14,mtr15,mtr16,mtr17,mtr18,mtr19,mtr20,mtr21,mtr22,mtr23,mtr24} ; // M keys
+                     
 char * str1to12[] = {str1, str2, str3, str4, str5, str6, str7, str8, str9, str10,str11,str12,
                      str13,str14,str15,str16,str17,str18,str19,str20,str21,str22,str23,str24} ; // S keys
                      
@@ -706,9 +709,9 @@ bool mPlay = false;                    // PC Playing Music
 static const int mPlaySize = 96;       // Must check this
 char mPlayArr[mPlaySize]  = { " " };    
 
-bool tTimeDate = false;                    // Show Date and Time
-static const int tTimeDateSize = 48;       // Must check this Tuesday, May 16, 2023 11:27:51 AM
-char tTimeDateArr[mPlaySize]  = { " " };   // Not system time but time sent with <I > not <T >              
+bool tTimeDate = false;                     // Show Date and Time
+static const int tTimeDateSize = mPlaySize; // Must check this Tuesday, May 16, 2023 11:27:51 AM
+char tTimeDateArr[mPlaySize]  = { " " };    // Not system time but time sent with <I > not <T >              
  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // RTC knows how many days are in each month - https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf
@@ -725,15 +728,14 @@ char tTimeDateArr[mPlaySize]  = { " " };   // Not system time but time sent with
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned long aMinute = 0;                 // Times 1 minute to stop repeating a clock timers firing for a minute before waiting for next 24 cycle
 unsigned long tMinute = 0;                 // Times 1 minute to stop repeating t clock timers firing for a minute before waiting for next 24 cycle
-unsigned long wMinute = 0;                 // Times 1 minute to stop repeating w clock timers firing for a minute before waiting for next 24 cycle
-unsigned long pMinute = 0;
-char datetime_buf[256];
+unsigned long pMinute = 0;                 // Times 1 minute to stop repeating w clock timers firing for a minute before waiting for next 24 cycle
+char datetime_buf[32];
 char *datetime_str = &datetime_buf[0]; 
-char alarm_buf[256];
+char alarm_buf[32];
 char *alarm_str = &alarm_buf[0]; 
-char power_buf[256];
+char power_buf[32];
 char *power_str = &power_buf[0]; 
-char timer_buf[256];
+char timer_buf[32];
 char *timer_str = &timer_buf[0]; 
 // For rtc alarm set field = -1 then alarm ignore this - for example can then set alarm every 60 minutes by setting all other fields -1 and min=00-59
 // 0 is Sunday, so 5 is Friday - all byte8 length except year which is int16
@@ -751,6 +753,50 @@ bool powerEnable = false;                  // Set in GUI then clock activates
 int setPower = 0;                          // 1 used short hhmm to set time or 2 used full yymmddwhhmm 0 
 int setAlarm = 0;                          // 1 used short hhmm to set time or 2 used full yymmddwhhmm 0 
 int setTimer = 0;                          // 1 used short hhmm to set time or 2 used full yymmddwhhmm 0 
+bool SaveTime4Data = false;                // Only save when this is set by entering clock-based power or timer data
+////////////////////////////////////////////
+// Time read and saved source Googel Gemini
+////////////////////////////////////////////
+void save4Time() 
+{
+  File file = LittleFS.open("Time4data", "w");
+  if (!file) return;
+
+  file.write((uint8_t *)&t, sizeof(datetime_t));
+  file.write((uint8_t *)&alarm, sizeof(datetime_t));
+  file.write((uint8_t *)&power, sizeof(datetime_t));
+  file.write((uint8_t *)&timer, sizeof(datetime_t));
+  file.write((uint8_t *)&setPower, 1);
+  file.write((uint8_t *)&setAlarm, 1);
+  file.write((uint8_t *)&powerEnable, 1);
+  file.write((uint8_t *)&alarmEnable, 1);
+  file.write((uint8_t *)&PowerClock, 1);
+  file.write((uint8_t *)&MacroTimer5, 1);
+  file.write((uint8_t *)&MacroTimer7, 1);
+  
+  SaveTime4Data = false; 
+  file.close();
+}
+void read4Time() 
+{ 
+  File file = LittleFS.open("Time4data", "r");
+  if (!file) return;
+
+  if (file.available()) {
+    file.read((uint8_t *)&t, sizeof(datetime_t));
+    file.read((uint8_t *)&alarm, sizeof(datetime_t));
+    file.read((uint8_t *)&power, sizeof(datetime_t));
+    file.read((uint8_t *)&timer, sizeof(datetime_t));    
+    file.read((uint8_t *)&setPower, 1);
+    file.read((uint8_t *)&setAlarm, 1);
+    file.read((uint8_t *)&powerEnable, 1);
+    file.read((uint8_t *)&alarmEnable, 1);
+    file.read((uint8_t *)&PowerClock, 1);
+    file.read((uint8_t *)&MacroTimer5, 1);
+    file.read((uint8_t *)&MacroTimer7, 1);
+  }
+  file.close();
+}
 
 ///////////////////////////////////////
 // Setup
@@ -855,7 +901,7 @@ void loop()
 
   if (power_fired)  { if (PowerClock == 1) DoPowerKeys('r', PowerKeysMenu, 8);
                       if (PowerClock == 2) DoPowerKeys('u', PowerKeysMenu, 10);
-                      if (setPower==2) powerEnable = false; power_fired = false; }
+                      if (setPower==2) { powerEnable = false; pMinute = 0; } power_fired = false; }
                      
   if ((NowMillis - LastMillis) >= TimePeriod)                   // test whether the period has elapsed
       if (!BLOnOffToggle)                                       // Is toggled ON after Black Key Pressed for OFF state
@@ -967,6 +1013,8 @@ void GetTimeData(datetime_t *a, bool hm, int h, int m)
 // Pico SDK rtc.h use it as minutes .min
 ///////////////////////////////////////////////////////////////////////////////
 { const char SKIP = '-';
+  SaveTime4Data = true; 
+  
   if (hm) { a->hour = h; a->min  = m; a->sec  = 0; }
   else { a->year  = (RecBytes[1]  == SKIP) ? -1 : 2000 + parse2(1);
          a->month = (RecBytes[3]  == SKIP) ? -1 : parse2(3);
@@ -1799,7 +1847,11 @@ bool MacroKeys(byte c, byte Option)
   char AppStr[80] = "";
   
   AxD = LayerAxD;
-  // if (Option==1) { DoMSTAName(c, Layout); Option=3; }   // No use with 1 yet
+  
+  if (Option==1)   // Send pre-codede strings - no need to be filled or saved to Flash/SDCard
+  { if (Layout==1) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = mtr1to12[c][n]; if (MacroBuff[n]==0x00) break; } }
+    if (Layout==3) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = str1to12[c][n]; if (MacroBuff[n]==0x00) break; } }
+    if (Layout==4) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = ttr1to12[c][n]; if (MacroBuff[n]==0x00) break; } } MacroBuffSize = n; }
 
   if (Option==2) 
      {DoMSTName(c, Layout);
@@ -1962,11 +2014,11 @@ int DoLargeFile(const char *STRf)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons M S T
+void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons M S T - largely untested if iLink ON
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Instruction List Simple: (Only execute 0-9,a-d exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )
+// Instruction List Simple: (Only execute 0-9,a-j exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )
 // 1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-// a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L Note: a=0x62=97->after -48 a b c d = 49 50 51 52
+// a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L e-j see below.  a-j = 10-19 from a=0x62=97->after -48 a b ... i j = 49 50 ... 57 58
 // For example 1 2 5 9 0   is the same as Layout=3 previously
 //             2 5 9 0     is the same as Layout=4 previously 
 //             2 5 6 7 9 0 is the same as Layout=1 previously  
@@ -1986,6 +2038,7 @@ void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons
 //////////////////////////////////////////////////////////////////////////////////////////////
   {byte Do2 = 2;    // 2 = A-D switch switch between two macros same name on both SDCard and FlashMem, 0 = only do current macro loaded
    int a, b, n = 0;
+   bool okL = true; // Must be ON here else if IlIst is of AND test for LinkOk will always fail
 
    if (!iList) goto iListOff;    // do it without instruction list
    
@@ -1993,21 +2046,28 @@ void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons
    if (Layout==3&&MacroS1S12[c]==2) Do2 = 0;     // Do *fs* for current session
    if (Layout==4&&MacroT1T12[c]==2) Do2 = 0;     // Do *ft* for current session
    
-  do { a = MacroInstructionList[b][n]; // if (a>9) a = a-39; // a-d=10-13 from a=0x62=97->after -48 a b c d = 49 50 51 52
+  do { a = MacroInstructionList[b][n]; // if (a>9) a = a-39; // a-j = 10-19 from a=0x62=97->after -48 a b c d e f g h i j = 49 50 51 52 53 54 55 56 57 58
        switch (a) {
        case 0:   break;
-       case 1:  if (LayerAxD)  if (ReadSDCard(c))              a=0; break;   // if (!LayerAxD) will also execute break which is correct
-       case 2:  if (!LayerAxD) if (MacroKeys(c, Do2))        { a=0; break; } else { DoKeyMST(c, 0); if (LinkOk) a=0; } break;    
-       case 3:  if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk) { a=0; break; } else if (MacroKeys(c, Do2))     a=0; } break;  
-       case 4:  if (LayerAxD)  if (MacroKeys(c, Do2))        { a=0; break; } else { DoKeyMST(c, 0); if (LinkOk) a=0; } break;    
-       case 5:  if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk) { a=0; break; } else if (MacroKeys(c, Do2))     a=0; } break;  
-       case 10: if (!LayerAxD) if (MacroKeys(c, Do2))          a=0;   break; // if (LayerAxD) will also execute break which is correct
-       case 11: if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk)   a=0; } break; 
-       case 12: if (LayerAxD)  if (MacroKeys(c, Do2))          a=0;   break; // if (!LayerAxD) will also execute break which is correct
-       case 13: if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk)   a=0; } break; 
+       case 1:  if (LayerAxD)  if (ReadSDCard(c))                    a=0;    break;   // if (!LayerAxD) will also execute break which is correct
+       case 2:  if (!LayerAxD) if (MacroKeys(c, Do2))              { a=0;    break; } else { DoKeyMST(c, 0); if (LinkOk&&okL) a=0; } break;    
+       case 3:  if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk&&okL)  { a=0;    break; } else if (MacroKeys(c, Do2))     a=0; }         break;  
+       case 4:  if (LayerAxD)  if (MacroKeys(c, Do2))              { a=0;    break; } else { DoKeyMST(c, 0); if (LinkOk&&okL) a=0; } break;    
+       case 5:  if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk&&okL)  { a=0;    break; } else if (MacroKeys(c, Do2))     a=0; }         break;  
+       case 10: if (!LayerAxD) if (MacroKeys(c, Do2))                 a=0;   break;   // if (LayerAxD) will also execute break which is correct
+       case 11: if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk&&okL)     a=0; } break; 
+       case 12: if (LayerAxD)  if (MacroKeys(c, Do2))                 a=0;   break;   // if (!LayerAxD) will also execute break which is correct
+       case 13: if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk&&okL)     a=0; } break; 
+       case 14: if (MacroKeys(c, 1)); break;                                 break;   // Use pre-coded text strings for M S T       
        case 6:  if (Option==1) if (LayerAD==0) { DoAdminCmd();        a=0; } break;
        case 7:  if (Option==2) if (LayerAD==0) { DoAdminPowershell(); a=0; } break;
-       case 9:  Bank123Select( b, c, Button); a=0; break; }
+       case 8:  break;         // Spare custom function 
+       case 9:  Bank123Select( b, c, Button); a=0; break; 
+       case 15: okL = true;  break;     // Could also use NOT invert-LinkOk or OR either/both XOR invert-LinkOk/same-LinkOk                                   
+       case 16: okL = false; break;     // instead of AND both-or-never/never in if (LinkOk&&okL)
+       case 17: Do2 = 0; break;         // Will load strings Str Ttr Mtr in MacroBuff then send - if strings saved on Flash/SDCard will fill Str Ttr Mtr on boot
+       case 18: Do2 = 1; break;         // Will send pre-coded strings str ttr (no mtr) in MacroBuff then send - no need to fill or save strings
+       case 19: Do2 = 2; break;    }    // Other Macro's
        n++; 
      } while (a>0&&n<iListMax);
 
@@ -3242,7 +3302,8 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
   
   if (LittleFS.exists("inputStr"))   { ChrPtr = inputString; DoFileStrings(StrOK, "inputStr", ChrPtr, 0); }
   if (LittleFS.exists("TimersData")) ReadTimers(1); else ReadTimers(2); // If not exist create TimersData with default data
-
+  if (LittleFS.exists("Time4data")) read4Time();                        // Get saved Time
+  
   if (MLabel) DoMSTLabel(0, 1); if (SLabel) DoMSTLabel(0, 3); if (TLabel) DoMSTLabel(0, 4);
 
   ReadBSDKeyKArr();    // New defines for K1-K24 in BSD1-3
@@ -3440,15 +3501,16 @@ void GetSysInfo(int Action)
   if (Action>0) { if (Action==4) { Savex1x6(); SaveX1X6 = false; Config1[28] = XFiles; WriteConfig1(1); WriteConfig1Change = false; }
                   if (SaveLayout>0) SaveLayoutConfig(); return; }  // SaveLayoutConfig sets WriteConfig1Change = true;
 
-  if (WriteConfig1Change && AppState==0) { WriteConfig1(1); SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
+  if (WriteConfig1Change && AppState==0) { WriteConfig1(1); SaveTime4Data = SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
   if (SDNumChange) { SaveSDCardArr(); SDNumChange = false; }  
   if (Bank123Change) { File f = LittleFS.open("Bank123File", "w"); if (f) {f.write(Bank123, 3); f.close(); } Bank123Change = false; }
   if (LayerADChange) { if ( LayerAxD!=Config1[26] || LayerAD!=Config1[32] ) WriteConfig1(1); LayerADChange = false; }
   if (SaveVar) { WriteConfig1(1); SaveVar = false; }  
   if (MediaChange) { if (VolOn!=Config1[25] || MuteOn!=Config1[24] || Media!=Config1[27] || ToneOn!=Config1[79]) { WriteConfig1(1); MediaChange = false; } }  
   if (SaveOptionOS) { WriteConfig1(1); SaveOptionOS = false; }  
+  if (SaveTime4Data) { save4Time(); SaveTime4Data = false; } 
   
-  Serial.println("Version: VolumeMacroPad424 Tobias van Dyk March 2026 License GPL3");
+  Serial.println("Version: VolumeMacroPad424 Tobias van Dyk April 2026 License GPL3");
   Serial.println("Hardware: Waveshare Pico 1 or 2 RP2040 ILI9488 Resistive TouchLCD 3.5inch"); 
   Serial.printf("CPU MHz (Pico 1 or RP20240): %d\n\r", fCPU);
   Serial.printf("FreeHeap: %d\n\r", fHeap);
@@ -3523,6 +3585,8 @@ bool WriteTimers(unsigned long PVal, byte Option, byte b)
   File f = LittleFS.open("TimersData", "w");
   if (f) f.write((const unsigned char *)DimData, 36); else return 0; f.close();  // Store 9 long unsigned int
   
+  // SaveTime4Data = true; 
+  
   if (Option>0) { Timer2Str(TimerArr, 0, PVal); // Serial.println(TimerArr);
                   strcpy(TimerVal[Option-1], TimerArr);
                   if (timeU=='m'||timeU=='h') Timer2Str(TimerArr, 1, PVal); // Serial.println(TimerArr);
@@ -3566,7 +3630,7 @@ void FillKeysStr(int SelectLayout)
   if (SelectLayout==4||SelectLayout==0)   // Keys T1-T24
   { MacroT1T12[n] = 2; for (m=0; m<=strlen(ttr1to12[n]); m++) Ttr1to12[n][m] = ttr1to12[n][m]; MacroSizeT1T12[n] = m; }
   if (SelectLayout==1||SelectLayout==0)   // Keys M1-M24
-  { MacroM1M12[n] = 2; for (m=0; m<=strlen(str1to12[n]); m++) Mtr1to12[n][m] = str1to12[n][m]; MacroSizeM1M12[n] = m; } }
+  { MacroM1M12[n] = 2; for (m=0; m<=strlen(mtr1to12[n]); m++) Mtr1to12[n][m] = mtr1to12[n][m]; MacroSizeM1M12[n] = m; } }  
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -3986,14 +4050,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          DoFileList(d); StarOk = true; break; } 
          case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* or *ul*0,1 off/on Upper/Lowercase macrokeys filenames
        { if (knum==4) MacroUL = !MacroUL; if (knum==5) MacroUL = b; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
-         case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-9
+         case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-19 as 0-9,a-j
        { if (k2==0x78) { if (knum==5 && b<2) iList = b; else iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // *ix* toggle or *ix*0,1 off/on
                          if (iList) status("Instruction List ON"); else status("Instruction List OFF"); StarOk = true; break; }       
          if (k2==0x73) i = 1; if (k2==0x74) i = 2; if (k2==0x6d) i = 0;                        // *is*, *it*, *im* 
-         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-52 - max iListMax=12 entries
-             status("Instruction List Reset"); SaveInstructionList(); StarOk = true; break; }  // Reset if not numbers added                  
-         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48-39*(KeyBrdByte[4+n]=='a'||KeyBrdByte[4+n]=='b'||KeyBrdByte[4+n]=='c'||KeyBrdByte[4+n]=='d');
-         status("Instruction List filled"); SaveInstructionList(); StarOk = true; break; }     // a=0x62=97->after -48 a b c d = 49 50 51 52
+         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-58 - max iListMax=12 entries
+                       status("Instruction List Reset"); SaveInstructionList(); StarOk = true; break; }  // Reset if not numbers added                  
+         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48-39*(KeyBrdByte[4+n]>='a'&&KeyBrdByte[4+n]<='j');
+         status("Instruction List filled"); SaveInstructionList(); StarOk = true; break; }     // a=0x62=97->after -48 a b ... i j = 49 50 ... 57 58
          case 45: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x39 *09* Number-Pad or 96 n-Keys n01-n96
        { nKeys = !nKeys; Config1[7] = nKeys; WriteConfig1(0); 
          if (nKeys) status("n-Keys n01-n996 On"); else status ("NumPad pages 1-8 On"); Numkeys123 = 0; NumKeysChange(); StarOk = true; break; }
@@ -5312,4 +5376,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 5289 *****************/
+/************* EOF line 5379 *****************/
