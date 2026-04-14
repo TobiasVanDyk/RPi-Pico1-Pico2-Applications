@@ -12,7 +12,7 @@
 // shares a similar layout approach to what is used here - their design dates back to early 2021. 
 // https://learn.adafruit.com/touch-deck-diy-tft-customized-control-pad?view=all
 //
-// Adapted by Tobias van Dyk August 2022 - February 2026 for the Pico 2 RP2350 and ILI9488 480x320 LCD
+// Adapted by Tobias van Dyk August 2022 - April 2026 for the Pico 2 RP2350 and ILI9488 480x320 LCD
 // This use the the Waveshare 3.5inch Touch Display Module for Raspberry Pi Pico 1, 2 with included SDCard module:
 // https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 //
@@ -39,6 +39,7 @@
 #include <SD.h>           // Wrapper to replace Arduino SD.h for SD cards - calls new SDFS and latest SdFat
 #include "strings24.h"    // S keys S1 - S24 load with *fs*[EXE] save to Flash/SDCard with *ss*[EXE]
 #include "stringt24.h"    // T keys T1 - T24 load with *ft*[EXE] save to Flash/SDCard with *st*[EXE]
+#include "stringm24.h"    // M keys M1 - M24 load with *fm*[EXE] save to Flash/SDCard with *sm*[EXE]
 #include "stringRSL.h"    // Reboot or Shutdown or Logout strings for Windows, Linux, RaspiOS
 #include "coloursDef.h"   // Colours used
 #include "keysDef.h"      // Keys used
@@ -502,7 +503,7 @@ bool MacroTimerOK = false;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                         
 // const static char hex16[16][2] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};  // Unused 
 static const char* digits = "0123456789ABCDEF";                                                         // dec 2 hex digits positional map used in [Lst] list file contents
-static const char* b2Hex  = "0123456789abcdef";                                                         // Instruction list used
+static const char* b2Hex  = "0123456789abcdefghij";                                                     // Instruction list used
 char Int2HexStr[64] = "  ";
 char HexString[2] = { '0', '0' };
                         
@@ -636,6 +637,8 @@ static const byte StrButton[48] = { 0, 0, 0, 0, 0, 1, 2, 0, 3, 4, 5,  0, 0, 0, 0
                                     0, 0, 0, 0, 12,13,14,0, 15,16,17, 0, 0, 0, 0, 0, 18,19,20, 0, 21,22,23, 0  };
                                     
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+char * mtr1to12[] = {mtr1, mtr2, mtr3, mtr4, mtr5, mtr6, mtr7, mtr8, mtr9, mtr10,mtr11,mtr12,
+                     mtr13,mtr14,mtr15,mtr16,mtr17,mtr18,mtr19,mtr20,mtr21,mtr22,mtr23,mtr24} ; // M keys
 
 char * str1to12[] = {str1, str2, str3, str4, str5, str6, str7, str8, str9, str10,str11,str12,
                      str13,str14,str15,str16,str17,str18,str19,str20,str21,str22,str23,str24} ; // S keys
@@ -738,6 +741,50 @@ tmElements_t timer = { .Second = 05, .Minute = 20, .Hour = 16, .Wday = 3, .Day =
 static volatile bool alarm_fired = false;  // Set in callback triggers Macro Send xOne xMany based on Clock Time
 static volatile bool power_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Time
 static volatile bool timer_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Timer
+bool SaveTime4Data = false; 
+
+////////////////////////////////////////////
+// Time read and saved source Googel Gemini
+////////////////////////////////////////////
+void save4Time() 
+{
+  File file = LittleFS.open("Time4data", "w");
+  if (!file) return;
+
+  // Write each struct as raw bytes
+  file.write((uint8_t *)&t, sizeof(t));
+  file.write((uint8_t *)&alarm, sizeof(alarm));
+  file.write((uint8_t *)&power, sizeof(power));
+  file.write((uint8_t *)&timer, sizeof(timer));
+  file.write((uint8_t *)&setPower, 1);
+  file.write((uint8_t *)&setAlarm, 1);
+  file.write((uint8_t *)&powerEnable, 1);
+  file.write((uint8_t *)&alarmEnable, 1);
+  file.write((uint8_t *)&PowerClock, 1);
+  file.write((uint8_t *)&MacroTimer5, 1);
+  file.write((uint8_t *)&MacroTimer7, 1);
+  file.close();
+}
+void read4Time() 
+{ 
+  File file = LittleFS.open("Time4data", "r");
+  if (!file) return;
+
+  if (file.available()) {
+    file.read((uint8_t *)&t, sizeof(t));
+    file.read((uint8_t *)&alarm, sizeof(alarm));
+    file.read((uint8_t *)&power, sizeof(power));
+    file.read((uint8_t *)&timer, sizeof(timer));    
+    file.read((uint8_t *)&setPower, 1);
+    file.read((uint8_t *)&setAlarm, 1);
+    file.read((uint8_t *)&powerEnable, 1);
+    file.read((uint8_t *)&alarmEnable, 1);
+    file.read((uint8_t *)&PowerClock, 1);
+    file.read((uint8_t *)&MacroTimer5, 1);
+    file.read((uint8_t *)&MacroTimer7, 1);
+  }
+  file.close();
+}
 
 ///////////////////////////////////////
 // Setup
@@ -817,8 +864,8 @@ void loop()
 { if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
                    else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
   
-  NowT = now();   // Time from TimeLib
-  NowMillis = millis();
+  NowT = now();                        // Time from TimeLib
+  NowMillis = wiggleCheck = millis();  // get the current time (number of milliseconds since started)
 
   if (powerEnable) { if (setPower == 1) { if (pMinute != 0 && (NowMillis - pMinute) > tMin) pMinute = 0;
                                           if (hour() == power.Hour && minute() == power.Minute && pMinute == 0) { power_fired = true; pMinute = NowMillis; } }
@@ -835,9 +882,8 @@ void loop()
   if (MacroTimer18) CheckMacroTimers();
 
   if (power_fired) { power_fired = false; if (PowerClock == 1) { DoPowerKeys('r', PowerKeysMenu, 8);  }
-                                          if (PowerClock == 2) { DoPowerKeys('u', PowerKeysMenu, 10); } }
-                        
-  NowMillis = wiggleCheck = millis();                           // get the current time (number of milliseconds since started)
+                                          if (PowerClock == 2) { DoPowerKeys('u', PowerKeysMenu, 10); } }                        
+  
   if ((NowMillis - LastMillis) >= TimePeriod)                   // test whether the period has elapsed
       if (!BLOnOffToggle)                                       // Is toggled ON after Black Key Pressed for OFF state
          {if (DimVal==0) digitalWrite(LCDBackLight, LOW);       // Backlight Off
@@ -936,7 +982,8 @@ void GetTimeData(tmElements_t *a, char *tArr, bool hm, int h, int m)
 //////////////////////////////////////////////////////////////////////////////////////////////
 {
   bool SetT = false;
-
+  SaveTime4Data = true; 
+  
   if (hm) { a->Hour = h; a->Minute = m; a->Second = 0; }
      else { if (RecBytes[0]=='t' || RecBytes[0]=='T') SetT = true;  // Enters with once with tArr[0] = char then after that yymmddwhhmm
             if (RecBytes[1]!=0x2d)  a->Year   = (2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48)) - 1970;
@@ -951,9 +998,7 @@ void GetTimeData(tmElements_t *a, char *tArr, bool hm, int h, int m)
                         optionsindicators(0); }  }
 
   if (RecBytes[0]=='a' || RecBytes[0]=='A') { alarmEnable = true; setAlarm = 2 - hm; optionsindicators(0); }
-
   if (RecBytes[0]=='p' || RecBytes[0]=='P') { powerEnable = true; setPower = 2 - hm; optionsindicators(0); }
-
   if (RecBytes[0]=='w' || RecBytes[0]=='W') { timerEnable = true; setTimer = 2 - hm; optionsindicators(0); }
 
   for (int n = 0; n < 12; n++) { if (RecBytes[n+1] != 0x2d) tArr[n] = RecBytes[n+1]; else tArr[n] = ' '; } // Removes t,w,a,p copies up to minutes not sec 
@@ -1732,8 +1777,11 @@ bool MacroKeys(byte c, byte Option)
   char AppStr[80] = "";
   
   AxD = LayerAxD;
-  // AppStr[0] = 0x00;
-  // if (Option==1) { DoMSTAName(c, Layout); Option=3; }   // No use with 1 yet
+  
+  if (Option==1)   // Send pre-codede strings - no need to be filled or saved to Flash/SDCard
+  { if (Layout==1) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = mtr1to12[c][n]; if (MacroBuff[n]==0x00) break; } }
+    if (Layout==3) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = str1to12[c][n]; if (MacroBuff[n]==0x00) break; } }
+    if (Layout==4) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = ttr1to12[c][n]; if (MacroBuff[n]==0x00) break; } } MacroBuffSize = n; }
 
   if (Option==2) 
      {DoMSTName(c, Layout);
@@ -1741,22 +1789,22 @@ bool MacroKeys(byte c, byte Option)
       BPtr = MacroBuff;   
       // SerPr2; Serial.print("MacroKeys2"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(MSTAName); SerPr1; Serial.print(nDir); SerPr2;      
       MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);        
-      if (MacroBuffSize==0) return MacroKeysOK;  }   
+      if (MacroBuffSize==0) return false;  }   
 
   if (Option==3)          // DonKeys go here with MSTAName includes /nDir
      {BPtr = MacroBuff;   // SendBytes if (macroA) also comes here
       if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTAName); } else strcpy(AppStr, MSTAName); // Key [M11] executes file /AppDir/ + m11 = /AppDir/m11 always SDCard  
       // SerPr2; Serial.print("MacroKeys3"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(MSTAName); SerPr1; Serial.print(nDir); SerPr2;     
       MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);   
-      if (MacroBuffSize==0) return MacroKeysOK; }
+      if (MacroBuffSize==0) return false; }
   
   if (Option==0)   // Some callers already copied into MacroBuff
   { if (Layout==1) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = Mtr1to12[c][n]; if (MacroBuff[n]==0x00) break; } }
     if (Layout==3) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = Str1to12[c][n]; if (MacroBuff[n]==0x00) break; } }
     if (Layout==4) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = Ttr1to12[c][n]; if (MacroBuff[n]==0x00) break; } } MacroBuffSize = n; }
  
-  if (MacroBuffSize==0 && !LargeFile) { if (LayerAxD) status("SDCard File not found"); else status("Flash File not found"); return MacroKeysOK; }
-  if (MacroBuffSize==0 && LargeFile)  { status("Large file - use M S T A K nKeys"); return MacroKeysOK; }                                               
+  if (MacroBuffSize==0 && !LargeFile) { if (LayerAxD) status("SDCard File not found"); else status("Flash File not found"); return false; }
+  if (MacroBuffSize==0 && LargeFile)  { status("Large file - use M S T A K nKeys"); return false; }                                               
 
   if (MacroBuff[0]==0x2A&&MacroBuff[1]!=0x2A)    // Check for starcodes ignore if double ** - make sure to add 0x00 at end
      { n = 0; while (MacroBuff[n]!=0) { KeyBrdByte[n] = MacroBuff[n]; n++; } KeyBrdByte[n] = 0x00; KeyBrdByteNum = n;
@@ -1897,11 +1945,11 @@ int DoLargeFile(const char *STRf)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons M S T
+void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons M S T - largely untested if iLink ON
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Instruction List Simple: (Only execute 0-9,a-d exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )
+// Instruction List Simple: (Only execute 0-9,a-j exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )
 // 1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-// a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L Note: a=0x62=97->after -48 a b c d = 49 50 51 52
+// a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L e-j see below.  a-j = 10-19 from a=0x62=97->after -48 a b ... i j = 49 50 ... 57 58
 // For example 1 2 5 9 0   is the same as Layout=3 previously
 //             2 5 9 0     is the same as Layout=4 previously 
 //             2 5 6 7 9 0 is the same as Layout=1 previously  
@@ -1921,6 +1969,7 @@ void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons
 //////////////////////////////////////////////////////////////////////////////////////////////
   {byte Do2 = 2;    // 2 = A-D switch switch between two macros same name on both SDCard and FlashMem, 0 = only do current macro loaded
    int a, b, n = 0;
+   bool okL = true; // Must be ON here else if ilIst is OFF then AND test for LinkOk will always fail
 
    if (!iList) goto iListOff;    // do it without instruction list
    
@@ -1928,21 +1977,28 @@ void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons
    if (Layout==3&&MacroS1S12[c]==2) Do2 = 0;     // Do *fs* for current session
    if (Layout==4&&MacroT1T12[c]==2) Do2 = 0;     // Do *ft* for current session
    
-  do { a = MacroInstructionList[b][n]; // if (a>9) a = a-39; // a-d=10-13 from a=0x62=97->after -48 a b c d = 49 50 51 52
+  do { a = MacroInstructionList[b][n]; // if (a>9) a = a-39; // a-j = 10-19 from a=0x62=97->after -48 a b c d e f g h i j = 49 50 51 52 53 54 55 56 57 58
        switch (a) {
        case 0:   break;
-       case 1:  if (LayerAxD)  if (ReadSDCard(c))              a=0; break;   // if (!LayerAxD) will also execute break which is correct
-       case 2:  if (!LayerAxD) if (MacroKeys(c, Do2))        { a=0; break; } else { DoKeyMST(c, 0); if (LinkOk) a=0; } break;    
-       case 3:  if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk) { a=0; break; } else if (MacroKeys(c, Do2))     a=0; } break;  
-       case 4:  if (LayerAxD)  if (MacroKeys(c, Do2))        { a=0; break; } else { DoKeyMST(c, 0); if (LinkOk) a=0; } break;    
-       case 5:  if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk) { a=0; break; } else if (MacroKeys(c, Do2))     a=0; } break;  
-       case 10: if (!LayerAxD) if (MacroKeys(c, Do2))          a=0;   break; // if (LayerAxD) will also execute break which is correct
-       case 11: if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk)   a=0; } break; 
-       case 12: if (LayerAxD)  if (MacroKeys(c, Do2))          a=0;   break; // if (!LayerAxD) will also execute break which is correct
-       case 13: if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk)   a=0; } break; 
+       case 1:  if (LayerAxD)  if (ReadSDCard(c))                    a=0;    break;   // if (!LayerAxD) will also execute break which is correct
+       case 2:  if (!LayerAxD) if (MacroKeys(c, Do2))              { a=0;    break; } else { DoKeyMST(c, 0); if (LinkOk&&okL) a=0; } break;    
+       case 3:  if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk&&okL)  { a=0;    break; } else if (MacroKeys(c, Do2))     a=0; }         break;  
+       case 4:  if (LayerAxD)  if (MacroKeys(c, Do2))              { a=0;    break; } else { DoKeyMST(c, 0); if (LinkOk&&okL) a=0; } break;    
+       case 5:  if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk&&okL)  { a=0;    break; } else if (MacroKeys(c, Do2))     a=0; }         break;  
+       case 10: if (!LayerAxD) if (MacroKeys(c, Do2))                 a=0;   break;   // if (LayerAxD) will also execute break which is correct
+       case 11: if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk&&okL)     a=0; } break; 
+       case 12: if (LayerAxD)  if (MacroKeys(c, Do2))                 a=0;   break;   // if (!LayerAxD) will also execute break which is correct
+       case 13: if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk&&okL)     a=0; } break; 
+       case 14: if (MacroKeys(c, 1)); break;                                 break;   // Use pre-coded text strings for M S T
        case 6:  if (Option==1) if (LayerAD==0) { DoAdminCmd();        a=0; } break;
        case 7:  if (Option==2) if (LayerAD==0) { DoAdminPowershell(); a=0; } break;
-       case 9:  Bank123Select( b, c, Button); a=0; break; }
+       case 8:  break;         // Spare custom function 
+       case 9:  Bank123Select( b, c, Button); a=0; break; 
+       case 15: okL = true;  break;     // Could also use NOT invert-LinkOk or OR either/both XOR invert-LinkOk/same-LinkOk                                   
+       case 16: okL = false; break;     // instead of AND both-or-never/never in if (LinkOk&&okL)
+       case 17: Do2 = 0; break;         // Will load strings Str Ttr Mtr in MacroBuff then send - if strings saved on Flash/SDCard will fill Str Ttr Mtr on boot
+       case 18: Do2 = 1; break;         // Will send pre-coded strings str ttr (no mtr) in MacroBuff then send - no need to fill or save strings
+       case 19: Do2 = 2; break;    }    // Other Macro's
        n++; 
      } while (a>0&&n<iListMax);
 
@@ -3187,6 +3243,7 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
   
   if (LittleFS.exists("inputStr"))   { ChrPtr = inputString; DoFileStrings(StrOK, "inputStr", ChrPtr, 0); }
   if (LittleFS.exists("TimersData")) ReadTimers(1); else ReadTimers(2); // If not exist create TimersData with default data
+  if (LittleFS.exists("Time4data")) read4Time(); Serial.println("Time Data Read");                // Get saved Time
 
   if (MLabel) DoMSTLabel(0, 1); if (SLabel) DoMSTLabel(0, 3); if (TLabel) DoMSTLabel(0, 4);
 
@@ -3407,16 +3464,17 @@ void GetSysInfo(int Action)
   if (Action>0) { if (Action==4) { Savex1x6(); SaveX1X6 = false; Config1[28] = XFiles; WriteConfig1(1); WriteConfig1Change = false; }
                   if (SaveLayout>0) SaveLayoutConfig(); return; }  // SaveLayoutConfig sets WriteConfig1Change = true;
 
-  if (WriteConfig1Change && AppState==0) { WriteConfig1(1); SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
+  if (WriteConfig1Change && AppState==0) { WriteConfig1(1); SaveTime4Data = SaveOptionOS = MediaChange = SaveVar = LayerADChange = SDNumChange = WriteConfig1Change = false; }
   if (SDNumChange) { SaveSDCardArr(); SDNumChange = false; }  
   if (Bank123Change) { File f = LittleFS.open("Bank123File", "w"); if (f) {f.write(Bank123, 3); f.close(); } Bank123Change = false; }
   if (LayerADChange) { if ( LayerAxD!=Config1[26] || LayerAD!=Config1[32] ) WriteConfig1(1); LayerADChange = false; }
   if (SaveVar) { WriteConfig1(1); SaveVar = false; }  
   if (MediaChange) { if (VolOn!=Config1[25] || MuteOn!=Config1[24] || Media!=Config1[27] || ToneOn!=Config1[79]) { WriteConfig1(1); MediaChange = false; } }  
   if (SaveOptionOS) { WriteConfig1(1); SaveOptionOS = false; }  
+  if (SaveTime4Data) { save4Time(); SaveTime4Data = false; }  
   
-  Serial.println("Version: VolumeMacro334 Tobias van Dyk March 2026 License GPL3");
-  Serial.println("Hardware: Waveshare Pico 2 RP2350 ILI9488 Resistive TouchLCD 3.5inch"); 
+  Serial.println("Version: VolumeMacro334 Tobias van Dyk April 2026 License GPL3");
+  Serial.println("Hardware: Waveshare Pico 2 RP2350-A2 ILI9488 Resistive TouchLCD 3.5inch - Pico 2 A4 wanted"); 
   Serial.printf("CPU MHz (Pico 1 or RP20240): %d\n\r", fCPU);
   Serial.printf("FreeHeap: %d\n\r", fHeap);
   Serial.printf("UsedHeap: %d\n\r", uHeap);
@@ -3489,6 +3547,8 @@ bool WriteTimers(unsigned long PVal, byte Option, byte b)
               
   File f = LittleFS.open("TimersData", "w");
   if (f) f.write((const unsigned char *)DimData, 36); else return 0; f.close();  // Store 9 long unsigned int
+
+  save4Time();
   
   if (Option>0) { Timer2Str(TimerArr, 0, PVal); // Serial.println(TimerArr);
                   strcpy(TimerVal[Option-1], TimerArr);
@@ -3533,7 +3593,7 @@ void FillKeysStr(int SelectLayout)
   if (SelectLayout==4||SelectLayout==0)   // Keys T1-T24
   { MacroT1T12[n] = 2; for (m=0; m<=strlen(ttr1to12[n]); m++) Ttr1to12[n][m] = ttr1to12[n][m]; MacroSizeT1T12[n] = m; }
   if (SelectLayout==1||SelectLayout==0)   // Keys M1-M24
-  { MacroM1M12[n] = 2; for (m=0; m<=strlen(str1to12[n]); m++) Mtr1to12[n][m] = str1to12[n][m]; MacroSizeM1M12[n] = m; } }
+  { MacroM1M12[n] = 2; for (m=0; m<=strlen(mtr1to12[n]); m++) Mtr1to12[n][m] = mtr1to12[n][m]; MacroSizeM1M12[n] = m; } }  
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -3958,13 +4018,13 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          DoFileList(d); StarOk = true; break; } 
          case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* or *ul*0,1 off/on Upper/Lowercase macrokeys filenames
        { if (knum==4) MacroUL = !MacroUL; if (knum==5) MacroUL = b; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
-         case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-9
+         case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-19 as 0-9,a-j
        { if (k2==0x78) { if (knum==5 && b<2) iList = b; else iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // *ix* toggle or *ix*0,1 off/on
                          if (iList) status("Instruction List ON"); else status("Instruction List OFF"); StarOk = true; break; }       
          if (k2==0x73) i = 1; if (k2==0x74) i = 2; if (k2==0x6d) i = 0;                        // *is*, *it*, *im* 
-         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-52 - max iListMax=12 entries
-             status("Instruction List Reset"); SaveInstructionList(); StarOk = true; break; }  // Reset if not numbers added                  
-         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48-39*(KeyBrdByte[4+n]=='a'||KeyBrdByte[4+n]=='b'||KeyBrdByte[4+n]=='c'||KeyBrdByte[4+n]=='d');
+         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-58 - max iListMax=12 entries
+                       status("Instruction List Reset"); SaveInstructionList(); StarOk = true; break; }  // Reset if not numbers added                  
+         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48-39*(KeyBrdByte[4+n]>='a'&&KeyBrdByte[4+n]<='j');
          status("Instruction List filled"); SaveInstructionList(); StarOk = true; break; }     // a=0x62=97->after -48 a b c d = 49 50 51 52
          case 45: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x39 *09* Number-Pad or 96 n-Keys n01-n96
        { nKeys = !nKeys; Config1[7] = nKeys; WriteConfig1(0); 
@@ -4921,7 +4981,7 @@ bool SaveMacro(bool Notfmst)   // Also used by *sa,m,s,t then all 24 (U/L case) 
   if (MST1==2) { for (n=0; n<ByteSize; n++) { if (Ttr1to12[Option1][n]==0x00) break;  } 
                  MacroT1T12[Option1] = 6; BPtr = Ttr1to12[Option1]; MacroSizeT1T12[Option1] = n; }
                         
-  DoFileBytes(1, MSTAName, BPtr, n, sdCard);   // Save Source File content already configured in MSTtr1to13[Option1]
+  DoFileBytes(1, MSTAName, BPtr, n, sdCard);   // Save Source File content already configured in MSTtr1to24[Option1]
  
   if (Notfmst) if (n>1) status("Saved"); 
   return (n>1);        
@@ -5289,4 +5349,4 @@ void showKeyData(byte Option)
          SerPr2;  }          
  }
 
-/************* EOF line 5239 *****************/
+/************* EOF line 5301 *****************/
