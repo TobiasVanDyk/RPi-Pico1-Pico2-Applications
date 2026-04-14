@@ -807,12 +807,12 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *lf* /+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
     *lf* /+/ lists all flash files and all the sdcard files (the folder for both is now root /).
 (y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names, or use *up*0,1 off/on. 
-(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-d. Can add less
+(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-j. Can add less
     than 12 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
     *ld* when a serial terminal is connected to the TouchLCD.
-    Instruction List: Only execute 0-9 or a-d, exit if 0, can be in any order or length (set to 12 currently): 
+    Instruction List: Only execute 0-9 or a-j, exit if 0, can be in any order or length (set to 12 currently): 
     1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-    a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L
+    a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L and for e to j see sourcecode or PC App iList tab
     For example 1 2 5 9 0   is the same as Layout=3 previously
                 2 5 9 0     is the same as Layout=4 previously 
                 2 5 6 7 9 0 is the same as Layout=1 previously
