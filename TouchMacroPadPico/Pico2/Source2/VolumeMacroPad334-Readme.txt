@@ -15,14 +15,14 @@ Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Ard
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad334.ino.elf"
-Sketch uses 250940 bytes (12%) of program storage space. Maximum is 2088960 bytes.
-Global variables use 63664 bytes (12%) of dynamic memory, leaving 460624 bytes for local variables. Maximum is 524288 bytes.
+Sketch uses 250972 bytes (12%) of program storage space. Maximum is 2088960 bytes.
+Global variables use 64264 bytes (12%) of dynamic memory, leaving 460024 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad334.ino.uf2 
 Resetting COM3
-Converting to uf2, output size: 580096, start address: 0x2000
+Converting to uf2, output size: 581632, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 580096 bytes to D:/NEW.UF2
+Wrote 581632 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -46,21 +46,27 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 
 New changes:
-1. Added pre-coded M1-M24 text string as stringm24.h - use new iList number 14 to send without loading or saving the text strings - similar to Do2=1 option
-2. Expanded iList options to 19.
-3. Fixed regression errors for Timers and Clocks + 1 minute lock fix
-4. Added 0xF4 and 0xF0 options to ExecuteCode()
-5. Macro Instruction List execution data sent to PC App iList tab where it can be edited and sent back to Pico.
-6. Labels L1, L3, L4 char L replaced by nKeys char - switch on/off with *0n*. Config1 only saved if App switching is not active (AppState==0)
-7. Fix when large textfile is printed then the second action is also executed additionally when using L4. This can be corrected by choosing an alternative instruction list that excludes 
+1, Added colour copy defaults to iList
+2. Fixed regression errors for Timers and Clocks + 1 minute switching threshold hysteresis
+3. Added 0xF4 and 0xF0 options to ExecuteCode()
+4. Macro Instruction List execution data sent to PC App iList tab where it can be edited and sent back to Pico.
+5. Labels L1, L3, L4 char L replaced by nKeys char - switch on/off with *0n*. Config1 only saved if App switching is not active (AppState==0)
+6. Fix when large textfile is printed then the second action is also executed additionally when using L4. This can be corrected by choosing an alternative instruction list that excludes 
    that specific second action, but in this case DoNKeys() was modified: 
    if (StrLen==0) { if (LayerAxD) status("nKeys File not found on SDCard"); else status("nKeys File not found on Flash"); } else LinkOk = true;
-8. Various fixes to <1 - <6 handling, *up*0,1 off/on Macro Upper/Lower case added, SDCardNum Pad [n] + Pad[o] used, SDCardArr[2] sent to PC App, changes to [Cfg][Sav] such as A-D only 
+7. Various fixes to <1 - <6 handling, *up*0,1 off/on Macro Upper/Lower case added, SDCardNum Pad [n] + Pad[o] used, SDCardArr[2] sent to PC App, changes to [Cfg][Sav] such as A-D only 
    saved from [A-D] not L1,L3,L4 changes.
-9. MacroUL part of Config1
-10, Added Custom Labels M,S,T to config  data sent to PC App.
-11. Added Custom Labels Off/On *lm,s,t*0,1 switch custem labels off/on - *lm,s,t*x <> 0,1 toggle state on/off
-12. Fixed Labels Folder switching in Star Codes function and added nDir = AppDir switch. Reset nDir to / after App Switch closed.
+8. MacroUL part of Config1
+9, Added Custom Labels M,S,T to config  data sent to PC App.
+10. Added Custom Labels Off/On *lm,s,t*0,1 switch custem labels off/on - *lm,s,t*x <> 0,1 toggle state on/off
+11. Fixed Labels Folder switching in Star Codes function and added nDir = AppDir switch. Reset nDir to / after App Switch closed.
+12. Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App internal list (wip)
+    *ap*appname=1,3,4 creates a folder /appname/ if it does not exist on the SDCard and assigns appname to the keys in Layout 1,3,4. Pressing the keys M1-M24 or *S1-S24 or 
+    T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder /appname/. *ap*appname=0 switches appname app switch off. 
+    *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys. 
+    *ap* disables App Switch function
+
+
  
 
 

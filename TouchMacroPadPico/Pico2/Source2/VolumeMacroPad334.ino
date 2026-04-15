@@ -1947,58 +1947,43 @@ int DoLargeFile(const char *STRf)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons M S T - largely untested if iLink ON
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Instruction List Simple: (Only execute 0-9,a-j exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )
-// 1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-// a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L e-j see below.  a-j = 10-19 from a=0x62=97->after -48 a b ... i j = 49 50 ... 57 58
-// For example 1 2 5 9 0   is the same as Layout=3 previously
-//             2 5 9 0     is the same as Layout=4 previously 
-//             2 5 6 7 9 0 is the same as Layout=1 previously  
-//
-// Instruction List Expanded: (Only execute if >20) not yet implemented
-// For example 11  102 203 31 41 90    is the same as Layout=3 previously
-//             102 103 31  41 90       is the same as Layout=4 previously 
-//             102 103 42  43 31 41 90 is the same as Layout=1 previously  
-//  
-// SDCardTextFiles  Bank123      CodedAction   Exit      Flash-Link/Macro  SDCard-Link/Macro  
-// 20-29            30-39        40-49         90=Exit   100-109           200-209
-// 0=Ignore         0=Ignore     0=Ignore      0=Done    0=Macro           0=Macro
-// 1=Execute        1=Selected   1=Execute               1=Link            1=Link
-//                               2-9=Do1-Do8             2=Macro -> Link   2=Macro -> Link
-//                                                       3=Link  -> Macro  3=Link  -> Macro                 
-//                                                      (UC/lc combinations future expansion)                                                                      
-//////////////////////////////////////////////////////////////////////////////////////////////
+// Instruction List Simple: (Only execute 0-9,a-j exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )                                                                  
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   {byte Do2 = 2;    // 2 = A-D switch switch between two macros same name on both SDCard and FlashMem, 0 = only do current macro loaded
    int a, b, n = 0;
    bool okL = true; // Must be ON here else if ilIst is OFF then AND test for LinkOk will always fail
-
+   byte AxD = 0, axd = 0;    // Values 0,1,2 
+   
    if (!iList) goto iListOff;    // do it without instruction list
    
    b = (Layout-1) - (Layout>2); // Layout 1,3,4 = 0,1,2
    if (Layout==3&&MacroS1S12[c]==2) Do2 = 0;     // Do *fs* for current session
    if (Layout==4&&MacroT1T12[c]==2) Do2 = 0;     // Do *ft* for current session
+   AxD = axd = LayerAxD+1;                       // Value 0,1,2 
    
   do { a = MacroInstructionList[b][n]; // if (a>9) a = a-39; // a-j = 10-19 from a=0x62=97->after -48 a b c d e f g h i j = 49 50 51 52 53 54 55 56 57 58
-       switch (a) {
-       case 0:   break;
-       case 1:  if (LayerAxD)  if (ReadSDCard(c))                    a=0;    break;   // if (!LayerAxD) will also execute break which is correct
-       case 2:  if (!LayerAxD) if (MacroKeys(c, Do2))              { a=0;    break; } else { DoKeyMST(c, 0); if (LinkOk&&okL) a=0; } break;    
-       case 3:  if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk&&okL)  { a=0;    break; } else if (MacroKeys(c, Do2))     a=0; }         break;  
-       case 4:  if (LayerAxD)  if (MacroKeys(c, Do2))              { a=0;    break; } else { DoKeyMST(c, 0); if (LinkOk&&okL) a=0; } break;    
-       case 5:  if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk&&okL)  { a=0;    break; } else if (MacroKeys(c, Do2))     a=0; }         break;  
-       case 10: if (!LayerAxD) if (MacroKeys(c, Do2))                 a=0;   break;   // if (LayerAxD) will also execute break which is correct
-       case 11: if (!LayerAxD) { DoKeyMST(c, 0); if (LinkOk&&okL)     a=0; } break; 
-       case 12: if (LayerAxD)  if (MacroKeys(c, Do2))                 a=0;   break;   // if (!LayerAxD) will also execute break which is correct
-       case 13: if (LayerAxD)  { DoKeyMST(c, 0); if (LinkOk&&okL)     a=0; } break; 
-       case 14: if (MacroKeys(c, 1)); break;                                 break;   // Use pre-coded text strings for M S T
-       case 6:  if (Option==1) if (LayerAD==0) { DoAdminCmd();        a=0; } break;
-       case 7:  if (Option==2) if (LayerAD==0) { DoAdminPowershell(); a=0; } break;
-       case 8:  break;         // Spare custom function 
-       case 9:  Bank123Select( b, c, Button); a=0; break; 
-       case 15: okL = true;  break;     // Could also use NOT invert-LinkOk or OR either/both XOR invert-LinkOk/same-LinkOk                                   
-       case 16: okL = false; break;     // instead of AND both-or-never/never in if (LinkOk&&okL)
-       case 17: Do2 = 0; break;         // Will load strings Str Ttr Mtr in MacroBuff then send - if strings saved on Flash/SDCard will fill Str Ttr Mtr on boot
-       case 18: Do2 = 1; break;         // Will send pre-coded strings str ttr (no mtr) in MacroBuff then send - no need to fill or save strings
-       case 19: Do2 = 2; break;    }    // Other Macro's
+       switch (a) { case 0: break;
+                    case 1: if (AxD==axd) if (ReadSDCard(c))                  a=0;   break;   // if (!LayerAxD) will also execute break which is correct
+                    case 2: if (AxD==axd) if (MacroKeys(c, Do2))            { a=0;   break; } else { DoKeyMST(c, 0); if (LinkOk&&okL) a=0; } break;    
+                    case 3: if (AxD==axd) DoKeyMST(c, 0); if (LinkOk&&okL)  { a=0;   break; } else if (MacroKeys(c, Do2))             a=0;   break;  
+                    case 4: if (AxD==axd) { DoKeyMST(c, 0); if (LinkOk&&okL)  a=0; } break; 
+                    case 5: if (AxD==axd) if (MacroKeys(c, Do2))              a=0;   break;   // if (!LayerAxD) will also execute break which is correct  
+                    case 6: if (AxD==axd) Bank123Select( b, c, Button);       a=0;   break; 
+                    case 7:  if (Option==1) if (LayerAD==0) { DoAdminCmd();        a=0; } break;
+                    case 8:  if (Option==2) if (LayerAD==0) { DoAdminPowershell(); a=0; } break;
+                    case 9 : Do2 = 0; break;           // Will load strings Str Ttr Mtr in MacroBuff then send - if strings saved on Flash/SDCard will fill Str Ttr Mtr on boot
+                    case 10: Do2 = 1; break;           // Will send pre-coded strings str ttr (no mtr) in MacroBuff then send - no need to fill or save strings = MacroKeys(c, 1)
+                    case 11: Do2 = 2; break;           // Other Macro's
+                    case 12: okL = true; break;        // Could also use NOT invert-LinkOk or OR either/both XOR invert-LinkOk/same-LinkOk                                   
+                    case 13: okL = false; break;       // instead of AND both-or-never/never in if (LinkOk&&okL)
+                    case 14: AxD = LayerAxD+1; break;  // Value 0,1,2 1=Flash 2=SDCard
+                    case 15: AxD = 0;          break;  // Value 0,1,2 Reset to 0 after use
+                    case 16: AxD = axd;        break;
+                    case 17: axd = AxD;        break;
+                    case 18: axd = 1;          break;
+                    case 19: axd = 2;          break; 
+                    default: break;  
+                  }               
        n++; 
      } while (a>0&&n<iListMax);
 
@@ -5349,4 +5334,4 @@ void showKeyData(byte Option)
          SerPr2;  }          
  }
 
-/************* EOF line 5301 *****************/
+/************* EOF line 5337 *****************/
