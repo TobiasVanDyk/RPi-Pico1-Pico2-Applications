@@ -5,7 +5,7 @@
 <img src="images/Win10-95.png" height="120" /> 
 <img src="images/Win10-87.png" height="120" /> 
 <img src="images/Win11-77.png" height="120" />  
-<img src="images/Win10-98.png" height="120" />   
+<img src="images/iList1.png" height="120" />   
 <img src="images/Win10-96.png" height="120" />    
 <img src="SelectandSendFiles.gif" height="120" /> 
 </p>
@@ -18,7 +18,7 @@ There is now an exercise that demonstrates [**how to use the Keys and Links tabs
 
 <img src="images/Win11-Keys2.png" width="40" height="30"/> **Keys construction tab** added to PC App - enable the tab by clicking on its label **Keys** in the Config tab. Its use should be clear - click on cell then label or click on cell then choose from combobox and press key next to it. Use the keyboard for the normal keys 0-9 and A-Z to type directly in the cell. Type in a filename to save and press [Save]. The picture shows the three ways in which the Pico can send simultaneous HID keypresses - two using the modifier byte and one without the byte. The FE option in the Pico firmware is currently being tested.
 
-<img src="images/Win10-51.png" width="40" height="30"/> **Macro Instruction List tab** iList added to PC App - enable the tab by clicking on its label **iList** in the Config tab. See manual.h for a description in section (z). The Pico code have not been tested at all. Although instruction lists are designed mainly for sets of macro-keys or macro-layouts, and linked lists for individual macro-keys, there are many similarities and also many differences in their potential use. Many new types of instruction sequences that can be built using these i-lists - some are similar and some are difficult with the macro linked lists XxxLink. For example a long coded section can be added for one key in one Layout - see the two examples for admin powershell and admin command shells. Another example is that a JSON module that reads json scripts can be added to the iList options.
+<img src="images/iList2.png" width="40" height="30"/> **Macro Instruction List tab** iList added to PC App - enable the tab by clicking on its label **iList** in the Config tab. See manual.h for a description in section (z). The Pico code have not been tested extensively. Although instruction lists are designed mainly for sets of macro-keys or macro-layouts, and linked lists for individual macro-keys, there are many similarities and also many differences in their potential use. Many new types of instruction sequences that can be built using these i-lists - some are similar and some are difficult with the macro linked lists XxxLink. For example a long coded section can be added for one key in one Layout - see the two examples for admin powershell and admin command shells. Another example is that a JSON module that reads json scripts can be added to the iList options.
 
 The DataGridView + dataset approach used for the instruction lists will also be applied next in the construction of linked lists where pre-configured macro-files and actions, are added to the column to construct the list.
 
