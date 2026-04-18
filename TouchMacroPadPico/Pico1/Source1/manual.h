@@ -808,22 +808,20 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *lf* /+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
     *lf* /+/ lists all flash files and all the sdcard files (the folder for both is now root /).
 (y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names*up*, or use *up*0,1 off/on. 
-(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-j. Can add less
-    than 12 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
+(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-k. Can add less
+    than 16 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
     *ld* when a serial terminal is connected to the TouchLCD.
-    Instruction List: Only execute 0-9 or a-j, exit if 0, can be in any order or length (set to 12 currently): 
-    1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-    a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L and for e to j see sourcecode or PC App iList tab
+    Instruction List: Only execute 0-9 or a-k, exit if 0, can be in any order or length (set to 16 currently): 
     For example 1 2 5 9 0   is the same as Layout=3 previously
                 2 5 9 0     is the same as Layout=4 previously 
                 2 5 6 7 9 0 is the same as Layout=1 previously
     Use *im* *is* *it* to reset to default i.e. when no numbers added after *im*, *is*, *it* 
-    Use *ix* toggle instruction list or *ix*0,1 instruction list off/on - if off use coded part.
+    Use *ix* toggle instruction list or *ix*0,1 instruction list off/on - if use coded part.
 (A) *09* toggles between NumPad and nKey n01-n996 mode when Pad [n] is pressed in the Config page. Use Pad [o] to move
     between the 1-83 pages of each mode. 
 (B) *0n*char The nKeys first character (default n), can be changed with with *0n*char - for example *0n*p will change
     the keys, and filenames used to p01 - p996. Any character or digit can be used - but not all will yield valid 
-    filenames. Use *0n* for nKeysShow on/off replaces L in L1,L3,L4.
+    filenames. Use *0n* without a char for nKeysShow on/off i.e. replaces L in L1,L3,L4.
 (C) *0p*pages withe pages = 1 to 83 set the number of pages for nKeys or the NumPad. Enter as *0p*n n=1-9 pages
     or use *0p*nn nn=01-83 pages nKeys per first character. Note that 83 pages is the maximum because 12x83=996 nKeys.
 (D) *0s*list-of-10-characters - these are displayd when pressing [Cfg][Opt] then select nKeys character woth Pad[o]
@@ -938,6 +936,11 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder appname
     folder /appname/
     *ap* disables App Switch function      
+(Y) Volume and Play Media: Use *v+* *v-* *vm* Volume + - mute or *v+,-*nn = 00-99 and *p+* *p-* *pp* *ps* Play Media Next 
+    Previous Play/Pause Stop. For *v+*nn and *v-*nn the nn is not and absolute number but an increase or decrease of the 
+    existing value  divided by two - i.e. if the existing value is 40 and you send *v+*20 then the new volume will be 50
+    (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
+    <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.*
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 

@@ -455,27 +455,28 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 123; // StarCodes Count 16+16+16+16+16+16+16+11 StarNum = 0-122
+const static int StarCodesMax = 130; // StarCodes Count 16+16+16+16+16+16+16+16+2 StarNum = 0-129
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", 
   "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo",   
   "fs", "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", 
   "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", 
-  "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "r0", "r1", "r2", "r3", "rm", "rn", "ro", 
-  "rt", "rT", "sa", "sd", "se", "sf", "sF","sm", "ss", "st",  "sx", "ta", "tb", "tp", "tt", "tw", 
-  "ua", "ul", "up", "vx", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R",
-  "09", "0d", "0n", "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
+  "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", "r0", "r1", "r2", 
+  "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", "st", "sx", "ta", 
+  "tb", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", "wa", "x0", "x1", "x2", "x3", 
+  "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", "0x", "1s", "1e", 
+  "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   
   64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   
   11,   11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   
   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   
-  74,   75,   21,   21,   22,   23,   23,   72,   25,   37,   26,   40,   41,   77,   49,   27,   
-  24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   4,    31,   31,   31,   
-  33,   32,   43,   61,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   
-  45,   53,   46,   47,   48,   54,   52,   82,   83,   84,   85    };
-  
+  74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   37,   26,   40,   
+  41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   
+  4,    31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   80,   35,   35,   35,   35,   
+  35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   52,   82,   83,   
+  84,   85    };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -522,7 +523,7 @@ const static char mTArrayStr[10][10]       = {"300 hrs", "2 hrs", "3 hrs",   "5 
                          
 // const static char hex16[16][2] = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};  // Unused 
 static const char* digits = "0123456789ABCDEF";                                                         // dec 2 hex digits positional map used in [Lst] list file contents
-static const char* b2Hex  = "0123456789abcdefghijklmn";                                                 // Instruction list used 0-19 0-9,a-j currently 
+static const char* b2Hex  = "0123456789abcdefghijklmn";                                                 // Instruction list used 0-20 0-9,a-k currently 
 char Int2HexStr[64] = "  ";
 char HexString[2] = { '0', '0' };
                         
@@ -2016,12 +2017,12 @@ int DoLargeFile(const char *STRf)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons M S T - largely untested if iLink ON
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Instruction List Simple: (Only execute 0-9,a-j exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )                                                                  
+// Instruction List Simple: (Only execute 0-9,a-k exit if 0, can be in any order or length (set to 16 currently) such as 6 1 3 0 )                                                                  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   {byte Do2 = 2;    // 2 = A-D switch switch between two macros same name on both SDCard and FlashMem, 0 = only do current macro loaded
    int a, b, n = 0;
-   bool okL = true; // Must be ON here else if ilIst is OFF then AND test for LinkOk will always fail
-   byte AxD = 0, axd = 0;    // Values 0,1,2 
+   bool okL = true; // okL if ON if ilIst is OFF then AND test for LinkOk will always fail
+   byte AxD = 0, axd = 0;          // Values 0,1,2 
    
    if (!iList) goto iListOff;    // do it without instruction list
    
@@ -2051,10 +2052,11 @@ void DoMacroButtons(int Button, byte c, byte Option)   // Called from 24 nuttons
                     case 17: axd = AxD;        break;
                     case 18: axd = 1;          break;
                     case 19: axd = 2;          break; 
+                    case 20: Do2 = 4;          break;  // Not implemented yet
                     default: break;  
                   }               
        n++; 
-     } while (a>0&&n<iListMax);
+     } while (a>0 && n<iListMax);
 
   return;     // iList = true;  
   iListOff:   // iList = false;
@@ -4036,14 +4038,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          DoFileList(d); StarOk = true; break; } 
          case 43: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x70 *up* or *ul*0,1 off/on Upper/Lowercase macrokeys filenames
        { if (knum==4) MacroUL = !MacroUL; if (knum==5) MacroUL = b; SwitchMacroUL(1); StarOk = true; break; }   // Toggle On/Off and change Padlabels
-         case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 12 numbers 0-19 as 0-9,a-j
+         case 44: ////////////////////// KeyBrdByte[1]==0x69&&KeyBrdByte[2]==0x73,74,6d *im,s,t*12numbers for MacroInstructionList 16 numbers 0-20 as 0-9,a-k
        { if (k2==0x78) { if (knum==5 && b<2) iList = b; else iList = !iList; Config1[23] = iList; WriteConfig1Change = true;      // *ix* toggle or *ix*0,1 off/on
                          if (iList) status("Instruction List ON"); else status("Instruction List OFF"); StarOk = true; break; }       
          if (k2==0x73) i = 1; if (k2==0x74) i = 2; if (k2==0x6d) i = 0;                        // *is*, *it*, *im* 
-         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-58 - max iListMax=12 entries
+         if (knum<5) { for (n=0; n<iListMax; n++) MacroInstructionList[i][n] = MacroInstructionListDefault[i][n]; // Instruction list 0-9, or 49-59 - max iListMax=16 entries
                        status("Instruction List Reset"); SaveInstructionList(); StarOk = true; break; }  // Reset if not numbers added                  
-         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48-39*(KeyBrdByte[4+n]>='a'&&KeyBrdByte[4+n]<='j');
-         status("Instruction List filled"); SaveInstructionList(); StarOk = true; break; }     // a=0x62=97->after -48 a b ... i j = 49 50 ... 57 58
+         for (n=0; n<knum; n++) MacroInstructionList[i][n] = KeyBrdByte[4+n]-48-39*(KeyBrdByte[4+n]>='a'&&KeyBrdByte[4+n]<='k');
+         status("Instruction List filled"); SaveInstructionList(); StarOk = true; break; }     // a=0x62=97->after -48 a b c d = 49 50 51 52
          case 45: ////////////////////// KeyBrdByte[1]==0x30&&KeyBrdByte[2]==0x39 *09* Number-Pad or 96 n-Keys n01-n96
        { nKeys = !nKeys; Config1[7] = nKeys; WriteConfig1(0); 
          if (nKeys) status("n-Keys n01-n996 On"); else status ("NumPad pages 1-8 On"); Numkeys123 = 0; NumKeysChange(); StarOk = true; break; }
@@ -4218,8 +4220,19 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                                   AppDir[n+2] = AppName[n] = 0x00; AppL134 = KeyBrdByte[knum-1]-48; StarOk = DoAppDir(); 
                                                   if (AppL134==0) { strcpy(nDir, "/"); nDirX=0; } else { strcpy(nDir, AppDir); nDirX=3; }
                                                   if (StarOk) if (AppState!=0) status(AppName); else status("No App Switch");  
-                                                } break; }                                                                                                
-      } return StarOk;                      
+                                                } break; }  
+        case 87: ///////////////////// KeyBrdByte[1]=='v'&&KeyBrdByte[2]=='+','-','m' *v+* *v-* *vm* Volume + - mute or *v+,-*00-99
+      { if (knum==4)  { if (k2=='+') { usb_hid.sendReport16(HIDCons, VolUp);   delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Up");   StarOk = true; break; } 
+                        if (k2=='-') { usb_hid.sendReport16(HIDCons, VolDown); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Mute"); StarOk = true; break; }                                                                                 
+                        if (k2=='m') { usb_hid.sendReport16(HIDCons, VolMute); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Down"); StarOk = true; break; } }
+        if (knum==6)  { if (k2=='+') { for (n=0; n<=c99; n++) { usb_hid.sendReport16(HIDCons, VolUp);   delay(dt50); usb_hid.sendReport16(HIDCons, 0); delay(dt50); } StarOk = true; break; }                                                                                                       
+                        if (k2=='-') { for (n=0; n<=c99; n++) { usb_hid.sendReport16(HIDCons, VolDown); delay(dt50); usb_hid.sendReport16(HIDCons, 0); delay(dt50); } StarOk = true; break; } } }
+        case 88: ///////////////////// KeyBrdByte[1]=='p'&&KeyBrdByte[2]=='+','-','s','p' *p+* *p-* *pp* *ps* Play Media Next Previous Play/Pause Stop
+      { if (knum==4)  { if (k2=='+') { usb_hid.sendReport16(HIDCons, NxtMed);  delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Next");      StarOk = true; break; } 
+                        if (k2=='-') { usb_hid.sendReport16(HIDCons, PrevMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Previous");   StarOk = true; break; }    
+                        if (k2=='p') { usb_hid.sendReport16(HIDCons, PlayMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Next Pause"); StarOk = true; break; }                                                                                
+                        if (k2=='s') { usb_hid.sendReport16(HIDCons, StopMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Stop");       StarOk = true; break; } } }                        
+      } return StarOk;                        
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5362,4 +5375,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 5365 *****************/
+/************* EOF line 5378 *****************/
