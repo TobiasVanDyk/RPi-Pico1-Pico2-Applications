@@ -815,12 +815,10 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *lf* /+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
     *lf* /+/ lists all flash files and all the sdcard files (the folder for both is now root /).
 (y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names.
-(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-d. Can add less
-    than 12 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
+(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-k. Can add less
+    than 16 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
     *ld* when a serial terminal is connected to the TouchLCD.
-    Instruction List: Only execute 0-9 or a-d, exit if 0, can be in any order or length (set to 12 currently): 
-    1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-    a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L
+    Instruction List: Only execute 0-9 or a-k, exit if 0, can be in any order or length (set to 16 currently): 
     For example 1 2 5 9 0   is the same as Layout=3 previously
                 2 5 9 0     is the same as Layout=4 previously 
                 2 5 6 7 9 0 is the same as Layout=1 previously
@@ -830,7 +828,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     between the 1-83 pages of each mode. 
 (B) *0n*char The nKeys first character (default n), can be changed with with *0n*char - for example *0n*p will change
     the keys, and filenames used to p01 - p996. Any character or digit can be used - but not all will yield valid 
-    filenames. Use *0n* for nKeysShow on/off replaces L in L1,L3,L4.
+    filenames. Use *0n* without a char for nKeysShow on/off i.e. replaces L in L1,L3,L4.
 (C) *0p*pages withe pages = 1 to 83 set the number of pages for nKeys or the NumPad. Enter as *0p*n n=1-9 pages
     or use *0p*nn nn=01-83 pages nKeys per first character. Note that 83 pages is the maximum because 12x83=996 nKeys.
 (D) *0s*list-of-10-characters - these are displayd when pressing [Cfg][Opt] then select nKeys character woth Pad[o]
@@ -908,7 +906,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
    (Math and Greek etc). Load symbol set 0-9 using *ma*0-9 or by using the [Load] key in the Symbols page - if the file 
    Math0 to Math9 exists on the SDCard it is loaded as the current symbol set. Read mathKeys.h for more instructions - 
    you can use *ma* with no number added to save the 3 Math Arrays in mathKeys.h to the SDCard as file MathX.    
-(P) *md* - Direct Mode (Blue D indicator in MacroEditor), accessed via *md* to switch on. To switch off press [*Cm] key. 
+(P) *md* - Direct Mode (Blue D indicator in MacroEditor), use *md* to switch on and to switch off press [*Cm] key. 
     Use direct mode by pressing any character then press [EXE] to send it to PC.
 (Q) Backup and Restore files on Flash memory to SDCard. 
     *c1* = copy all Flash Files to folder Flash on SDCard.
@@ -961,6 +959,11 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     the SDCard folder /appname/. *ap*appname=0 switches appname app switch off. 
     *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys. 
     *ap* disables App Switch function
+(Y) Volume and Play Media: Use *v+* *v-* *vm* Volume + - mute or *v+,-*nn = 00-99 and *p+* *p-* *pp* *ps* Play Media Next 
+    Previous Play/Pause Stop. For *v+*nn and *v-*nn the nn is not and absolute number but an increase or decrease of the 
+    existing value  divided by two - i.e. if the existing value is 40 and you send *v+*20 then the new volume will be 50
+    (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
+    <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
