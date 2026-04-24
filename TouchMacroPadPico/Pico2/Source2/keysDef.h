@@ -24,7 +24,9 @@
 #define KeyY     HID_KEY_Y
 #define KeyZ     HID_KEY_Z
 #define KeyC     HID_KEY_C
+#define KeyD     HID_KEY_D
 #define KeyV     HID_KEY_V
+#define KeyM     HID_KEY_M
 #define KeyR     HID_KEY_R
 #define KeyS     HID_KEY_S
 #define KeyO     HID_KEY_O

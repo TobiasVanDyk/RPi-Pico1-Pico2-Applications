@@ -3,17 +3,12 @@
 ////////////////
 #define cSt const static  // line space needed
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Instruction List Simple: (Only execute 0-9,a-d exit if 0, can be in any order or length (set to 12 currently) such as 6 1 3 0 )
-// 1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-// a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L Note: a=0x62=97->after -48 a b c d = 49 50 51 52
-// For example 1 2 5 9 0   is the same as Layout=3 below
-//             2 5 9 0     is the same as Layout=4 below 
-//             2 5 6 7 9 0 is the same as Layout=1 below  
-cSt int iListMax = 12;                               // Number of entries
+// Instruction List Simple: (Only execute 0-9,a-k exit if 0, can be in any order or length (set to 16 currently) such as 6 1 3 0 )
+cSt int iListMax = 16;                               // Number of entries
 byte MacroInstructionList[3][iListMax] = 
-{ 2, 5, 6, 7, 9, 0, 0, 0, 0, 0, 0, 0,                // Layout 1 = M
-  1, 2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0,                // Layout 3 = S
-  10, 12, 11, 13, 0, 0, 0, 0, 0, 0, 0, 0 } ;         // Layout 4 = T
+{ 2, 5, 6, 7, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                // Layout 1 = M
+  1, 2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                // Layout 3 = S
+  10, 12, 11, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, } ;        // Layout 4 = T
 cSt byte MacroInstructionListDefault[3][iListMax] =  // Defaults to reset MacroInstructionList
 { 2, 5, 6, 7, 9, 0, 0, 0, 0, 0, 0, 0,    1, 2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0,     2, 5, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;  
 bool iList = false;     // Select between new instructionlist or old coded section - use *ix* to switch new list-based on
@@ -39,6 +34,7 @@ cSt byte PShopMacro[3][24] = {{ CtrL,CtrL,CtrL,CtrL,CtrL,CtrL, CtrL,CtrL,CtrL,Ct
                               { 0x2E,0x2D,0x27,ShfL,ShfL,0x1A, AltL,ShfL,ShfL,ShfL,ShfL,AltL, 0x11,0x1A,0x17,0x4A,0x07,ShfL, AltL,0x56,AltL,AltL,AltL,AltL }, 
                               { 0x00,0x00,0x00,0x11,0x16,0x00, ShfL,0x11,0x08,0x07,0x0C,0x04, 0x00,0x00,0x00,0x00,0x00,0x16, 0x56,0x00,0x15,0x17,0x37,0x06 }}; 
 //                              Notepad Shortcuts              Photoshop Shortcuts            Firefox Shortcuts              MSWord Special Characters
+//                                                             Ctr+Shf+Z=Fwd Alt+Ctr+Z=Back
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt char RunCode[24][60] = 
 {"netplwiz","cmd","winver","msconfig","sndvol","msinfo32",
