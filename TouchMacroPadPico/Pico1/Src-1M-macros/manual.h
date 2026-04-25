@@ -940,6 +940,12 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     existing value  divided by two - i.e. if the existing value is 40 and you send *v+*20 then the new volume will be 50
     (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
     <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.
+(Z) Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
+    *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
+    *tm*char = vuzsxdwVUZSXDW code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
+    Default volume vV - *tm*char = vV uU zZ sS xX dD wW code definitions vuzsxdVUZSXD coded macro options volume =/-/mute undo/redo 
+    zoom +/-/reset scroll +/- lines-= backspace/delete Wallaper-Next
+    
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 

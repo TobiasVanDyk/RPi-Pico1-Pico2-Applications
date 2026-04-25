@@ -24,7 +24,9 @@
 #define KeyY     HID_KEY_Y
 #define KeyZ     HID_KEY_Z
 #define KeyC     HID_KEY_C
+#define KeyD     HID_KEY_D
 #define KeyV     HID_KEY_V
+#define KeyM     HID_KEY_M
 #define KeyR     HID_KEY_R
 #define KeyS     HID_KEY_S
 #define KeyO     HID_KEY_O
@@ -51,7 +53,8 @@
 #define KeyEnd   0x4D
 #define PageUp   0x4B
 #define PageDwn  0x4E
-#define KEqu     HID_KEY_EQUAL
+#define KEqu     HID_KEY_EQUAL   // 0x2E
+#define KMin     HID_KEY_MINUS   // 0x2D
 #define KEnt     0x28 // KEYPAD_ENTER = 0x58 KEY_RETURN = 0x9E KEY_EXECUTE = 0x74
 #define KeyYes   0x1C // "Y" or "y" note ACII Y = 0x59 y = 0x79 (difference of 61 decimal)
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -170,14 +173,14 @@ const static char Labels[4][16][12][4] =   // Size = 3072 bytes
   HPU,   "V+",  LcR,  "L2",  EPD,   "V-",  //                       5
   XCV,   "V+",  S13,  "L3",  S46,   "V-",  //                       6
   XCV,   "V+",  T13,  "L4",  T46,   "V-",  //                       7
-  CcP,   "BsD", M13,  "Vo",  M46,   "Ret", // L1 Mute ON Vol=OFF  8      Group 2 Layer A
-  HPU,   "BsD", LcR,  "Vo",  EPD,   "Ret", //                     9
-  XCV,   "BsD", S13,  "Vo",  S46,   "Ret", //                     10
-  XCV,   "BsD", T13,  "Vo",  T46,   "Ret", //                     11
-  CcP,   "BsD", M13,  "L1",  M46,   "Ret", // L1 Mute OFF Vol=OFF    12  Group 3 Layer A
-  HPU,   "BsD", LcR,  "L2",  EPD,   "Ret", //                        13
-  XCV,   "BsD", S13,  "L3",  S46,   "Ret", //                        14
-  XCV,   "BsD", T13,  "L4",  T46,   "Ret", //                        15
+  CcP,   "Del", M13,  "Vo",  M46,   "Ret", // L1 Mute ON Vol=OFF  8      Group 2 Layer A
+  HPU,   "Del", LcR,  "Vo",  EPD,   "Ret", //                     9
+  XCV,   "Del", S13,  "Vo",  S46,   "Ret", //                     10
+  XCV,   "Del", T13,  "Vo",  T46,   "Ret", //                     11
+  CcP,   "Del", M13,  "L1",  M46,   "Ret", // L1 Mute OFF Vol=OFF    12  Group 3 Layer A
+  HPU,   "Del", LcR,  "L2",  EPD,   "Ret", //                        13
+  XCV,   "Del", S13,  "L3",  S46,   "Ret", //                        14
+  XCV,   "Del", T13,  "L4",  T46,   "Ret", //                        15
   CcP,   "V+",  M79,  "Vo",  M12,   "V-",  // L1 Mute ON Vol=ON          Group 0 Layer B 
   HPU,   "V+",  LcR,  "Vo",  EPD,   "V-",  // L2
   XCV,   "V+",  S79,  "Vo",  S12,   "V-",  // L3
@@ -186,14 +189,14 @@ const static char Labels[4][16][12][4] =   // Size = 3072 bytes
   HPU,   "V+",  LcR,  "L2",  EPD,   "V-",
   XCV,   "V+",  S79,  "L3",  S12,   "V-",
   XCV,   "V+",  T79,  "L4",  T12,   "V-",
-  CcP,   "BsD", M79,  "Vo",  M12,   "Ret", // L1 Mute ON Vol=OFF         Group 2 Layer B
-  HPU,   "BsD", LcR,  "Vo",  EPD,   "Ret",
-  XCV,   "BsD", S79,  "Vo",  S12,   "Ret",
-  XCV,   "BsD", T79,  "Vo",  T12,   "Ret",
-  CcP,   "BsD", M79,  "L1",  M12,   "Ret", // L1 Mute OFF Vol=OFF        Group 3 Layer B 
-  HPU,   "BsD", LcR,  "L2",  EPD,   "Ret",
-  XCV,   "BsD", S79,  "L3",  S12,   "Ret",
-  XCV,   "BsD", T79,  "L4",  T12,   "Ret",
+  CcP,   "Del", M79,  "Vo",  M12,   "Ret", // L1 Mute ON Vol=OFF         Group 2 Layer B
+  HPU,   "Del", LcR,  "Vo",  EPD,   "Ret",
+  XCV,   "Del", S79,  "Vo",  S12,   "Ret",
+  XCV,   "Del", T79,  "Vo",  T12,   "Ret",
+  CcP,   "Del", M79,  "L1",  M12,   "Ret", // L1 Mute OFF Vol=OFF        Group 3 Layer B 
+  HPU,   "Del", LcR,  "L2",  EPD,   "Ret",
+  XCV,   "Del", S79,  "L3",  S12,   "Ret",
+  XCV,   "Del", T79,  "L4",  T12,   "Ret",
   CcP,   "V+",  M35,  "Vo",  M68,   "V-",  // L1 Mute ON Vol=ON   0      Group 0 Layer C
   HPU,   "V+",  LcR,  "Vo",  EPD,   "V-",  // L2                  1
   XCV,   "V+",  S35,  "Vo",  S68,   "V-",  // L3                  2
@@ -202,14 +205,14 @@ const static char Labels[4][16][12][4] =   // Size = 3072 bytes
   HPU,   "V+",  LcR,  "L2",  EPD,   "V-",  //                       5
   XCV,   "V+",  S35,  "L3",  S68,   "V-",  //                       6
   XCV,   "V+",  T35,  "L4",  T68,   "V-",  //                       7
-  CcP,   "BsD", M35,  "Vo",  M68,   "Ret", // L1 Mute ON Vol=OFF  8      Group 2 Layer C
-  HPU,   "BsD", LcR,  "Vo",  EPD,   "Ret", //                     9
-  XCV,   "BsD", S35,  "Vo",  S68,   "Ret", //                     10
-  XCV,   "BsD", T35,  "Vo",  T68,   "Ret", //                     11
-  CcP,   "BsD", M35,  "L1",  M68,   "Ret", // L1 Mute OFF Vol=OFF    12  Group 3 Layer C
-  HPU,   "BsD", LcR,  "L2",  EPD,   "Ret", //                        13
-  XCV,   "BsD", S35,  "L3",  S68,   "Ret", //                        14
-  XCV,   "BsD", T35,  "L4",  T68,   "Ret", //                        15
+  CcP,   "Del", M35,  "Vo",  M68,   "Ret", // L1 Mute ON Vol=OFF  8      Group 2 Layer C
+  HPU,   "Del", LcR,  "Vo",  EPD,   "Ret", //                     9
+  XCV,   "Del", S35,  "Vo",  S68,   "Ret", //                     10
+  XCV,   "Del", T35,  "Vo",  T68,   "Ret", //                     11
+  CcP,   "Del", M35,  "L1",  M68,   "Ret", // L1 Mute OFF Vol=OFF    12  Group 3 Layer C
+  HPU,   "Del", LcR,  "L2",  EPD,   "Ret", //                        13
+  XCV,   "Del", S35,  "L3",  S68,   "Ret", //                        14
+  XCV,   "Del", T35,  "L4",  T68,   "Ret", //                        15
   CcP,   "V+",  M91,  "Vo",  M24,   "V-",  // L1 Mute ON Vol=ON          Group 0 Layer D 
   HPU,   "V+",  LcR,  "Vo",  EPD,   "V-",  // L2
   XCV,   "V+",  S91,  "Vo",  S24,   "V-",  // L3
@@ -218,14 +221,14 @@ const static char Labels[4][16][12][4] =   // Size = 3072 bytes
   HPU,   "V+",  LcR,  "L2",  EPD,   "V-",
   XCV,   "V+",  S91,  "L3",  S24,   "V-",
   XCV,   "V+",  T91,  "L4",  T24,   "V-",
-  CcP,   "BsD", M91,  "Vo",  M24,   "Ret", // L1 Mute ON Vol=OFF         Group 2 Layer D
-  HPU,   "BsD", LcR,  "Vo",  EPD,   "Ret",
-  XCV,   "BsD", S91,  "Vo",  S24,   "Ret",
-  XCV,   "BsD", T91,  "Vo",  T24,   "Ret",
-  CcP,   "BsD", M91,  "L1",  M24,   "Ret", // L1 Mute OFF Vol=OFF        Group 3 Layer D 
-  HPU,   "BsD", LcR,  "L2",  EPD,   "Ret",
-  XCV,   "BsD", S91,  "L3",  S24,   "Ret",
-  XCV,   "BsD", T91,  "L4",  T24,   "Ret" };
+  CcP,   "Del", M91,  "Vo",  M24,   "Ret", // L1 Mute ON Vol=OFF         Group 2 Layer D
+  HPU,   "Del", LcR,  "Vo",  EPD,   "Ret",
+  XCV,   "Del", S91,  "Vo",  S24,   "Ret",
+  XCV,   "Del", T91,  "Vo",  T24,   "Ret",
+  CcP,   "Del", M91,  "L1",  M24,   "Ret", // L1 Mute OFF Vol=OFF        Group 3 Layer D 
+  HPU,   "Del", LcR,  "L2",  EPD,   "Ret",
+  XCV,   "Del", S91,  "L3",  S24,   "Ret",
+  XCV,   "Del", T91,  "L4",  T24,   "Ret" };
 
 
 #define ModCtrL 0x01 // 0xEn -> 0x0n for modifiers
