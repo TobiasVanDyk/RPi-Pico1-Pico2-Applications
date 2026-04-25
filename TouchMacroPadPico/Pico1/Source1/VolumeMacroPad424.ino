@@ -49,7 +49,25 @@
 #include "mathKeys.h"     // Special symbols, Greek characters , and Math Symbols 
 #include "macroBanks.h"   // 5 Sets of 24 macro keys
 #include "sdcard.h"       // 20 Sets of 24 files stored on SDCard + 96 n-keys aA01-xX96 001-996
+#include <Wire.h>
+#include "SparkFun_Qwiic_Twist_Arduino_Library.h" // RGB REotary Encoder i2c
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+TWIST twist;                                  // Create instance of this object
+bool Twist1 = false;                          // True if Encoder plugged into i2c 1
+char twistF[] = "twist";                      // Filename containing the 3 twist macro path/filenames
+bool twistFDone = false;                      // All 3 twist macros have file pointers
+int time2Twist = 20;                          // Check rotary encoder status every 20mS - helps to debounce press-switch
+unsigned long int nowTwist = 0;               // 
+unsigned long int lastTwist = 0;              // nowTwist - lastTwist) >= time2Twist
+int16_t twistVal = 0;                         // -24 to +24
+bool pressTwist = false;                      // pressed 
+int twistStep = 0;                            // Multiple turns
+char twistMacro = 'v';                        // Default volume vV - *tm*char vV uU zZ sS xX dD code definitions - *tm* twistMacro=0x00 Use symbolic link file twist
+char twistOption[] = "vuzsxdVUZSXD";          // twist coded macro options volume undo/redo zoom scroll lines-= backspace/delete 0x00
+char twistRLP[240]  = "";                     // *t+,-,p* all
+char twistR[80]  = "";                        // *t+*Name turn right
+char twistL[80]  = "";                        // *t-*Name turn left
+char twistP[80]  = "";                        // *tp*Name press
 
 volatile bool Change = false;          // Indicators changed at any time
 volatile bool BusyCNS = false;         // Lock changes when in CNS callback
@@ -455,7 +473,7 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 130; // StarCodes Count 16+16+16+16+16+16+16+16+2 StarNum = 0-129
+const static int StarCodesMax = 132; // StarCodes Count 16+16+16+16+16+16+16+16+4 StarNum = 0-131
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", 
   "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo",   
@@ -463,9 +481,9 @@ const static char StarCode[StarCodesMax][3] =
   "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", 
   "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", "r0", "r1", "r2", 
   "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", "st", "sx", "ta", 
-  "tb", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", "wa", "x0", "x1", "x2", "x3", 
-  "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", "0x", "1s", "1e", 
-  "2s", "2e"  };
+  "tb", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", "wa", "x0", "x1", 
+  "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", "0x", 
+  "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   
@@ -474,9 +492,10 @@ const static byte StarCodeType[StarCodesMax] =
   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   
   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   37,   26,   40,   
   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   
-  4,    31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   80,   35,   35,   35,   35,   
-  35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   52,   82,   83,   
-  84,   85    };
+  4,    90,   89,   31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   80,   35,   35,   
+  35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   52,   
+  82,   83,   84,   85    };
+  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -822,6 +841,8 @@ void setup()
   pinMode(LCDBackLight, OUTPUT);    // Used for Backlight HIGH is ON
   //digitalWrite(LCDBackLight, HIGH); // Switch on here to prevent blank screen when Coordinates missing 
 
+  Wire1.begin(); Wire1.setClock(400000);
+
   //if (!LittleFS.begin()) {LittleFS.format(); LittleFS.begin(); }   
   LittleFS.begin(); // LittleFs automatically format the filesystem if one is not detected
 
@@ -869,6 +890,15 @@ void setup()
   ConfigKeyCount = 0;                                      // Start up
   ConfigButtons(0);                                        // Draw Buttons and Labels 0 = All 3+5 rows
 
+  Twist1 = twist.begin(Wire1);                             // True if Encoder plugged in in i2c port 1
+  // int currentVersion = twist.getVersion(); Serial.print(currentVersion & 0xFF); Serial.print("."); Serial.println(currentVersion >> 8); 
+  twist.setLimit(0);                                       // Twist -24 to +24 not availale if version < 1.2 else it is -x 0 + x
+  twist.clearInterrupts(); 
+  twist.setCount(0); 
+  twist.setColor(255 / 2, 0, 255 / 2);                     //Set Red and Blue LED brightnesses to half of max.
+  twist.connectRed(-10);                                   //Red LED will go down 10 in brightness with each encoder tick
+  twist.connectBlue(10);                                   //Blue LED will go up 10 in brightness with each encoder tick
+
   NumKeysChange();                              // NumkeysX = Layout 0  
   LastMillis = millis();                        // Initial start time
   NewData = KBrdActive = Kbrd = false;          // Can skip this
@@ -879,6 +909,101 @@ void setup()
   optionsindicators(0);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+void DoTwistMacro()
+//////////////////////////////////////////////////////////////////////////////////////////////
+{ uint8_t keycode[6] = { 0 };     // simultaneous keys pressed in here 
+  char Action = ' ';
+  int n = 0;
+  bool VolOk = false;
+  char ScrollM[] = "*ms* ", ScrollX[] = "*m1*10", VolumeX[] = "*v *";  
+  
+  for (int n=0; n<6; n++) keycode[n] = 0x00;
+  
+  switch (twistMacro)  
+         { case 'V': if (pressTwist) usb_hid.sendReport16(HIDCons, VolMute);
+                     else { if (twistVal>0) usb_hid.sendReport16(HIDCons, VolUp); if (twistVal<0) usb_hid.sendReport16(HIDCons, VolDown); }
+                     delay(dt50); usb_hid.sendReport16(HIDCons, 0); break;
+           case 'v': for (int n=0; n<4; n++) KeyBrdByte[n] = VolumeX[n]; KeyBrdByteNum = 4;                                       
+                     if (pressTwist) KeyBrdByte[2] = 'm'; else { if (twistVal>0) KeyBrdByte[2] = '+'; if (twistVal<0) KeyBrdByte[2] = '-'; }
+                     VolOk = SendBytesStarCodes();
+                     break;
+           case 'U':
+           case 'u': if (twistVal>0) Action = KeyY; else Action = KeyZ; 
+                     keycode[0] = CtrL; keycode[1] = Action; keycode[2] = 0x00; 
+                     usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
+                     break;
+           case 'D': 
+           case 'd': if (twistVal>0) Action = DelK; else Action = BckS;  
+                     keycode[0] = Action; keycode[1] = keycode[2] = 0x00; 
+                     usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
+                     break;  
+           case 'S': if (pressTwist) { for (int n=0; n<6; n++) KeyBrdByte[n] = ScrollX[n]; KeyBrdByteNum = 6; }
+                     else { for (int n=0; n<5; n++) KeyBrdByte[n] = ScrollM[n]; KeyBrdByteNum = 5; if (twistVal>0) KeyBrdByte[4] = 'U'; if (twistVal<0) KeyBrdByte[4] = 'D'; }  
+                     SendBytesStarCodes(); break;
+           case 's': if (pressTwist) { for (int n=0; n<6; n++) KeyBrdByte[n] = ScrollX[n]; KeyBrdByte[4] = '0'; KeyBrdByteNum = 6; SendBytesStarCodes(); break; }
+                     else { if (twistVal<0) usb_hid.mouseScroll(RID_MOUSE, MouseScrollAmount, 0); else usb_hid.mouseScroll(RID_MOUSE, -1*MouseScrollAmount, 0); } break;
+           case 'Z': 
+           case 'z': if (pressTwist) Action = Key0; else { if (twistVal>0) Action = KEqu; else Action = KMin; } 
+                     keycode[0] = CtrL; keycode[1] = Action; keycode[2] = 0x00; 
+                     usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
+                     break;                                 
+           case 'X': 
+           case 'x': if (twistVal>0) Action = '-'; else Action = '=';  
+                     usb_hid.keyboardPress(HIDKbrd, Action);             delay(dt50);
+                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50); 
+                     break; 
+           case 'Y': if (pressTwist) { keycode[0] = KeyD; keycode[1] = 0x00; keycode[2] = 0x00; 
+                                       tud_hid_keyboard_report(HIDKbrd, ModGuiL, keycode); delay(dt50); 
+                                       tud_task();   // call before releasing the keys
+                                       keycode[0] = 0x00;
+                                       tud_hid_keyboard_report(HIDKbrd, 0x00, keycode); }
+                     break;                      
+           case 'y': if (pressTwist) { keycode[0] = GuiL; keycode[1] = KeyD; keycode[2] = 0x00; 
+                                       usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                                       usb_hid.keyboardRelease(HIDKbrd);                   delay(1000); }
+                     break;  
+           case 'W':                                        
+           case 'w': if (twistVal>0) { keycode[0] = ShfL; keycode[1] = F10; keycode[2] = 0x00; 
+                                       usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                                       usb_hid.keyboardRelease(HIDKbrd);                   delay(dt200);
+                                       usb_hid.keyboardPress(HIDKbrd, 'n');                delay(dt50);
+                                       usb_hid.keyboardRelease(HIDKbrd);                   delay(1000); }                
+                     break;                                                 
+           default:  break;
+         }  return; 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+void DoTwistFile()
+//////////////////////////////////////////////////////////////////////////////////////////////
+{ uint8_t keycode[6] = { 0 };     // simultaneous keys pressed in here 
+  char k = ' ', Action = ' ';
+  int fSize, i, m, n = 0;
+  File f1;
+  
+  if (twistFDone) goto DoneFiles;      // Must include function to check if file "twist" exist in AppDir if yes refresh 3 twist macros
+  
+  if (LayerAxD) if (SDFS.exists(twistF))       f1 = SDFS.open(twistF, "r"); 
+           else if (LittleFS.exists(twistF)) f1 = LittleFS.open(twistF, "r");    // if (!f1) return;
+  fSize = f1.size(); f1.readBytes(twistRLP, fSize); f1.close(); 
+
+  n = 0; k = 0; while (n < fSize && (k = twistRLP[n]) != 0x3D) { twistR[n] = k; n++; }   twistR[n] = 0x00; n++;
+  i = 0; k = 0; while (n < fSize && (k = twistRLP[n]) != 0x3D) { twistL[i++] = k; n++; } twistL[i] = 0x00; n++;
+  i = 0; while (n < fSize) { twistP[i++] = twistRLP[n++]; } twistP[i] = 0x00; 
+  if (fSize>7) twistFDone = true;  // Reset if content in file twist changes default is twist1=twist2=twist3
+  // SerPr2; Serial.print(twistR); SerPr1; Serial.print(twistL); SerPr1; Serial.println(twistP);
+
+  DoneFiles:  // Assumes twist use the same three filenames in each appfolder such as twist1 twist2 twist3
+  n = 0;      // If different filenames for the 3 encoder actions are used must reset twistFDone=false when AppDir changes 
+  if (pressTwist) while (twistR[n]!=0x00) { MSTAName[n] = twistP[n]; n++; } MacroKeys(0, 3); return;
+  if (twistVal>0) while (twistL[n]!=0x00) { MSTAName[n] = twistR[n]; n++; } MacroKeys(0, 3); return;
+  if (twistVal<0) while (twistP[n]!=0x00) { MSTAName[n] = twistL[n]; n++; } MacroKeys(0, 3);   
+}
+
 /////////////////////////////
 // Main Loop
 /////////////////////////////
@@ -887,7 +1012,7 @@ void loop()
                    else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
 
   NowMillis = millis();
-  wiggleCheck = NowMillis;
+  wiggleCheck = nowTwist = NowMillis;
   
   if (powerEnable || alarmEnable || timerEnable) { rtc_get_datetime(&t); }
 
@@ -915,6 +1040,15 @@ void loop()
           //Serial.println(t.hour); Serial.println(power.hour); Serial.println(t.min); Serial.println(power.min); Serial.println(NowMillis);  
           //Serial.println(setPower); Serial.println(PowerClock); Serial.println(power_fired);
           BackLightOn = false;   }                              // Until keypress   
+
+  if (Twist1) if ((nowTwist - lastTwist) >= time2Twist )
+     { lastTwist = nowTwist; 
+       if (twist.isMoved())   { twist.getCount(); twistStep = twist.getDiff(); 
+                                if (twistMacro!=0x00) { while (twistStep > 0) { twistVal = 1;  DoTwistMacro(); twistStep --; }    // ignores twistStep==0
+                                                        while (twistStep < 0) { twistVal = -1; DoTwistMacro(); twistStep ++; }  } // twist.clearInterrupts();
+                                else DoTwistFile();  }
+       if (twist.isClicked()) { pressTwist = true; twistVal = 0; if (twistMacro==0x00) DoTwistFile(); else DoTwistMacro(); pressTwist = false; }        
+     }         
 
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  }                                      
            
@@ -3905,15 +4039,16 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                 if (WiggleTime>wigglePeriod) WiggleTime = WiggleTime-wigglePeriod; else WiggleTime = 0;  }
         StarOk = true; status("Wiggler OFF"); break; }  
       case 66: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x62,0x73 *mb* *ms* Mouse move, buttons, scoll
-      { b = b + 48; if (b=='U' || b=='D') d = 10; else d = 1;   // D,U = scroll x 10
+      { b = b + 48; 
         if (k2==0x62) { if (b=='l' || b=='L' || b=='d')   { usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);   delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }
                         if (b=='d' || b=='L') { delay(250); usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);   delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }
                         if (b=='m' || b=='M')   { usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_MIDDLE); delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  } 
                         if (b=='M') { delay(250); usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_MIDDLE); delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  } 
                         if (b=='r'|| b=='R')    { usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_RIGHT);  delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }
                         if (b=='R') { delay(250); usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_RIGHT);  delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }  }
-        if (k2==0x73) { if (b=='u' || b=='U') { for (int n=0; n<d; n++) { usb_hid.mouseScroll(RID_MOUSE, d99, 0);    delay(5); } }
-                        if (b=='d' || b=='D') { for (int n=0; n<d; n++) { usb_hid.mouseScroll(RID_MOUSE, -1*d99, 0); delay(5); } } }
+        if (k2==0x73) { if (knum==4) break;  d99 = (knum==5) ? 1 : d99; if (b=='U' || b=='D') d99 *= 10;
+                        if (b=='u' || b=='U') usb_hid.mouseScroll(RID_MOUSE,  d99, 0);
+                        if (b=='d' || b=='D') usb_hid.mouseScroll(RID_MOUSE, -d99, 0); }
         StarOk = true; break; }                
         case 20: //////////////////// KeyBrdByte[1]==0x6d *mt or *mT = macro onceof timers *mc*n*xyyy n=1-8 *=Link MST1=x (mstakn) Option1=yyy (1-24,1-99,1-255)
       { if (k2=='c') { KeyBrdByte[0] = KeyBrdByte[1] = 0; KeyBrdByte[0] = k4; if (k5=='*') KeyBrdByte[1] = k5; else k5 = ' '; MST1 = k6-48;   // *mc*n*12
@@ -4148,7 +4283,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { n = CopySDCardFiles2Flash(); Timer2Str(FileCopy, 2, n); strcat(FileRestoreMsg, FileCopy); status(FileRestoreMsg); StarOk = true; break; }  
         case 65: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x64 *md* DirectPC On in MacroEditor
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false;
-        case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
+      case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
       { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); status("Raw Data sent to PC"); StarOk = true; break; }  
         if (knum==5) { for (n=0; n<6; n++)                              Serial.println(BsDLabel[XNum[n]]); Serial.println(BsDLabel[BsDNum]);  Serial.println(BsDLabel[RetNum]);
         Serial.println(Layout);      Serial.println(LayerAD);           Serial.println(LayerAxD);          Serial.println(VolOn);             Serial.println(MuteOn);      
@@ -4161,7 +4296,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         Serial.println(Rotate180);   Serial.println(KeyHeldEnable);     Serial.println(KeySkip);           Serial.println(SDCardArr[2]);      Serial.println(nKeysL134);
         Serial.println(iList);       for (i=0; i<3; i++) { for (n=0; n<iListMax; n++)  Serial.print(b2Hex[MacroInstructionList[i][n]]);       Serial.println(); }    
         for (n=0; n<10; n++)         Serial.print(nKeysCharSet[n]);     Serial.println();                  for (n=0; n<10; n++)               Serial.print(nKeysLnkChar[n]);          
-        Serial.println();            Serial.println("EOC");                 
+        Serial.println();            Serial.println(MouseK);            Serial.println("EOC");                 
         status("Text Data sent to PC"); StarOk = true; break; } } 
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -4232,6 +4367,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                         if (k2=='-') { usb_hid.sendReport16(HIDCons, PrevMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Previous");   StarOk = true; break; }    
                         if (k2=='p') { usb_hid.sendReport16(HIDCons, PlayMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Next Pause"); StarOk = true; break; }                                                                                
                         if (k2=='s') { usb_hid.sendReport16(HIDCons, StopMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Stop");       StarOk = true; break; } } }                        
+        case 89: ///////////////////// KeyBrdByte[1]=='t'&&KeyBrdByte[2]=='m' *tm*char code definitions - *tm* twistMacro=0x00 Use symbolic file twist
+      { if (knum==4)  { twistMacro=0x00; status("Twist use File Macros"); StarOk = true; break; } 
+        if (knum==5)  { twistMacro=k4;   status("Twist use Code Macros "); StarOk = true; break; } }    
+        case 90: ///////////////////// KeyBrdByte[1]=='t'&&KeyBrdByte[2]=='f' *tf* = delete file twist *tf*nameR=nameL=namep
+      { if (knum==4)  { if (LayerAxD) { if (SDFS.exists(twistF)); SDFS.remove(twistF); StarOk = true; } else { if (LittleFS.exists(twistF)); LittleFS.remove(twistF); StarOk = true; } 
+                        if (StarOk) status("Twist File Removed"); break; }
+        if (knum>10) { for (n=4; n<knum; n++) twistRLP[n] = KeyBrdByte[n+4]; twistRLP[n] =0x00; if (LayerAxD) f = SDFS.open(twistF, "w"); else f = LittleFS.open(twistF, "w");
+                       if (f) { f.write(twistRLP, n); f.close(); status("Twist File Saved"); StarOk = true; } break; } }                                                 
       } return StarOk;                        
 }
 

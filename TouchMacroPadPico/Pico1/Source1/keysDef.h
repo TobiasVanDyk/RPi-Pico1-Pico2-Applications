@@ -24,7 +24,9 @@
 #define KeyY     HID_KEY_Y
 #define KeyZ     HID_KEY_Z
 #define KeyC     HID_KEY_C
+#define KeyD     HID_KEY_D
 #define KeyV     HID_KEY_V
+#define KeyM     HID_KEY_M
 #define KeyR     HID_KEY_R
 #define KeyS     HID_KEY_S
 #define KeyO     HID_KEY_O
@@ -51,7 +53,8 @@
 #define KeyEnd   0x4D
 #define PageUp   0x4B
 #define PageDwn  0x4E
-#define KEqu     HID_KEY_EQUAL
+#define KEqu     HID_KEY_EQUAL   // 0x2E
+#define KMin     HID_KEY_MINUS   // 0x2D
 #define KEnt     0x28 // KEYPAD_ENTER = 0x58 KEY_RETURN = 0x9E KEY_EXECUTE = 0x74
 #define KeyYes   0x1C // "Y" or "y" note ACII Y = 0x59 y = 0x79 (difference of 61 decimal)
 ///////////////////////////////////////////////////////////////////////////////////////////
