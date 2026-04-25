@@ -17,14 +17,14 @@ Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino
 Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\Wire 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad334.ino.elf"
-Sketch uses 257672 bytes (12%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 257880 bytes (12%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 65000 bytes (12%) of dynamic memory, leaving 459288 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad334.ino.uf2 
 Resetting COM3
-Converting to uf2, output size: 594944, start address: 0x2000
+Converting to uf2, output size: 595456, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 594944 bytes to D:/NEW.UF2
+Wrote 595456 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -48,10 +48,11 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 
 New changes:
-1. Added Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
+1. Added Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders and example Files4Twist.zip
    *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
    *tm*char code definitions - *tm* twistMacro=0x00 Use symbolic file twist not coded macros
    Default volume vV - *tm*char vV uU zZ sS xX dD code definitions vuzsxdVUZSXD coded macro options volume undo/redo zoom scroll lines-= backspace/delete 0x00
+   Use Sparkfun Qwiic Twist https://www.sparkfun.com/sparkfun-qwiic-twist-rgb-rotary-encoder-breakout.html and connect to 3v3 Gnd and GPIO 26 GPIO 27 for SDA SCL
 2. Support Mouse keys page on PC App
 3. Added Volume and Play Media Star Codes: Use *v+* *v-* *vm* Volume + - mute or *v+,-*nn = 00-99 and *p+* *p-* *pp* *ps* Play Media Next Previous Play/Pause Stop. 
    For *v+*nn and *v-*nn the nn is not and absolute number but an increase or decrease of the existing value  divided by two - i.e. if the existing value is 40 and

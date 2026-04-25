@@ -897,11 +897,15 @@ void DoTwistMacro()
   char Action = ' ';
   int n = 0;
   bool VolOk = false;
+  char ScrollM[] = "*ms* ", ScrollX[] = "*m1*10", VolumeX[] = "*v *";  
+  
   for (int n=0; n<6; n++) keycode[n] = 0x00;
   
   switch (twistMacro)  
-         { case 'V':
-           case 'v': KeyBrdByte[0] = KeyBrdByte[3] = '*'; KeyBrdByte[1] = 'v';  KeyBrdByteNum = 4;                  
+         { case 'V': if (pressTwist) usb_hid.sendReport16(HIDCons, VolMute);
+                     else { if (twistVal>0) usb_hid.sendReport16(HIDCons, VolUp); if (twistVal<0) usb_hid.sendReport16(HIDCons, VolDown); }
+                     delay(dt50); usb_hid.sendReport16(HIDCons, 0); break;
+           case 'v': for (int n=0; n<4; n++) KeyBrdByte[n] = VolumeX[n]; KeyBrdByteNum = 4;                                       
                      if (pressTwist) KeyBrdByte[2] = 'm'; else { if (twistVal>0) KeyBrdByte[2] = '+'; if (twistVal<0) KeyBrdByte[2] = '-'; }
                      VolOk = SendBytesStarCodes();
                      break;
@@ -916,15 +920,14 @@ void DoTwistMacro()
                      keycode[0] = Action; keycode[1] = keycode[2] = 0x00; 
                      usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
-                     break;   
-           case 'S': if (twistVal<0) usb_hid.mouseScroll(RID_MOUSE,  5*MouseScrollAmount, 0);  
-                               else  usb_hid.mouseScroll(RID_MOUSE, -5*MouseScrollAmount, 0);
-                     break;
-           case 's': if (twistVal<0) usb_hid.mouseScroll(RID_MOUSE, MouseScrollAmount, 0);  
-                               else  usb_hid.mouseScroll(RID_MOUSE, -1*MouseScrollAmount, 0);
-                     break;
+                     break;  
+           case 'S': if (pressTwist) { for (int n=0; n<6; n++) KeyBrdByte[n] = ScrollX[n]; KeyBrdByteNum = 6; }
+                     else { for (int n=0; n<5; n++) KeyBrdByte[n] = ScrollM[n]; KeyBrdByteNum = 5; if (twistVal>0) KeyBrdByte[4] = 'U'; if (twistVal<0) KeyBrdByte[4] = 'D'; }  
+                     SendBytesStarCodes(); break;
+           case 's': if (pressTwist) { for (int n=0; n<6; n++) KeyBrdByte[n] = ScrollX[n]; KeyBrdByte[4] = '0'; KeyBrdByteNum = 6; SendBytesStarCodes(); break; }
+                     else { if (twistVal<0) usb_hid.mouseScroll(RID_MOUSE, MouseScrollAmount, 0); else usb_hid.mouseScroll(RID_MOUSE, -1*MouseScrollAmount, 0); } break;
            case 'Z': 
-           case 'z': if (twistVal>0) Action = 0x2E; else Action = '-';  
+           case 'z': if (pressTwist) Action = Key0; else { if (twistVal>0) Action = KEqu; else Action = KMin; } 
                      keycode[0] = CtrL; keycode[1] = Action; keycode[2] = 0x00; 
                      usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
@@ -4002,15 +4005,16 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                 if (WiggleTime>wigglePeriod) WiggleTime = WiggleTime-wigglePeriod; else WiggleTime = 0;  }
         StarOk = true; status("Wiggler OFF"); break; }  
       case 66: ///////////////////// KeyBrdByte[1]==0x6d&&KeyBrdByte[2]==0x62,0x73 *mb* *ms* Mouse move, buttons, scoll
-      { b = b + 48; if (b=='U' || b=='D') d = 10; else d = 1;   // D,U = scroll x 10
+      { b = b + 48; 
         if (k2==0x62) { if (b=='l' || b=='L' || b=='d')   { usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);   delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }
                         if (b=='d' || b=='L') { delay(250); usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_LEFT);   delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }
                         if (b=='m' || b=='M')   { usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_MIDDLE); delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  } 
                         if (b=='M') { delay(250); usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_MIDDLE); delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  } 
                         if (b=='r'|| b=='R')    { usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_RIGHT);  delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }
                         if (b=='R') { delay(250); usb_hid.mouseButtonPress(RID_MOUSE, MOUSE_BUTTON_RIGHT);  delay(dt50); usb_hid.mouseButtonRelease(RID_MOUSE);  }  }
-        if (k2==0x73) { if (b=='u' || b=='U') { for (int n=0; n<d; n++) { usb_hid.mouseScroll(RID_MOUSE, d99, 0);    delay(5); } }
-                        if (b=='d' || b=='D') { for (int n=0; n<d; n++) { usb_hid.mouseScroll(RID_MOUSE, -1*d99, 0); delay(5); } } }
+        if (k2==0x73) { if (knum==4) break;  d99 = (knum==5) ? 1 : d99; if (b=='U' || b=='D') d99 *= 10;
+                        if (b=='u' || b=='U') usb_hid.mouseScroll(RID_MOUSE,  d99, 0);
+                        if (b=='d' || b=='D') usb_hid.mouseScroll(RID_MOUSE, -d99, 0); }
         StarOk = true; break; } 
         case 20: //////////////////// KeyBrdByte[1]==0x6d *mt or *mT = macro onceof timers *mc*n*xyyy n=1-8 *=Link MST1=x (mstakn) Option1=yyy (1-24,1-99,1-255)
       { if (k2=='c') { KeyBrdByte[0] = KeyBrdByte[1] = 0; KeyBrdByte[0] = k4; if (k5=='*') KeyBrdByte[1] = k5; else k5 = ' '; MST1 = k6-48;   // *mc*n*12
