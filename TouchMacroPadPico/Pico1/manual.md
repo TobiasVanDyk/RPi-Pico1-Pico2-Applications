@@ -270,17 +270,18 @@ n985-n996 are available. They can be stored on both the Flash memory or the SDCa
 the Number-Pad mode by using *09*. The n01-n996 files are therefore neither macros, textstrings, or linkfiles. They only
 point to another file which has a a path - i.e. folder and name, of any length less than 250 characters, on the same 
 storage (Flash or SDCard), to be executed.
-[n] Green Number Pad:  Number-Keypad on/off - then use red Pad [o] to scroll through NumberPad pages.
-                       Macro Mode - Pressing grey Pad 4 [n] toggles KeyBoard Direct to PC Mode On/Off - show "d" in  
-                       Macro Editor instead of Src/Dst macros. This sends single enries to PC when [EXE] pressed.
-                       SDCard Select Set Mode: Switch Upper/Lower-case filenames for SDCard Filesets 1-21
-[o] Red Options Pad:   Config Mode - Toggle Capslock and Numlock on/off in combinations
-    (Colour Green)     Macro Mode  - 4-Cycle combinations of Source and Destination SDCard (Orange) or Flash (White) 
-                       NumPad Mode - Switch between 3 NumPad pages.
-                       [Opt] Mode  - Macro Upper/Lower case files, [L1-4][VolMute]Long-Press On/Off, StartupLayout L1-L4,
-                                    Select M S T MacroBanks 1-5, Select SDCard File Set 1-21, Send SD+Flash File lists
-                                    Custom Key Labels On/Off for Keys M,S,T 
-                       [Key] Mode  - Select 24 options for [Del], [Ret], [Cut,Copy,Paste] keys
+[n] Grey Number Pad:  Number-Keypad on/off - then use red Pad [o] to scroll through NumberPad pages.
+                      Macro Mode - Pressing grey Pad 4 [n] toggles KeyBoard Direct to PC Mode On/Off - show "d" in  
+                      Macro Editor instead of Src/Dst macros. This sends single enries to PC when [EXE] pressed.
+                      SDCard Select Set Mode: Switch Upper/Lower-case filenames for SDCard Filesets 1-21
+[o] Red Options Pad:  Config Mode - Toggle Capslock and Numlock on/off in combinations
+    Green Colour ->   Macro Mode  - 4-Cycle combinations of Source and Destination SDCard (Orange) or Flash (White) 
+                      NumPad Mode - Switch between 3 NumPad pages.
+                      [Opt] Mode  - Macro Upper/Lower case files, [L1-4][VolMute]Long-Press On/Off, StartupLayout L1-L4,
+                                    Select M S T MacroBanks 1-5, Select SDCard File Set 1-21 use Pads [o] and [n], 
+                                    Send SD+Flash File lists,  Custom Key Labels On/Off for Keys M,S,T 
+                      [Key] Mode  - Select 24 options for [Del], [Ret], [Cut,Copy,Paste] keys
+-----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
 Layout 2 - Full Media Mode - Play Controls On - Volume Controls On - Tone Controls On 
 -----------------------------------------------------------------------------------------------------------------------
@@ -706,8 +707,9 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (j) *br* = toggle brightness controls up/down replace volume up/dwn for Layouts 1, 3, 4 (not in Layout 2 Cfg). The
     brightness slider usually only has an effect when used in notebook computers not desktops.
 (k) *tt* *ta* *tp* *tw* Use *tx*yymmddwhhmm -> *tx*22110341200 12:00am 3 Nov 2022 Thursday where x = t,a,p,w
-    t = Main Time/Clock a  = Macro Clock Repeat-Oneshot [R-C][O-C] p = Macro Clock Countdown [RcT][OcT] 
-    w = Power Clock [O-C][R-C]. if using [*Cm] only add the numbers yymmddwhhmm w = weekday 0 = Sunday 6 = Saturday  
+    t = Main Time/Clock a  = Macro Clock Repeat-Oneshot [R-C][O-C] w = Macro Clock Countdown [RcT][OcT] 
+    p = Power Clock [O-C][R-C]. if using [*Cm] only add the numbers yymmddwhhmm w = weekday 0 = Sunday 6 = Saturday
+    (If a Pico 2 used then Sunday=1 Saturday=7 as in TimeLib.h)   
 (l) *xn*number n = 0,1 - 8, 9 number = 1-54. Top row 3 keys cX-Cut, cC-Copy, cV-Paste: Programmable as x1, x2, x3 
     Layout 1, and x4, x5, x6 for Layout 3 and 4. *x0*0 clear all 8 keys, *xn*0 clear all 6 top-row keys. 54 options 
     are: Del Bks Tab aTb Ins Esc PrS aPr Ret Snp Osk UnD ReD caD Cut Cpy Pst Tsk Run wX CPi Ts1 Ts6  K1 - K24 Num 
@@ -804,23 +806,21 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *lf* /store/+/new/ lists all flash files in the folder /new and the sdcard files in folder /store.
     *lf* /+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
     *lf* /+/ lists all flash files and all the sdcard files (the folder for both is now root /).
-(y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names.
-(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-d. Can add less
-    than 12 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
+(y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names*up*, or use *up*0,1 off/on. 
+(z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-k. Can add less
+    than 16 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
     *ld* when a serial terminal is connected to the TouchLCD.
-    Instruction List: Only execute 0-9 or a-d, exit if 0, can be in any order or length (set to 12 currently): 
-    1=SDCardTextFiles 2=Flash+M-L 3=Flash+L-M 4=SDCard+M-L 5=SDCard+L-M 6=Do1 7=Do2 8=Do3 9=Bank123 0=Exit 
-    a=Flash+M b=Flash+L c=SDCard+M d=SDCard+L
+    Instruction List: Only execute 0-9 or a-k, exit if 0, can be in any order or length (set to 16 currently): 
     For example 1 2 5 9 0   is the same as Layout=3 previously
                 2 5 9 0     is the same as Layout=4 previously 
                 2 5 6 7 9 0 is the same as Layout=1 previously
     Use *im* *is* *it* to reset to default i.e. when no numbers added after *im*, *is*, *it* 
-    Use *ix* to select between the new instruction-list or the old coded section 
+    Use *ix* toggle instruction list or *ix*0,1 instruction list off/on - if use coded part.
 (A) *09* toggles between NumPad and nKey n01-n996 mode when Pad [n] is pressed in the Config page. Use Pad [o] to move
     between the 1-83 pages of each mode. 
 (B) *0n*char The nKeys first character (default n), can be changed with with *0n*char - for example *0n*p will change
     the keys, and filenames used to p01 - p996. Any character or digit can be used - but not all will yield valid 
-    filenames.  
+    filenames. Use *0n* without a char for nKeysShow on/off i.e. replaces L in L1,L3,L4.
 (C) *0p*pages withe pages = 1 to 83 set the number of pages for nKeys or the NumPad. Enter as *0p*n n=1-9 pages
     or use *0p*nn nn=01-83 pages nKeys per first character. Note that 83 pages is the maximum because 12x83=996 nKeys.
 (D) *0s*list-of-10-characters - these are displayd when pressing [Cfg][Opt] then select nKeys character woth Pad[o]
@@ -853,13 +853,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     Default is 'n','o','p','q','u','v','w','x','y','z'. Alternative could be '0','1','2','3','4','5','6','7','8','9'.
     Cannot use dD rR lL as nKeys in stringlist as they are reserved for delay, repeat, link. 
     Considering alternative choices of w (wait) for d (delay), and x (times) in DoLinkStr()
-(K) Toggle custom key labels for keys M,S,T 1-24 ON/OFF - use *lm* *ls* *lt* + optional filename (which contains 24 key
-    labels seperated by a NULL character). For example *lt*label1 -> LabelT now has content label1 and keys T1-T24 will 
-    have the labels defined in file1 where file1 can have a path before it such as /app1/label1. If only one char added 
-    after *lm,s,t* such as *lm,s,t*x then the files FileM,S,T are reset with the default custom text filename label1,2,3.
-    When using the Macroeditor make sure the A-D indicator is brown when working with the SCard custom label files and 
-    white when working with the Flash custom label files. If a label definition filename is added after the *lm,s,t* the
-    custom label enable is always made ON - i.e. normally it is toggled between ON and OFF.
+(K) Custom Labels Off/On *lm,s,t*0,1 switch custem labels off/on - *lm,s,t*x <> 0,1 toggle state on/off. Use *lm* *ls* 
+    *lt* + optional filename (which contains 24 key labels seperated by a NULL character). For example *lt*label1 -> 
+    LabelT now has content label1 and keys T1-T24 will have the labels defined in file1 where file1 can have a path 
+    before it such as /app1/label1. If only one char but not 0 or 1, added after *lm,s,t* such as *lm,s,t*x then the 
+    files FileM,S,T are reset with the default custom text filename label1,2,3. When using the Macroeditor make sure 
+    the A-D indicator is brown when working with the SCard custom label files and white when working with the Flash 
+    custom label files. If a label definition filename is added after the *lm,s,t* the custom label state is not changed.
       
     Alternatively, use Layout 2 keys [Cfg][[Opt][ M,S,T ] Custom Label and press Pad (o) for ON/OFF. Can also send a new 
     custom label filename  by using <m,s,tfilename> via serial port making sure that A-D is brown when sent, i.e it is 
@@ -928,7 +928,24 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     the new firmware - this condition where both are 0x00 are handled by setting them to the default < and >. Otherwiae
     use the Macro editor on the Pico and enter *1s* and save with the [Cfg]->[Sav] config button, before opening the 
     PC App, or enter as *1s*< and *1e*> and save.
-      
+(X) Added App Switch function - the PC App will send the name of the opened program that has focus and is on the PC App
+    list of App Switches:
+    *ap*appname creates a folder /appname/ if it does not exist on the SDCard
+    *ap*1,3,4 assigns app switch to Layouts 1, 3, or 4 = M S T keys and enables App Switch. Pressing the keys M1-M24 or 
+    *S1-S24 or T1-T24 will then execute macros files such as t01 to t24 inside the SDCard folder appname
+    folder /appname/
+    *ap* disables App Switch function      
+(Y) Volume and Play Media: Use *v+* *v-* *vm* Volume + - mute or *v+,-*nn = 00-99 and *p+* *p-* *pp* *ps* Play Media Next 
+    Previous Play/Pause Stop. For *v+*nn and *v-*nn the nn is not and absolute number but an increase or decrease of the 
+    existing value  divided by two - i.e. if the existing value is 40 and you send *v+*20 then the new volume will be 50
+    (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
+    <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.*
+(Z) Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
+    *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
+    *tm*char = vuzsxdwVUZSXDW code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
+    Default volume vV - *tm*char = vV uU zZ sS xX dD wW code definitions vuzsxdVUZSXD coded macro options volume =/-/mute undo/redo 
+    zoom +/-/reset scroll +/- lines-= backspace/delete Wallaper-Next
+    
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
@@ -1027,6 +1044,15 @@ the Pico has a HW RTC but does not have a dedicated battery backup for its HW RT
 
 The Repeat-only mode (i.e send macro fixed number of times with a delay or no delay, is not implemented as yet.
 
+For the Restart-Shutdown Timer page there are Time and Clock handlers for Pico 1 (using its RTC where Sunday=0), and 
+Pico 2 (using TimeLib.h where Sunday=1). Power Timers Clock-Restart and Clock-PowerOff functional with a choice of 
+using shorter time-set options hours and minutes as hhmm (i.e. 24 hours max time-span) by using *ct*hhmmR,O, or 
+using a full date + time <Pyymmddwhhmm>. To test set time using PC App then [Cfg]->[ROf] type in top grey box below 
+[R-C] and [O-C] buttons current time + 3 minutes for example 1630 if time is 16h27. and press enter. Then if both 
+MST and Other Keys are checked and Delay = 0 in Layout L2, press [R-C] key either in the PC App or on the TouchLCD. 
+After the first enter the LCD will display "Restart Clock ON" and after [R-C] pressed it will display "Restart on 
+Clock" - leave the LCD on and after 3 minutes it will open the run box and type the reboot command.
+
 Text Strings: 
 Large Text file processing for nKeys: Can handle very large text strings strings, preferably stored on SDCard using 
 nKeys n,o,p,q,r. If nKeys = m,s,t then large strings also enabled for M S T keys 01 - 96. Large strings tested up to
@@ -1091,3 +1117,4 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
+
