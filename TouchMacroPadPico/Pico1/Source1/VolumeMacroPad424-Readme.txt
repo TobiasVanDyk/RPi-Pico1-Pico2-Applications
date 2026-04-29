@@ -1,22 +1,22 @@
-Compiled with Pico SDK 2.21-develop, Arduino Pico 5.5.1 and included Adafruit_TinyUSB_Arduino 3.7.2, and TFTeSPI 2.5.43
+Compiled with Pico SDK 2.21-develop, Arduino Pico 5.6.0 and included Adafruit_TinyUSB_Arduino 3.7.4, and TFTeSPI 2.5.43
 Pico 1 RP2040 and 3.5inch Touch Display Module for 200MHz Raspberry Pi Pico included SDCard module https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 -------------------------------------------------------------------------------------------------------------------------------------------------
-Using library Adafruit_TinyUSB_Arduino at version 3.7.2 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\Adafruit_TinyUSB_Arduino 
-Using library SPI at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SPI 
+Using library Adafruit_TinyUSB_Arduino at version 3.7.4 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\Adafruit_TinyUSB_Arduino 
+Using library SPI at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\SPI 
 Using library TFT_eSPI at version 2.5.43 in folder: C:\Users\Tobias\Documents\Arduino\libraries\TFT_eSPI 
-Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\LittleFS 
-Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SDFS 
-Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\SdFat 
-Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.5.1\libraries\Wire 
+Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\LittleFS 
+Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\SDFS 
+Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\SdFat 
+Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\Wire 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad424.ino.elf"
-Sketch uses 267176 bytes (25%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 63392 bytes (24%) of dynamic memory, leaving 198752 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 268152 bytes (25%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 63420 bytes (24%) of dynamic memory, leaving 198724 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
-Converting to uf2, output size: 608256, start address: 0x2000
+Converting to uf2, output size: 610304, start address: 0x2000
 Scanning for RP2040 devices
 Flashing E: (RPI-RP2)
-Wrote 608256 bytes to E:/NEW.UF2
+Wrote 610304 bytes to E:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -30,9 +30,10 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
 
 New changes:
 1. Added Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders and example Files4Twist.zip
+   *tc*X X = rR gG bB yY wW pP dD 0-9 set Twist options and colours and connect *tc*RRGGBBCrCgCb RGB colours Cx Connect -128 to +127 *tc* version
    *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
    *tm*char code definitions - *tm* twistMacro=0x00 Use symbolic file twist not coded macros
-   Default volume vV - *tm*char vV uU zZ sS xX dD wW code definitions vuzsxdwVUZSXDW coded macro options volume undo/redo zoom scroll lines-= backspace/delete Wallpaper-Next
+   Default volume vV - *tm*char vV uU zZ sS xX dD code definitions vuzsxdVUZSXD coded macro options volume undo/redo zoom scroll lines-= backspace/delete 0x00   
    Use Sparkfun Qwiic Twist https://www.sparkfun.com/sparkfun-qwiic-twist-rgb-rotary-encoder-breakout.html and connect to 3v3 Gnd and GPIO 26 GPIO 27 for SDA SCL
 2. Support Mouse keys page on PC App
 3. Added Volume and Play Media Star Codes: Use *v+* *v-* *vm* Volume + - mute or *v+,-*nn = 00-99 and *p+* *p-* *pp* *ps* Play Media Next Previous Play/Pause Stop. 

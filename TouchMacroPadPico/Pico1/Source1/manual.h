@@ -942,6 +942,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
     <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.*
 (Z) Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
+    *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
+    *tc* = version *tc*d,D = dimmed value *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
     *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
     *tm*char = vuzsxdwVUZSXDW code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
     Default volume vV - *tm*char = vV uU zZ sS xX dD wW code definitions vuzsxdVUZSXD coded macro options volume =/-/mute undo/redo 
