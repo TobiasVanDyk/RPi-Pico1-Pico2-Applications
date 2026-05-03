@@ -12,7 +12,7 @@
 // shares a similar layout approach to what is used here - their design dates back to early 2021. 
 // https://learn.adafruit.com/touch-deck-diy-tft-customized-control-pad?view=all
 //
-// Adapted by Tobias van Dyk August 2022 - April 2026 for the Pico 2 RP2350 and ILI9488 480x320 LCD
+// Adapted by Tobias van Dyk August 2022 - May 2026 for the Pico 2 RP2350 and ILI9488 480x320 LCD
 // This use the the Waveshare 3.5inch Touch Display Module for Raspberry Pi Pico 1, 2 with included SDCard module:
 // https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 //
@@ -48,12 +48,19 @@
 #include "sdcard.h"       // 20 Sets of 24 files stored on SDCard + 96 n-keys aA01-xX96 001-996
 #include <TimeLib.h>      // Replacement for Pico 1 HW RTC functions but Sunday is day 1 not day 0
 #include <Wire.h>
-#include "SparkFun_Qwiic_Twist_Arduino_Library.h" // RGB REotary Encoder i2c
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include "SparkFun_Qwiic_Twist_Arduino_Library.h" // RGB Rotary Encoder i2c 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SparkFun Qwiic Twist - RGB Rotary Encoder Breakout https://www.sparkfun.com/sparkfun-qwiic-twist-rgb-rotary-encoder-breakout.html
+// To upgrade version: Programming-the-Sparkfun-Twist-RGB-Rotary-Encoder-from-its-source-code-using-an-Arduino-Uno-as-ISP-Programmer.pdf
+// at https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/tree/main/TouchMacroPadPico
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TWIST twist;                                      // Create instance of this object
 bool Twist1 = false;                              // True if Encoder plugged into i2c 1
-char twistF[] = "twist";                          // Filename containing the 3 twist macro path/filenames
-bool twistFDone = false;                          // All 3 twist macros have file pointers
+char twistF[] = "twist";                          // Filename containing the 3 twist macro path/filenames Size=21 for default twist1,2,3 used in readTwist() 
+char twistC[] = "twistCfg";                       // Filename containing the twist configuration values size = 34 bytes
+int16_t twistConfig[3][15] = { 240,15,162,80,5,54,7,0,-12,3,24,0,  140,0,200,0,0,30,-9,0,9,5,24,0,  101,101,101,0,30,0,7,0,-12,3,24,0 }; // 3 choice default values 
+int twistNum = 0;                                 // 0 1 2 set of twistConfig[3] 
+bool twistFDone = true;                           // If false use twist1 twist2 twist3 if false read new names from file twist
 int time2Twist = 20;                              // Check rotary encoder status every 20mS - helps to debounce press-switch
 unsigned long int nowTwist = 0;                   // 
 unsigned long int lastTwist = 0;                  // nowTwist - lastTwist) >= time2Twist
@@ -61,24 +68,27 @@ int16_t twistVal = 0;                             // -24 to +24
 bool pressTwist = false;                          // pressed 
 int twistStep = 0;                                // Multiple turns
 char twistMacro = 'v';                            // Default volume vV - *tm*char vV uU zZ sS xX dD code definitions - *tm* twistMacro=0x00 Use symbolic link file twist
-char twistOption[15] = "vuzsxdwVUZSXDW";          // twist coded macro options volume undo/redo zoom scroll lines-= backspace/delete Wallpaper 0x00
+char twistOption[17] = "vuzsxdwbVUZSXDWB";        // twist coded macro options volume undo/redo zoom scroll lines-= backspace/delete Wallpaper Photoshop Brush size b +/- Hardness B +/- 0x00
 byte twistcurrOption  = 0;                        // Index into twistOption[] - same info value as twistMacro
 char twistRLP[240]  = "";                         // *t+,-,p* all
 char twistR[80]  = "";                            // *t+*Name turn right
 char twistL[80]  = "";                            // *t-*Name turn left
 char twistP[80]  = "";                            // *tp*Name press
-int16_t twistRconnect = -9;                       // R-connect -255 to +255
-int16_t twistGconnect = 0;                        // G-connect -255 to +255
-int16_t twistBconnect = 9;                        // B-connect -255 to +255
+int16_t twistRconnect = 7;                        // -9 R-connect -255 to +255
+int16_t twistGconnect = 0;                        // 0 G-connect -255 to +255
+int16_t twistBconnect = -12;                      // 9 B-connect -255 to +255
 uint8_t twistcurrColour[] = { 0, 0, 0 };          // current Red Green Blue twist colour
 uint8_t twistSavedColour[3] = { 0, 0, 0} ;        // 
-uint8_t twistColour[6] = { 140,0,200,0,0,30 };    // RGB-On RGB-dim - if dim-to-green change the connect to green as well
+uint8_t twistColour[6] = { 240,15,162,40,5,26 };  // = { 140,0,200,0,0,30 }; RGB-On RGB-dim - if dim-to-green change the connect to green as well
 bool twistChanged = false;                        // Something happened to twist
 bool SaveTwist = false;                           // Save to Twist data to Flash if true
-byte twistDim = 3;                                // 33% dimfactor
-byte twistLimit = 0;                              // 0 or 24
+byte twistDim = 3;                                // 33% or 20% dimfactor
+byte twistLimit = 0;                              // 0 or 24 if version 1.2
 #define twistLo 100                               // Colour RGB levels 100 or 200 
-#define twistHi 200
+#define twistHi 200                               //
+char twistStatus[12][28] = {"Twist Files Macros",   "Twist Coded Macros X",    "Twist File Macro Removed", "Twist File Macro Saved",   "Twist default X saved", "Twist Dimmed updated", 
+                            "Twist Limit updated",  "Twist Colours updated X", "Twist version: ",          "Twist Config updated X",   "Twist Config saved",    "Twist Config read" };
+   
  
 volatile bool Change = false;          // Indicators changed at any time
 volatile bool BusyCNS = false;         // Lock changes when in CNS callback
@@ -896,13 +906,13 @@ void loop()
               if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();
                                      if (twistMacro!=0x00) { while (twistStep > 0) { twistVal = 1;  DoTwistMacro(); twistStep--; }
                                                              while (twistStep < 0) { twistVal = -1; DoTwistMacro(); twistStep++; } }
-                                     else { DoTwistFile(); } }
+                                     else { twistVal = twistStep; DoTwistFile(); } }
                                      
-              if (twist.isClicked()) { twistChanged = pressTwist = true; twistVal = 0; if (twistMacro==0x00) DoTwistFile(); else DoTwistMacro(); pressTwist = false; }
+              if (twist.isClicked()) { twistChanged = pressTwist = true; twistVal = 0; if (twistMacro==0x00) DoTwistFile(); 
+                                                                                       else { twistVal = twistStep; DoTwistMacro(); } pressTwist = false; }              
               
-              if (twistChanged && BackLightOn)  { twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); }                           
-              if (twistChanged && !BackLightOn) { DoWakeUp(); }
-              
+              if (twistChanged && BackLightOn)  { twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); }                          
+              if (twistChanged && !BackLightOn) { DoWakeUp(); }              
             }
            
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  } 
@@ -3245,7 +3255,7 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
   if (LittleFS.exists("inputStr"))   { ChrPtr = inputString; DoFileStrings(StrOK, "inputStr", ChrPtr, 0); }
   if (LittleFS.exists("TimersData")) ReadTimers(1); else ReadTimers(2); // If not exist create TimersData with default data
   if (LittleFS.exists("Time4data")) read4Time();                // Get saved Time
-  if (LittleFS.exists("twistCfg")) readTwist();                 // Get Twist rotary encoder settings
+  if (LittleFS.exists(twistC)) readTwist();                 // Get Twist rotary encoder settings
 
   if (MLabel) DoMSTLabel(0, 1); if (SLabel) DoMSTLabel(0, 3); if (TLabel) DoMSTLabel(0, 4);
 
@@ -3476,7 +3486,7 @@ void GetSysInfo(int Action)
   if (SaveTime4Data) { save4Time(); SaveTime4Data = false; }  
   if (SaveTwist) { saveTwist(); SaveTwist = false; } 
   
-  Serial.println("Version: VolumeMacro334 Tobias van Dyk April 2026 License GPL3");
+  Serial.println("Version: VolumeMacro334 Tobias van Dyk May 2026 License GPL3");
   Serial.println("Hardware: Waveshare Pico 2 RP2350-A2 ILI9488 Resistive TouchLCD 3.5inch - Pico 2 A4 wanted"); 
   Serial.printf("CPU MHz (Pico 1 or RP20240): %d\n\r", fCPU);
   Serial.printf("FreeHeap: %d\n\r", fHeap);
@@ -3728,7 +3738,14 @@ byte FindStarNum()
   for (n=0; n<StarCodesMax; n++) {if ((s1==StarCode[n][0])&&(s2==StarCode[n][1])) { StarPos = n; break; } }
   return StarPos;
 }
-
+/////////////////////////////////////////////
+byte GetTwistCharPosition(char k) 
+/////////////////////////////////////////////
+{ byte StarPos = 100; // Default to 100 if not found  
+  byte optionsLength = strlen(twistOption);
+  for (byte n = 0; n < optionsLength; n++) { if (k==twistOption[n]) { StarPos = n; break; } }
+  return StarPos;
+}
 //////////////////////////////////////
 unsigned long GetT(byte knum)
 //////////////////////////////////////
@@ -4149,7 +4166,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         for (n=0; n<10; n++)            Serial.print(nKeysLnkChar[n]);        Serial.println(); 
         Serial.println(MouseK);         Serial.println(Twist1);               Serial.println(twistOption);         
         for (n=0; n<6; n++)             Serial.println(twistColour[n]);       
-        Serial.println(twistRconnect);  Serial.println(twistGconnect);        Serial.println(twistBconnect);     Serial.println(twistcurrOption);   Serial.println("EOC");         
+        Serial.println(twistRconnect);  Serial.println(twistGconnect);        Serial.println(twistBconnect);     Serial.println(twistcurrOption);   Serial.println(twistDim);     
+        Serial.println(twistLimit);     Serial.println("EOC");         
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -4221,19 +4239,23 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                         if (k2=='p')  { usb_hid.sendReport16(HIDCons, PlayMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Next Pause"); StarOk = true; break; }                                                                                
                         if (k2=='s')  { usb_hid.sendReport16(HIDCons, StopMed); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Play Media Stop");       StarOk = true; break; } } }  
         case 89: ///////////////////// KeyBrdByte[1]=='t'&&KeyBrdByte[2]=='m' *tm*char code definitions - *tm* twistMacro=0x00 Use symbolic file twist
-      { if (knum==4)  { twistMacro=0x00; status("Twist use File Macros");  } 
-        if (knum==5)  { twistMacro=k4;   status("Twist use Code Macros "); } SaveTwist = StarOk = true;StarOk = true; break; }   
+      { if (knum==4)  { twistMacro=0x00; status(twistStatus[0]); StarOk = true; break; } 
+        if (knum==5)  { if (b==0) { twistMacro=0x00; status(twistStatus[0]); StarOk = true; break; }
+                        if (b<3)  { twistNum = b-1;  defaultTwist(twistNum); saveTwist(); twistStatus[4][14] = twistNum; status(twistStatus[4]);  StarOk = true; break; }
+                        byte p = GetTwistCharPosition(k4); if (p<100) { twistMacro=k4; twistcurrOption=p; twistStatus[1][19] = k4; status(twistStatus[1]); SaveTwist = StarOk = true; } break; } }  
         case 90: ///////////////////// KeyBrdByte[1]=='t'&&KeyBrdByte[2]=='f' *tf* = delete file twist *tf*nameR=nameL=nameP
-      { if (knum==4)  { if (LayerAxD) { if (SD.exists(twistF)) SD.remove(twistF); StarOk = true; } else { if (LittleFS.exists(twistF)) LittleFS.remove(twistF); StarOk = true; } 
-                        if (StarOk) status("Twist File Removed"); break; }
+      { if (knum==4)  { if (LayerAxD) { if (SD.exists(twistF)) StarOk = SD.remove(twistF); } else { if (LittleFS.exists(twistF)) StarOk = LittleFS.remove(twistF); } 
+                        if (StarOk) status(twistStatus[2]); break; }
+        if (knum==5)  { if (k4=='s') { saveTwist(); status(twistStatus[10]); }
+                        if (k4=='r') { readTwist(); status(twistStatus[11]); } StarOk = true; break; }                                        
         if (knum>10) { for (n=4; n<knum; n++) twistRLP[n] = KeyBrdByte[n+4]; twistRLP[n] =0x00; if (LayerAxD) f = SD.open(twistF, "w"); else f = LittleFS.open(twistF, "w");
-                       if (f) { f.write(twistRLP, n); f.close(); status("Twist File Saved"); SaveTwist = StarOk = true; } break; } }   
+                       if (f) { f.write(twistRLP, n); f.close(); status(twistStatus[3]); SaveTwist = StarOk = true; } break; } } 
         case 91: ///////////////////// KeyBrdByte[1]=='t'&&KeyBrdByte[2]=='c' *tc* set Twist options, colours and connect *tc*RRGGBBCrCgCb RGB colours Cx Connect -128 to +127
       { const byte* p = KeyBrdByte + 4; byte twistOption = 0; if (knum>16) break;   // *tc* version *tc*d,D dimed value *tc*X = rR gG bB yY wW pP 0-9
-        if (knum==4) { m = twist.getVersion(); Serial.print(m & 0xFF); Serial.print("."); Serial.println(m >> 8); StarOk = true; break; }
-        if (knum==5) { if (k4=='d' || k4=='D') { twistDim = 3 + 2*(k4=='D'); status("Twist Dimmed value updated"); StarOk = true; break; }
-                       if (k4=='l' || k4=='L') { twistLimit = 0 + 24*(k4=='L'); twist.setLimit(twistLimit); status("Twist Limit updated"); StarOk = true; break; }
-                       if (b>9) for (n=0; n<3; n++) { twistColour[n+3] = twistColour[n] = 0; twistOption = 2; } 
+        if (knum==4) { m = twist.getVersion(); SerPr2; Serial.print(twistStatus[8]); Serial.print(m & 0xFF); Serial.print("."); Serial.println(m >> 8); StarOk = true; break; }
+        if (knum==5) { if (k4=='d' || k4=='D') { twistDim = 3 + 2*(k4=='D'); status(twistStatus[5]); SaveTwist = StarOk = true; break; }
+                       if (k4=='l' || k4=='L') { twistLimit = 0 + 24*(k4=='L'); twist.setLimit(twistLimit); status(twistStatus[8]); SaveTwist = StarOk = true; break; }
+                       if (b>9) for (n=0; n<3; n++) { twistColour[n+3] = twistColour[n] = 0; twistOption = 2; } // Set to 0 for following config r - c, 0-9
                        if (b<10) { twistRconnect = twistGconnect = twistBconnect = 0; twistOption = 1; }
                        if (k4=='r' || k4=='R') twistColour[0] = (k4=='R') ? twistHi : twistLo; 
                        if (k4=='g' || k4=='G') twistColour[1] = (k4=='G') ? twistHi : twistLo; 
@@ -4252,13 +4274,13 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                        if (k4=='7') { twistBconnect = -1*(twistRconnect = -8); twistGconnect = 0; }
                        if (k4=='8') { twistGconnect = -1*(twistRconnect = -8); twistBconnect = 0; }
                        if (k4=='9') { twistBconnect = -1*(twistGconnect = -8); twistRconnect = 0; }                       
-                       UpdateTwist(twistOption); status("Twist Config updated"); SaveTwist = StarOk = true; break; }        
+                       UpdateTwist(twistOption); twistStatus[4][21] = k4; status(twistStatus[9]); SaveTwist = StarOk = true; break; }        
         if (knum >= 10) { for (n=0; n<3; n++) { twistColour[n] = hex2byte(p); twistColour[n+3] = hex2byte(p)/twistDim; p += 2; } }
         if (knum == 16) { twistRconnect = hex2int8(p); p += 2; twistGconnect = hex2int8(p); p += 2; twistBconnect = hex2int8(p); }
-        twistOption = 3; status("Twist Colours updated"); UpdateTwist(twistOption); SaveTwist = StarOk = true; break; }  
+        twistOption = 3; twistStatus[4][19] = k4; status(twistStatus[7]); UpdateTwist(twistOption); SaveTwist = StarOk = true; break; }  
       } return StarOk;                
 }
-
+                       
 int8_t hex2int8(const byte* p) { return (int8_t)hex2byte(p); }
 byte hex2byte(const byte* p)
 {
@@ -4310,8 +4332,21 @@ void DoTwistMacro()
                      keycode[0] = CtrL; keycode[1] = Action; keycode[2] = 0x00; 
                      usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
-                     break;                                 
-           case 'X': 
+                     break;  
+           case 'B': if (pressTwist) twistMacro = (twistMacro == 'b') ? 'B' : 'b';                 // b Brush size B Brush hardness
+                     if (twistVal>0) Action = 0x30; if (twistVal<0) Action = 0x2F;                 // Shift + [ ] brush hardness
+                     keycode[0] = ShfL; keycode[1] = Action; keycode[2] = 0x00; 
+                     usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50); break;
+           case 'b': if (pressTwist) twistMacro = (twistMacro == 'b') ? 'B' : 'b';                 // b Brush size B Brush hardness
+                     if (twistVal>0) Action = ']'; if (twistVal<0) Action = '[';                   // [ ] brush size
+                     usb_hid.keyboardPress(HIDKbrd, Action);             delay(dt50); 
+                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
+                     break;                                                 
+           case 'X': if (twistVal>0) Action = '*'; else Action = '/'; 
+                     usb_hid.keyboardPress(HIDKbrd, Action);             delay(dt50);
+                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50); 
+                     break;           
            case 'x': if (twistVal>0) Action = '-'; else Action = '=';  
                      usb_hid.keyboardPress(HIDKbrd, Action);             delay(dt50);
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50); 
@@ -4345,24 +4380,27 @@ void DoTwistFile()
   int fSize, i, m, n = 0;
   File f1;
 
-  twist.setColor(twistcurrColour[0], twistcurrColour[1], twistcurrColour[2]);
+  twist.setColor(twistcurrColour[0], twistcurrColour[1], twistcurrColour[2]);  
   if (twistFDone) goto DoneFiles;      // Must include function to check if file "twist" exist in AppDir if yes refresh 3 twist macros
   
   if (LayerAxD) if (SD.exists(twistF))       f1 = SD.open(twistF, "r"); 
            else if (LittleFS.exists(twistF)) f1 = LittleFS.open(twistF, "r");    // if (!f1) return;
-  fSize = f1.size(); f1.readBytes(twistRLP, fSize); f1.close(); 
-
+  fSize = f1.size(); f1.readBytes(twistRLP, fSize); f1.close();   
   n = 0; k = 0; while (n < fSize && (k = twistRLP[n]) != 0x3D) { twistR[n] = k; n++; }   twistR[n] = 0x00; n++;
   i = 0; k = 0; while (n < fSize && (k = twistRLP[n]) != 0x3D) { twistL[i++] = k; n++; } twistL[i] = 0x00; n++;
-  i = 0; while (n < fSize) { twistP[i++] = twistRLP[n++]; } twistP[i] = 0x00; 
-  if (fSize>7) twistFDone = true;  // Reset if content in file twist changes default is twist1=twist2=twist3
-  // SerPr2; Serial.print(twistR); SerPr1; Serial.print(twistL); SerPr1; Serial.println(twistP);
+  i = 0; while (n < fSize) { twistP[i++] = twistRLP[n++]; } twistP[i] = 0x00;   
+  if (fSize>7) twistFDone = true;  // Reset if content in file twist changes default is twist1=twist2=twist3  
 
-  DoneFiles:  // Assumes twist use the same three filenames in each appfolder such as twist1 twist2 twist3
-  n = 0;      // If different filenames for the 3 encoder actions are used must reset twistFDone=false when AppDir changes 
-  if (pressTwist) while (twistR[n]!=0x00) { MSTAName[n] = twistP[n]; n++; } MacroKeys(0, 3); return;
-  if (twistVal>0) while (twistL[n]!=0x00) { MSTAName[n] = twistR[n]; n++; } MacroKeys(0, 3); return;
-  if (twistVal<0) while (twistP[n]!=0x00) { MSTAName[n] = twistL[n]; n++; } MacroKeys(0, 3);   
+  DoneFiles:  // Assumes twist use the same three filenames in each appfolder such as twist1 twist2 twist3   
+  // This is an option where twist1 twist2 twist3 has actions to be executed
+  if (pressTwist) { strcpy(MSTAName, twistP); MacroKeys(0, 3); return; }
+  if (twistVal>0) { strcpy(MSTAName, twistR); MacroKeys(0, 3); return; }
+  if (twistVal<0) { strcpy(MSTAName, twistL); MacroKeys(0, 3); return; }
+  // n = 0;
+  // This is an option where twist1 twist2 twist3 has filenames of the action to be executed - i.e. twice indirected - not yet implemented
+  //if (pressTwist) { while (twistP[n]!=0x00) { MacroBuff[n] = twistP[n]; n++; } MacroBuffSize = n; MacroKeys(0, 4); return; } // MacroKeys(0, 4) with Option=4 skips Options 0,1,2,3
+  //if (twistVal>0) { while (twistR[n]!=0x00) { MacroBuff[n] = twistR[n]; n++; } MacroBuffSize = n; MacroKeys(0, 4); return; }
+  //if (twistVal<0) { while (twistL[n]!=0x00) { MacroBuff[n] = twistL[n]; n++; } MacroBuffSize = n; MacroKeys(0, 4); } 
 }
 
 //////////////////////////////
@@ -4372,15 +4410,18 @@ void UpdateTwist(byte Option)
   { twist.setLimit(twistLimit);                                        // Twist -24 to +24 not availale if version < 1.2 else it is -x 0 + x
     twist.clearInterrupts(); 
     twist.setCount(0);                                                 // Reset to 0 
-    if (Option>1 )
+    
+    if (Option>1 )                                                     // Option=4 SetUp - Option=2 Set all colours=0 - Option=3 Colour + Connect changes
     { twist.setColor(twistColour[0], twistColour[1], twistColour[2]);  // Set Red Green Blue LED brightnesses values from InitCfg(1)
-      // twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); // No previous colour as yet
-      twistcurrColour[0] = twistColour[0]; twistcurrColour[1] = twistColour[1]; twistcurrColour[2] = twistColour[2]; 
+      twistSavedColour[0] = twistcurrColour[0] = twistColour[0]; 
+      twistSavedColour[1] = twistcurrColour[1] = twistColour[1];
+      twistSavedColour[2] = twistcurrColour[2] = twistColour[2];      
     }
-    if (Option<2 || Option==4)
-    { twist.connectRed(twistRconnect);                                 // Red LED will go down 10 in brightness with each encoder tick -10
+    
+    if (Option<2 || Option==3)                                         // Option=4 Setup - Option=1 Set all Connect=0 - Option=3 Colour + Connect changes
+    { twist.connectRed(twistRconnect);                                 // Red LED will go down or up with each encoder tick -R +R
       twist.connectGreen(twistGconnect);                               // Green LED disconnected if 0
-      twist.connectBlue(twistBconnect);                                // Blue LED will go up 10 in brightness with each encoder tick  +10
+      twist.connectBlue(twistBconnect);                                // Blue LED will go down or up with each encoder tick -B +B
     }
   }  
 }
@@ -4388,11 +4429,17 @@ void UpdateTwist(byte Option)
 ///////////////////////////////
 // Twist read and save 
 ///////////////////////////////
+void defaultTwist(int i)
+{ for (int n=0; n<5; n++) twistColour[n] = twistConfig[i][n];
+  twistRconnect = twistConfig[i][6]; twistGconnect = twistConfig[i][7]; twistBconnect = twistConfig[i][8];
+  twistDim = twistConfig[i][9]; twistLimit = twistConfig[i][10]; twistcurrOption = twistConfig[i][11]; 
+  twistNum = twistConfig[i][12]; twistFDone = twistConfig[i][13]; twistMacro = twistOption[twistcurrOption]; 
+}
 void saveTwist() 
 {
-  File file = LittleFS.open("twistCfg", "w");
-  if (!file) return;
-
+  File file = LittleFS.open(twistC, "w");
+  if (!file) return;  
+  
   // All pointers must be cast to (uint8_t *)
   file.write((uint8_t *)twistColour, 6);
   file.write((uint8_t *)&twistRconnect, sizeof(int16_t));
@@ -4401,14 +4448,17 @@ void saveTwist()
   file.write((uint8_t *)&twistDim, 1); 
   file.write((uint8_t *)&twistLimit, 1); 
   file.write((uint8_t *)&twistcurrOption, 1); 
+  file.write((uint8_t *)&twistNum, 1); 
+  file.write((uint8_t *)&twistFDone, 1);
   file.write((uint8_t *)twistOption, sizeof(twistOption));
   file.close();
 }
-
+ 
 void readTwist() 
 { 
-  File file = LittleFS.open("twistCfg", "r");
-  if (!file) return;
+  File file = LittleFS.open(twistC, "r");
+  if (!file) { defaultTwist(0); return; }
+  if (file.size()!=34) { file.close(); defaultTwist(twistNum); saveTwist(); return; }
   
   if (file.available()) 
   { 
@@ -4419,7 +4469,9 @@ void readTwist()
     file.read((uint8_t *)&twistBconnect, sizeof(int16_t));
     file.read((uint8_t *)&twistDim, 1); 
     file.read((uint8_t *)&twistLimit, 1);     
-    file.read((uint8_t *)&twistcurrOption, 1);    
+    file.read((uint8_t *)&twistcurrOption, 1);
+    file.read((uint8_t *)&twistNum, 1); 
+    file.read((uint8_t *)&twistFDone, 1);    
     file.read((uint8_t *)twistOption, sizeof(twistOption));    
     twistMacro = twistOption[twistcurrOption];
   }
@@ -5558,7 +5610,14 @@ void showKeyData(byte Option)
    SerPr2;
    Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
    SerPr2;
-   Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); }
+   Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); } SerPr2;
+
+   SerPr2;
+   Serial.print("Twist RGB rgb Colour Set: "); for (int i = 0; i < 6; i++) { Serial.print(twistColour[i], HEX); SerPr1; } SerPr2;
+   Serial.print("Twist Connect RGB Set: "); Serial.print(twistRconnect); SerPr1; Serial.print(twistGconnect); SerPr1; Serial.print(twistBconnect); SerPr2;
+   Serial.print("Twist Dim Value (/3 /5): "); Serial.print(twistDim); SerPr2; 
+   Serial.print("Twist Limit (0-24): "); Serial.print(twistLimit); SerPr2; 
+   Serial.print("Twist Options: "); Serial.print(twistcurrOption); SerPr1; if (twistMacro!=0x00) Serial.print(twistMacro); else Serial.print("0x00"); SerPr1; Serial.print(twistOption); SerPr2;
         
    SerPr2;
    Serial.print("Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
@@ -5615,4 +5674,4 @@ void showKeyData(byte Option)
          SerPr2;  }          
  }
 
-/************* EOF line 5571 *****************/
+/************* EOF line 5677 *****************/

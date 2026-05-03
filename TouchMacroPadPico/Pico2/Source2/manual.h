@@ -967,10 +967,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (Z) Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
     *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
     *tc* = version *tc*d,D = dimmed value *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
+    *tc* = version *tc*l,L = limit value l=0 no limits (version 1.0) L=24 steps limit such as -12 0 +12
     *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
-    *tm*char = vuzsxdwVUZSXDW code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
-    Default volume vV - *tm*char = vV uU zZ sS xX dD wW code definitions vuzsxdVUZSXD coded macro options volume =/-/mute undo/redo 
-    zoom +/-/reset scroll +/- lines-= backspace/delete Wallaper-Next
+    *tf*s,r = Save or Read twist config file twistCfg 
+    *tm*char = vuzsxdwbVUZSXDWB code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
+    Default volume vV - *tm*char = vV uU zZ sS xX dD wW etc in vuzsxdbVUZSXDB coded macro options volume =/-/mute
+    undo/redo zoom +/-/reset scroll +/- X /* x -= backspace/delete Wallaper-Next Photoshop Brush Size = b Hardness = B
+    *tm*0 same as *tm* switch to file-based macros for Twist not the coded macros as in *tm*char = vuzsxdwbVUZSXDWB
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
