@@ -29,7 +29,7 @@ NB: Use 2MB Flash option with 1MB Sketch 1 MB FS
                                                           #define SPI_READ_FREQUENCY 15000000  // 20 MHz also ok
 
 New changes:
-1. ILI9488 and GT911 LCD and Touch display - press the Pad buttons pn the inside of their border
+1. ILI9488 and GT911 LCD and Touch display - press the Pad buttons on the inside of their border
 
 
 
