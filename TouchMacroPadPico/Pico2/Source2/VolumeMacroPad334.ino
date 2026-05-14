@@ -56,9 +56,11 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TWIST twist;                                      // Create instance of this object
 bool Twist1 = false;                              // True if Encoder plugged into i2c 1
+#define TWIST_SDA 26                              // 4 5 SDA SCL Port 0 Wire
+#define TWIST_SCL 27                              // 26 27 SDA SCL Port 1 Wire1
 char twistF[] = "twist";                          // Filename containing the 3 twist macro path/filenames Size=21 for default twist1,2,3 used in readTwist() 
 char twistC[] = "twistCfg";                       // Filename containing the twist configuration values size = 34 bytes
-int16_t twistConfig[3][15] = { 240,15,162,80,5,54,7,0,-12,3,24,0,  140,0,200,0,0,30,-9,0,9,5,24,0,  101,101,101,0,30,0,7,0,-12,3,24,0 }; // 3 choice default values 
+int16_t twistConfig[3][15] = { 240,15,162,80,5,54,10,0,-12,3,24,0,  140,0,200,0,0,30,-9,0,9,5,24,0,  101,101,101,0,30,0,7,0,-12,3,24,0 }; // 3 choice default values 
 int twistNum = 0;                                 // 0 1 2 set of twistConfig[3] 
 bool twistFDone = true;                           // If false use twist1 twist2 twist3 if false read new names from file twist
 int time2Twist = 20;                              // Check rotary encoder status every 20mS - helps to debounce press-switch
@@ -74,12 +76,12 @@ char twistRLP[240]  = "";                         // *t+,-,p* all
 char twistR[80]  = "";                            // *t+*Name turn right
 char twistL[80]  = "";                            // *t-*Name turn left
 char twistP[80]  = "";                            // *tp*Name press
-int16_t twistRconnect = 7;                        // -9 R-connect -255 to +255
+int16_t twistRconnect = 10;                       // -9 R-connect -255 to +255
 int16_t twistGconnect = 0;                        // 0 G-connect -255 to +255
 int16_t twistBconnect = -12;                      // 9 B-connect -255 to +255
 uint8_t twistcurrColour[] = { 0, 0, 0 };          // current Red Green Blue twist colour
 uint8_t twistSavedColour[3] = { 0, 0, 0} ;        // 
-uint8_t twistColour[6] = { 240,15,162,40,5,26 };  // = { 140,0,200,0,0,30 }; RGB-On RGB-dim - if dim-to-green change the connect to green as well
+uint8_t twistColour[6] = { 240,15,162,30,5,26 };  // = { 140,0,200,0,0,30 }; RGB-On RGB-dim - if dim-to-green change the connect to green as well
 bool twistChanged = false;                        // Something happened to twist
 bool SaveTwist = false;                           // Save to Twist data to Flash if true
 byte twistDim = 3;                                // 33% or 20% dimfactor
@@ -87,8 +89,7 @@ byte twistLimit = 0;                              // 0 or 24 if version 1.2
 #define twistLo 100                               // Colour RGB levels 100 or 200 
 #define twistHi 200                               //
 char twistStatus[12][28] = {"Twist Files Macros",   "Twist Coded Macros X",    "Twist File Macro Removed", "Twist File Macro Saved",   "Twist default X saved", "Twist Dimmed updated", 
-                            "Twist Limit updated",  "Twist Colours updated X", "Twist version: ",          "Twist Config updated X",   "Twist Config saved",    "Twist Config read" };
-   
+                            "Twist Limit updated",  "Twist Colours updated X", "Twist version: ",          "Twist Config updated X",   "Twist Config saved",    "Twist Config read" };   
  
 volatile bool Change = false;          // Indicators changed at any time
 volatile bool BusyCNS = false;         // Lock changes when in CNS callback
@@ -146,18 +147,18 @@ uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
 // 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
 // 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
-// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0            nKeysL134  1
+// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0            nKeysL134  1         KeyRepeat2 20 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Currently last used entry nKeysL134 = Config1[86] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+// Currently last used entry KeyRepeat2 = Config1[87] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
 // Note only nDir only saved if 20 bytes max in size excluding last 0x00 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
 byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,   0, 0, 0  };
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  20, 0, 0  };
 cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,   0, 0, 0  };                                    
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  20, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -231,6 +232,7 @@ byte MediaConfig[1] = { 0 };           // Values are 0 - 4 for Media+Volume+Mute
 byte KeyHeld = 0;                      // Key held in number 0 - 17
 bool KeyHeldEnable = true;             // Enable/Disable Volume Mute Processing if [Vo][L1-L4 key is pressed long
 byte KeyRepeat = 6;                    // Duration before Key Repeat is active in KeyRepeatx100 milliseconds
+int  KeyRepeat2 = 650;                 // KeyRepeat2 = 650 = threshold see touch.h
 byte KeyHeldLayout = 0;                // Save Layout temporarily while checking KeyHeld
 bool SaveVar = false;                  // Save if any [Key] key changes
 byte VarNum = 0 ;                      // [Key] 0 = not pressed 1,2,3-5,6-8 1[Del]2[Ret] 3-5 Mkeys 6-8 ST keys changes with bottom Pad (o)
@@ -476,28 +478,28 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 133; // StarCodes Count 16+16+16+16+16+16+16+16+4 StarNum = 0-132
+const static int StarCodesMax = 134; // StarCodes Count 16+16+16+16+16+16+16+16+6 StarNum = 0-133
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", 
   "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo",   
-  "fs", "ft", "im", "is", "it", "ix", "kb", "ke", "kr", "ks", "ld", "lf", "lm", "ls", "lt", "lx", 
-  "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", "nf", 
-  "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", "r0", "r1", "r2", 
-  "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", "st", "sx", "ta", 
-  "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", "wa", "x0", 
-  "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", "0t", 
-  "0x", "1s", "1e", "2s", "2e"  };
+  "fs", "ft", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", "ls", "lt", 
+  "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", 
+  "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", "r0", "r1", 
+  "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", "st", "sx", 
+  "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", "wa", 
+  "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", 
+  "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   
   64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   
-  11,   11,   44,   44,   44,   44,   14,   39,   38,   15,   16,   42,   55,   55,   55,   58,   
-  67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   76,   73,   
-  74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   37,   26,   40,   
-  41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   31,   
-  4,    91,   90,   89,   31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   80,   35,   
-  35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,   54,   
-  52,   82,   83,   84,   85    };
+  11,   11,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   55,   55,   
+  58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   76,   
+  73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   37,   26,   
+  40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   
+  31,   4,    91,   90,   89,   31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   80,   
+  35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,  
+  54,   52,   82,   83,   84,   85    };
     
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -806,6 +808,8 @@ void setup()
   pinMode(LCDBackLight, OUTPUT);    // Used for Backlight HIGH is ON
   //digitalWrite(LCDBackLight, HIGH); // Switch on here to prevent blank screen when Coordinates missing   
 
+  Wire1.setSDA(TWIST_SDA);                                 // TWIST GPIO 4 5 26 27 SDA SCL
+  Wire1.setSCL(TWIST_SCL);                                 //
   Wire1.begin(); Wire1.setClock(400000);
 
   LittleFS.begin(); // LittleFs automatically format the filesystem if one is not detected
@@ -923,12 +927,12 @@ void loop()
   if (nKeyPC) { if (nKeyPCDelay==10) DoAltEsc(); else delay(KeyOnValDelay[nKeyPCDelay]); byte n = nKeyPCArr[4]*10 + nKeyPCArr[5]; 
                 Numkeys123 = nKeyPCArr[1]*10 + nKeyPCArr[2]; NumKeysChange(); DoNKeys(n); nKeyPC = false; }            
     
-  pressed = tft.getTouch(&t_x, &t_y, 650);                                     // True if valid key pressed 650 = threshold see touch.h
+  pressed = tft.getTouch(&t_x, &t_y, KeyRepeat2 );                             // True if valid key pressed KeyRepeat2 = 650 = threshold see touch.h
+  for (uint8_t b = 0; b < NumButtons; b++) { if (pressed && key[b].contains(t_x, t_y)) key[b].press(true); else key[b].press(false); }
+    
   if (TinyUSBDevice.suspended() && (pressed)) {TinyUSBDevice.remoteWakeup(); } // Wake up host if in suspend mode + REMOTE_WAKEUP feature enabled by host
-  for (uint8_t b = 0; b < NumButtons; b++) 
-      { if (pressed && key[b].contains(t_x, t_y)) key[b].press(true); else key[b].press(false); }
      
-  RepNow = millis(); KeyHeld = 0; KeyHeldLayout = Layout;       // get the current time and save KeyHeld 
+  RepNow = millis(); KeyHeld = 0; KeyHeldLayout = Layout;                      // get the current time and save KeyHeld 
   for ( uint8_t b = 0; b < NumButtons; b++) 
       { if (key[b].justReleased()) {key[b].drawButton(false); RepLast = RepNow; }                      // draw normal - code at release time
         if (key[b].justPressed())  {key[b].drawButton(true); { buttonpress(b); RepLast = millis(); }}  // draw invert - code at press time  
@@ -3145,15 +3149,16 @@ void ReadConfig1()
   DelayTimeVal = Config1[75]; 
   dt25=DelayTimeArr[DelayTimeVal][0];  dt50=DelayTimeArr[DelayTimeVal][1]; 
   dt100=DelayTimeArr[DelayTimeVal][2]; dt200=DelayTimeArr[DelayTimeVal][3]; dt500=DelayTimeArr[DelayTimeVal][4];
-  Vol1 = Config1[76]; Vol3 = Config1[77]; Vol4 = Config1[78];  // If = 1 then enable Volume Up/Dwn in Layouts 1, 3, 4 
-  ToneOn =         Config1[79];                                // Bass/Treble controls
-  MathSet =        Config1[80];                                // 0-9 0=Default  
-  MouseZ =         Config1[81];                                // 0-3 Screen 0,0 position corner LB LT RT RB  
-  MediaConfig[0] = Config1[82];                                // 0-6 Media keys Volume Mute Tonecontrol combinations
-  StartMarker =    Config1[83];                                // Serial Comms start was < now 0x02       
-  EndMarker  =     Config1[84];                                // Serial Comms end was > now 0x03  
-  MacroUL =        Config1[85];                                // Upper or lower case filenames for macros on Flash only
-  nKeysL134 =      Config1[86];                                // nChar replaces L in L1, L3, L4  
+  Vol1 = Config1[76]; Vol3 = Config1[77]; Vol4 = Config1[78];          // If = 1 then enable Volume Up/Dwn in Layouts 1, 3, 4 
+  ToneOn =         Config1[79];                                        // Bass/Treble controls
+  MathSet =        Config1[80];                                        // 0-9 0=Default  
+  MouseZ =         Config1[81];                                        // 0-3 Screen 0,0 position corner LB LT RT RB  
+  MediaConfig[0] = Config1[82];                                        // 0-6 Media keys Volume Mute Tonecontrol combinations
+  StartMarker =    Config1[83];                                        // Serial Comms start was < now 0x02       
+  EndMarker  =     Config1[84];                                        // Serial Comms end was > now 0x03  
+  MacroUL =        Config1[85];                                        // Upper or lower case filenames for macros on Flash only
+  nKeysL134 =      Config1[86];                                        // nChar replaces L in L1, L3, L4  
+  KeyRepeat2 =     Config1[87]*10; if (KeyRepeat2==0) KeyRepeat2=650;  // Unusable Macropad if 0
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3204,7 +3209,8 @@ void WriteConfig1(bool Option)
                   Config1[83] = StartMarker;                                  // Serial Comms start was < now 0x02       
                   Config1[84] = EndMarker;                                    // Serial Comms end was > now 0x03   
                   Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only    
-                  Config1[86] = nKeysL134;                                    // nChar replaces L in L1, L3, L4                                                  
+                  Config1[86] = nKeysL134;                                    // nChar replaces L in L1, L3, L4 
+                  Config1[87] = (byte)(KeyRepeat2/10);                        // x 10 = threshold see touch.h                  
                 }
   
   if (AppState>0) return;
@@ -4024,9 +4030,15 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (b<2) { status("Add number 2-9"); break; }             // Use the [ADD]ed number to assign 2-9
          RepTimePeriod = b*100; KeyRepeat = b; KRVal[11] = k4;     // Value 2-9 => 200-900 milliseconds 
          WriteConfig1Change = true;  status((char *)KRVal); StarOk = true; break; }   
-         case 39: ////////////////////// KeyBrdByte[1]==0x6b&&KeyBrdByte[2]==0x65 *ke* Enable/Disable Volume Mute Processing 
-       { KeyHeldEnable = !KeyHeldEnable; Config1[2] = KeyHeldEnable; WriteConfig1(0);
+         case 92: ////////////////////// KeyBrdByte[1]==0x6b&&KeyBrdByte[2]==0x68 *kh* Enable/Disable Volume Mute Processing 
+       { KeyHeldEnable = !KeyHeldEnable; Config1[2] = KeyHeldEnable; WriteConfig1Change = true;
          if (KeyHeldEnable) status("KeyHeldEnable On"); else status("KeyHeldEnable Off"); StarOk = true; break; }  // Toggle On/Off
+         case 39: ////////////////////// KeyBrdByte[1]==0x6b&&KeyBrdByte[2]==0x65 *ke* KeyRepeat2 = 650 = threshold see touch.h
+       { //                012345678901234567
+         char KRVal2[] = {"Key Threshold     "} ; if (knum!=7) break;
+         if (c999<100) { status("Add threshold number 100-999"); break; }            // Use the [ADD]ed number to assign 10-99 mS
+         KeyRepeat2 = c999; KRVal2[14] = k4; KRVal2[15] = k5; KRVal2[16] = k6;  
+         Config1[87] = KeyRepeat2; WriteConfig1Change = true;  status((char *)KRVal2); StarOk = true; break; }          
           case 40: ///////////////////// KeyBrdByte[1]==0x72&&KeyBrdByte[2]==0x32 *r2* Reboot to UF2 Loader see also rom_reset_usb_boot (p1,p2)
        { status("Rebooting LOAD NEW FIRMWARE UF2"); delay(3000); 
          status("TO CANCEL PRESS HW RESET NOW . . ."); delay(10000); rp2040.rebootToBootloader(); break; }   

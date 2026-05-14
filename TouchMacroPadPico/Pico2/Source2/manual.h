@@ -804,7 +804,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     <*bl*1> for full bright screen. For inbetween values use *bl*nn nn=00-99. Unlike pressing the Black Key to switch off,
     these additional values are not persistant through the dimming period. 
 (v) Key Held Duration: *kr*num with num = 1-9 or 100-900 msec key press wait duration before repeat.
-(w) Key Held Enable: *ke* Enable/Disable Volume Mute Processing if [Vo][L1-L4] key is long-pressed
+    Key Treshold: Normally 650 change with *ke*nnn nnn = 100-999
+(w) Key Held Enable: *kh* Enable/Disable Volume Mute Processing if [Vo][L1-L4] key is long-pressed
 (x) *lf* Send SDCard and FlashMemory Filelist to serial port. Can list files in folders with *lf* /sdcardfolder/ or 
     *lf* /sdcardfolder/+/flashfolder/. From the PC App use the two comboboxes in the Config tab to enter the folders or 
     use / for the root. Can select the listed /folder/filename and Delete or View content from the Comms tab. 
