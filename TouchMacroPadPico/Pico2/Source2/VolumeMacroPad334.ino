@@ -88,8 +88,11 @@ byte twistDim = 3;                                // 33% or 20% dimfactor
 byte twistLimit = 0;                              // 0 or 24 if version 1.2
 #define twistLo 100                               // Colour RGB levels 100 or 200 
 #define twistHi 200                               //
-char twistStatus[12][28] = {"Twist Files Macros",   "Twist Coded Macros X",    "Twist File Macro Removed", "Twist File Macro Saved",   "Twist default X saved", "Twist Dimmed updated", 
-                            "Twist Limit updated",  "Twist Colours updated X", "Twist version: ",          "Twist Config updated X",   "Twist Config saved",    "Twist Config read" };   
+bool twistLong = false;                           // Long press to change Twist Options s -W
+long int pressStartTime = 0;                       // Measure long - press
+char twistStatus[15][28] = {"Twist Files Macros",    "Twist Coded Macros X",  "Twist File Macro Removed",  "Twist File Macro Saved",   "Twist default X saved", 
+                            "Twist Dimmed updated",  "Twist Limit updated",   "Twist Colours updated X",   "Twist version: ",          "Twist Config updated X",  
+                            "Twist Config saved",    "Twist Config read" ,    "Twist Options d-Z Ready",   "Twist Option Changed",     "Twist Option:  "          };   
  
 volatile bool Change = false;          // Indicators changed at any time
 volatile bool BusyCNS = false;         // Lock changes when in CNS callback
@@ -155,10 +158,10 @@ uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
 byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  20, 0, 0  };
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 0, 0  };
 cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  20, 0, 0  };                                    
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 0, 0  };                                    
 bool WriteConfig1Change = false; // Do save if true
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -906,18 +909,23 @@ void loop()
           BackLightOn = false;   }                                        // Until keypress 
 
   if (Twist1) if ((nowTwist - lastTwist) >= time2Twist )
-            { lastTwist = nowTwist; twistChanged = false;            
-              if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();
-                                     if (twistMacro!=0x00) { while (twistStep > 0) { twistVal = 1;  DoTwistMacro(); twistStep--; }
-                                                             while (twistStep < 0) { twistVal = -1; DoTwistMacro(); twistStep++; } }
-                                     else { twistVal = twistStep; DoTwistFile(); } }
-                                     
-              if (twist.isClicked()) { twistChanged = pressTwist = true; twistVal = 0; if (twistMacro==0x00) DoTwistFile(); 
-                                                                                       else { twistVal = twistStep; DoTwistMacro(); } pressTwist = false; }              
-              
-              if (twistChanged && BackLightOn)  { twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); }                          
-              if (twistChanged && !BackLightOn) { DoWakeUp(); }              
-            }
+  { lastTwist = nowTwist; twistChanged = false; 
+    if (twist.isPressed()) { if (pressStartTime == 0) pressStartTime = millis(); 
+                                                      if (!twistLong && (millis() - pressStartTime > 800)) { twistLong = true; pressStartTime = 0; status(twistStatus[12]); } } 
+    else { if (pressStartTime != 0) { if (millis() - pressStartTime < 800) { twist.isClicked(); 
+                                                                             if (twistLong) { twistLong = false; twistMacro = twistOption[twistcurrOption]; status(twistStatus[13]);  } 
+                                                                             else { twistChanged = pressTwist = true; twistVal = 0;         
+                                                                                    if (twistMacro == 0x00) DoTwistFile(); else { twistVal = twistStep; DoTwistMacro(); } 
+                                                                             pressTwist = false; }  }  pressStartTime = 0; } }     
+  
+    if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();    
+                           if (twistLong) { int newOption = (int)twistcurrOption + twistStep; 
+                                            if (newOption < 0) newOption = 16 + (newOption % 16); twistcurrOption = newOption % 16;      
+                                                               twistStatus[14][14] = twistOption[twistcurrOption]; status(twistStatus[14]); }
+                           else { if (twistMacro != 0x00) { while (twistStep > 0)  { twistVal = 1;  DoTwistMacro(); twistStep--; }
+                                                            while (twistStep < 0)  { twistVal = -1; DoTwistMacro(); twistStep++; } }
+                                  else { twistVal = twistStep; DoTwistFile(); } } } 
+  } // if (Twist1)                                    
            
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  } 
 
@@ -5686,4 +5694,4 @@ void showKeyData(byte Option)
          SerPr2;  }          
  }
 
-/************* EOF line 5677 *****************/
+/************* EOF line 5697 *****************/
