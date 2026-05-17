@@ -796,7 +796,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     <*bl*1> for full bright screen. For inbetween values use *bl*nn nn=00-99. Unlike pressing the Black Key to switch off,
     these additional values are not persistant through the dimming period.    
 (v) Key Held Duration: *kr*num with num = 1-9 or 100-900 msec key press wait duration before repeat.
-(w) Key Held Enable: *ke* Enable/Disable Volume Mute Processing if [Vo][L1-L4] key is long-pressed
+    Key Treshold: Normally 650 change with *ke*nnn nnn = 100-999
+(w) Key Held Enable: *kh* Enable/Disable Volume Mute Processing if [Vo][L1-L4] key is long-pressed
 (x) *lf* Send SDCard and FlashMemory Filelist to serial port. Can list files in folders with *lf* /sdcardfolder/ or 
     *lf* /sdcardfolder/+/flashfolder/. From the PC App use the two comboboxes in the Config tab to enter the folders or use 
     / for the root. Can select the listed /folder/filename and Delete or View content from the Comms tab. 
@@ -941,10 +942,18 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
     <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.
 (Z) Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
+    Long-press Twist encoder until "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
+    Single-press Twist to exit the encoder options mode. Note: Do not release immediately when "Ready" shows, keep 
+    pressing for another tenth of a second else the "Chenged" message will show before any changes are made.
+    *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
+    *tc* = version *tc*d,D = dimmed value *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
+    *tc* = version *tc*l,L = limit value l=0 no limits (version 1.0) L=24 steps limit such as -12 0 +12
     *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
-    *tm*char = vuzsxdwVUZSXDW code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
-    Default volume vV - *tm*char = vV uU zZ sS xX dD wW code definitions vuzsxdVUZSXD coded macro options volume =/-/mute undo/redo 
-    zoom +/-/reset scroll +/- lines-= backspace/delete Wallaper-Next
+    *tf*s,r = Save or Read twist config file twistCfg 
+    *tm*char = vuzsxdwbVUZSXDWB code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
+    Default volume vV - *tm*char = vV uU zZ sS xX dD wW etc in vuzsxdbVUZSXDB coded macro options volume =/-/mute
+    undo/redo zoom +/-/reset scroll +/- X /* x -= backspace/delete Wallaper-Next Photoshop Brush Size = b Hardness = B
+    *tm*0 same as *tm* switch to file-based macros for Twist not the coded macros as in *tm*char = vuzsxdwbVUZSXDWB
     
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
