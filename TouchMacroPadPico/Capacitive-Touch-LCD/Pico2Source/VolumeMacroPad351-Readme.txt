@@ -15,10 +15,10 @@ Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Ard
 Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\SdFat 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
 Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\Wire 
-Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 Using library GT911_Lite at version 1.0.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\GT911_Lite 
+Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad351.ino.elf"
-Sketch uses 275704 bytes (13%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 275752 bytes (13%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 65744 bytes (12%) of dynamic memory, leaving 458544 bytes for local variables. Maximum is 524288 bytes.
 ----------------------------------------------------------------------------------------------------------------
 
@@ -39,8 +39,7 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
 
 New changes:
 1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
-   Single-press Twist to exit the encoder options mode. Note: Do not release immediately when "Ready" shows, keep 
-   pressing for another tenth of a second else the "Chenged" message will show before any changes are made
+   Long-press Twist again to exit the encoder options mode. 
 2. ILI9488 and GT911 LCD and Touch display 
 If calibration does not run on first start force by *ro*  
 Connections: GT911: Use Pico gpio 4 and 5 for i2c (Wire). Use the connections in User_Setup.h for the rest (same as Waveshare LCDs)
