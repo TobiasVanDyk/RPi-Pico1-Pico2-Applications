@@ -89,10 +89,11 @@ byte twistLimit = 0;                              // 0 or 24 if version 1.2
 #define twistLo 100                               // Colour RGB levels 100 or 200 
 #define twistHi 200                               //
 bool twistLong = false;                           // Long press to change Twist Options s -W
-long int pressStartTime = 0;                       // Measure long - press
+long int pressStartTime = 0;                      // Measure long - press
+bool twistPressed = false;                        // Twist Pressed state
 char twistStatus[15][28] = {"Twist Files Macros",    "Twist Coded Macros X",  "Twist File Macro Removed",  "Twist File Macro Saved",   "Twist default X saved", 
                             "Twist Dimmed updated",  "Twist Limit updated",   "Twist Colours updated X",   "Twist version: ",          "Twist Config updated X",  
-                            "Twist Config saved",    "Twist Config read" ,    "Twist Options d-Z Ready",   "Twist Option Changed",     "Twist Option:  "          };   
+                            "Twist Config saved",    "Twist Config read" ,    "Twist Options d-Z Ready",   "Twist Options Off",        "Twist Option:  "          };   
  
 volatile bool Change = false;          // Indicators changed at any time
 volatile bool BusyCNS = false;         // Lock changes when in CNS callback
@@ -908,24 +909,29 @@ void loop()
           OptNum = VarNum = 0;                                            // [Key] and [Opt] Keys reset to unpressed state
           BackLightOn = false;   }                                        // Until keypress 
 
-  if (Twist1) if ((nowTwist - lastTwist) >= time2Twist )
-  { lastTwist = nowTwist; twistChanged = false; 
-    if (twist.isPressed()) { if (pressStartTime == 0) pressStartTime = millis(); 
-                                                      if (!twistLong && (millis() - pressStartTime > 800)) { twistLong = true; pressStartTime = 0; status(twistStatus[12]); } } 
-    else { if (pressStartTime != 0) { if (millis() - pressStartTime < 800) { twist.isClicked(); 
-                                                                             if (twistLong) { twistLong = false; twistMacro = twistOption[twistcurrOption]; status(twistStatus[13]);  } 
-                                                                             else { twistChanged = pressTwist = true; twistVal = 0;         
-                                                                                    if (twistMacro == 0x00) DoTwistFile(); else { twistVal = twistStep; DoTwistMacro(); } 
-                                                                             pressTwist = false; }  }  pressStartTime = 0; } }     
+  if ( Twist1 ) 
+     { bool currentState = twist.isPressed();
+       if (currentState && !twistPressed) {  twistPressed = true; pressStartTime = millis(); }
+       else if (!currentState && twistPressed) { unsigned long pressDuration = millis() - pressStartTime;
+                                                 if (pressDuration >= 1000) { twistLong = !twistLong; if (twistLong) status(twistStatus[12]); else status(twistStatus[13]); }                                                          
+                                                 twistPressed = false; }
+                                                         
+       if (twistLong && twist.isMoved()) { twist.getCount(); twistStep = twist.getDiff();
+                                           if (twistLong) { twistcurrOption = (twistcurrOption + twistStep) % 16; if (twistcurrOption < 0) { twistcurrOption += 16; }                                                                   
+                                                            twistMacro = twistStatus[14][14] = twistOption[twistcurrOption]; status(twistStatus[14]); twist.isClicked(); } } }
   
-    if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();    
-                           if (twistLong) { int newOption = (int)twistcurrOption + twistStep; 
-                                            if (newOption < 0) newOption = 16 + (newOption % 16); twistcurrOption = newOption % 16;      
-                                                               twistStatus[14][14] = twistOption[twistcurrOption]; status(twistStatus[14]); }
-                           else { if (twistMacro != 0x00) { while (twistStep > 0)  { twistVal = 1;  DoTwistMacro(); twistStep--; }
-                                                            while (twistStep < 0)  { twistVal = -1; DoTwistMacro(); twistStep++; } }
-                                  else { twistVal = twistStep; DoTwistFile(); } } } 
-  } // if (Twist1)                                    
+  if ( Twist1 && !twistLong) if ((nowTwist - lastTwist) >= time2Twist )
+     { lastTwist = nowTwist; twistChanged = false;            
+       if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();
+                              if (twistMacro!=0x00) { while (twistStep > 0) { twistVal = 1;  DoTwistMacro(); twistStep--; }
+                                                      while (twistStep < 0) { twistVal = -1; DoTwistMacro(); twistStep++; } }
+                              else { twistVal = twistStep; DoTwistFile(); } }
+                                     
+       if (twist.isClicked()) { twistChanged = pressTwist = true; twistVal = 0; if (twistMacro==0x00) DoTwistFile(); else { twistVal = twistStep; DoTwistMacro(); } pressTwist = false; }              
+              
+       if (twistChanged && BackLightOn)  { twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); }                          
+       if (twistChanged && !BackLightOn) { DoWakeUp(); } }          
+
            
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  } 
 
@@ -4342,11 +4348,10 @@ void DoTwistMacro()
                      usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
                      break;  
-           case 'S': if (pressTwist) { for (int n=0; n<6; n++) KeyBrdByte[n] = ScrollX[n]; KeyBrdByteNum = 6; }
+           case 'S': 
+           case 's': if (pressTwist) { for (int n=0; n<6; n++) KeyBrdByte[n] = ScrollX[n]; KeyBrdByteNum = 6; }
                      else { for (int n=0; n<5; n++) KeyBrdByte[n] = ScrollM[n]; KeyBrdByteNum = 5; if (twistVal>0) KeyBrdByte[4] = 'U'; if (twistVal<0) KeyBrdByte[4] = 'D'; }  
                      SendBytesStarCodes(); break;
-           case 's': if (pressTwist) { for (int n=0; n<6; n++) KeyBrdByte[n] = ScrollX[n]; KeyBrdByte[4] = '0'; KeyBrdByteNum = 6; SendBytesStarCodes(); break; }
-                     else { if (twistVal<0) usb_hid.mouseScroll(RID_MOUSE, MouseScrollAmount, 0); else usb_hid.mouseScroll(RID_MOUSE, -1*MouseScrollAmount, 0); } break;
            case 'Z': 
            case 'z': if (pressTwist) Action = Key0; else { if (twistVal>0) Action = KEqu; else Action = KMin; } 
                      keycode[0] = CtrL; keycode[1] = Action; keycode[2] = 0x00; 
@@ -5694,4 +5699,4 @@ void showKeyData(byte Option)
          SerPr2;  }          
  }
 
-/************* EOF line 5697 *****************/
+/************* EOF line 5702 *****************/

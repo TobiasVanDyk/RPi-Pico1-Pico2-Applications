@@ -17,8 +17,8 @@ Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino
 Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\Wire 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad334.ino.elf"
-Sketch uses 261424 bytes (12%) of program storage space. Maximum is 2088960 bytes.
-Global variables use 65572 bytes (12%) of dynamic memory, leaving 458716 bytes for local variables. Maximum is 524288 bytes.
+Sketch uses 261472 bytes (12%) of program storage space. Maximum is 2088960 bytes.
+Global variables use 65576 bytes (12%) of dynamic memory, leaving 458712 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad334.ino.uf2 
 Resetting COM3
 Converting to uf2, output size: 603648, start address: 0x2000
@@ -42,15 +42,10 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
         TFT connections is via ||->serial 74HC interface no MISO used there - Therefore Bodmer can be ignored
     (2) #define TFT_INVERSION_ON        // Waveshare has this commented out in their Setup60_RP2040_ILI9341.h
 
-    Used here:  #define SPI_FREQUENCY       30000000   // Waveshare use 7MHz - 35MHz still seems ok
-                #define SPI_READ_FREQUENCY  16000000   // 20MHz also ok
-                #define SPI_TOUCH_FREQUENCY  500000    // 500kHz used - 250kHz or 500kHz needed for Pico 2
-
 
 New changes:
 1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
-   Single-press Twist to exit the encoder options mode. Note: Do not release immediately when "Ready" shows, keep 
-   pressing for another tenth of a second else the "Chenged" message will show before any changes are made.
+   Long-press Twist again to exit the encoder options mode.
 2. Added Key Threshold *ke*nnn nnn = 100-999 Use *kh* for Key Hold enable if VolMute.
 3. Added Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders and example Files4Twist.zip
    *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
@@ -77,7 +72,6 @@ New changes:
 12. Fix when large textfile is printed then the second action is also executed additionally when using L4. This can be corrected by choosing an alternative instruction list that excludes 
     that specific second action, but in this case DoNKeys() was modified: 
     if (StrLen==0) { if (LayerAxD) status("nKeys File not found on SDCard"); else status("nKeys File not found on Flash"); } else LinkOk = true;
-
 
 
 
