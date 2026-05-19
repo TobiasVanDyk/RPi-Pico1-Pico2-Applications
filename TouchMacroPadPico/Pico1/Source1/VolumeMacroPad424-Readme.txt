@@ -10,8 +10,8 @@ Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Ar
 Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\Wire 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad424.ino.elf"
-Sketch uses 270120 bytes (25%) of program storage space. Maximum is 1044480 bytes.
-Global variables use 63956 bytes (24%) of dynamic memory, leaving 198188 bytes for local variables. Maximum is 262144 bytes.
+Sketch uses 270112 bytes (25%) of program storage space. Maximum is 1044480 bytes.
+Global variables use 63972 bytes (24%) of dynamic memory, leaving 198172 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
 Converting to uf2, output size: 614912, start address: 0x2000
 Scanning for RP2040 devices
@@ -25,8 +25,9 @@ If a different display is used the Arduino-Pico build code must be deleted befor
 
 
 New changes:
-1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
-   Long-press Twist again to exit the encoder options mode.
+1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB. Long-press Twist again
+   to exit the encoder options mode. If the star * option is chosen the Twist mode will change from the coded options Volume, Scroll, Zoom 
+   etc. to Twist File macros. To cahnge back from file macros choose any of coded macros such as S V Z etc.
 2. Added Key Threshold *ke*nnn nnn = 100-999 Use *kh* for Key Hold enable if VolMute.
 3. Added Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders and example Files4Twist.zip
    *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
