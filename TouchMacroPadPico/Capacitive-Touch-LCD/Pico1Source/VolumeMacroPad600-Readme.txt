@@ -16,7 +16,7 @@ Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Ardui
 Using library GT911_Lite at version 1.0.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\GT911_Lite 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad600.ino.elf"
-Sketch uses 282848 bytes (27%) of program storage space. Maximum is 1044480 bytes.
+Sketch uses 282744 bytes (27%) of program storage space. Maximum is 1044480 bytes.
 Global variables use 64032 bytes (24%) of dynamic memory, leaving 198112 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM14
 Converting to uf2, output size: 640512, start address: 0x2000
@@ -30,8 +30,9 @@ C:\Users\Name\AppData\Local\Arduino15\packages\rp2040 then close and reopen Ardu
 If a different display is used the Arduino-Pico build code must be deleted before building the new TFT_eSPI build.
 
 New changes:
-1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
-   Long-press Twist again to exit the encoder options mode. 
+1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB. Long-press Twist again
+   to exit the encoder options mode. If the star * option is chosen the Twist mode will change from the coded options Volume, Scroll, Zoom 
+   etc. to Twist File macros. To cahnge back from file macros choose any of coded macros such as S V Z etc.
 2. ILI9488 and GT911 LCD and Touch display 
 If calibration does not run on first start force by *ro*  
 Connections: GT911: Use Pico gpio 4 and 5 for i2c (Wire). Use the connections in User_Setup.h for the rest (same as Waveshare LCDs)

@@ -66,6 +66,7 @@ bool pressTwist = false;                          // pressed
 int twistStep = 0;                                // Multiple turns
 char twistMacro = 'v';                            // Default volume vV - *tm*char vV uU zZ sS xX dD code definitions - *tm* twistMacro=0x00 Use symbolic link file twist
 char twistOption[17] = "vuzsxdwbVUZSXDWB";        // twist coded macro options volume undo/redo zoom scroll lines-= backspace/delete Wallpaper Photoshop Brush size b +/- Hardness B +/- 0x00
+const byte twistOptionSz = sizeof(twistOption);   // Size of Twist Options string - 0x00 is a valid choice = Twist File macros but adding \0 to string not ok
 byte twistcurrOption  = 0;                        // Index into twistOption[] - same info value as twistMacro
 char twistRLP[240]  = "";                         // *t+,-,p* all
 char twistR[80]  = "";                            // *t+*Name turn right
@@ -86,6 +87,7 @@ byte twistLimit = 0;                              // 0 or 24 if version 1.2
 bool twistLong = false;                           // Long press to change Twist Options s -W
 long int pressStartTime = 0;                      // Measure long - press
 bool twistPressed = false;                        // Twist Pressed state
+int twistPressedTime = 1000;                      // Twist long-press trigger time
 char twistStatus[15][28] = {"Twist Files Macros",    "Twist Coded Macros X",  "Twist File Macro Removed",  "Twist File Macro Saved",   "Twist default X saved", 
                             "Twist Dimmed updated",  "Twist Limit updated",   "Twist Colours updated X",   "Twist version: ",          "Twist Config updated X",  
                             "Twist Config saved",    "Twist Config read" ,    "Twist Options d-Z Ready",   "Twist Options Off",        "Twist Option:  "          };  
@@ -944,9 +946,6 @@ void setup()
   ConfigKeyCount = 0;                                      // Start up
   ConfigButtons(0);                                        // Draw Buttons and Labels 0 = All 3+5 rows
 
-  //Twist1 = twist.begin(Wire);                             // True if Encoder plugged in in i2c port 1
-  //if (Twist1) UpdateTwist(4);                             // Setup twist
-
   NumKeysChange();                              // NumkeysX = Layout 0  
   LastMillis = millis();                        // Initial start time
   NewData = KBrdActive = Kbrd = false;          // Can skip this
@@ -968,11 +967,13 @@ void loop()
                                                     t_y = map(rawX, cal.maxX+cal.maxXPad, cal.minX+cal.minXPad, 0, 319); }
                                    t_x = constrain(t_x, 0, 479);  t_y = constrain(t_y, 0, 319); pressed = true; }  
   
-  if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
-                   else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
+  // if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
+  //                  else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
 
   NowMillis = millis();
   wiggleCheck = nowTwist = NowMillis;
+
+  if (Twist1) CheckTwist();  
   
   if (powerEnable || alarmEnable || timerEnable) { rtc_get_datetime(&t); }
 
@@ -999,31 +1000,8 @@ void loop()
           RepLast = RepNow = NowMillis;                         // Reset repeat key timer      
           if (!Kbrd) status("");                                // Clear the status line if KeyBrd not active
           OptNum = VarNum = 0;                                  // [Key] and [Opt] Keys reset to unpressed state
-          BackLightOn = false;   }                              // Until keypress   
-  
-  if ( Twist1 ) 
-     { bool currentState = twist.isPressed();
-       if (currentState && !twistPressed) {  twistPressed = true; pressStartTime = millis(); }
-       else if (!currentState && twistPressed) { unsigned long pressDuration = millis() - pressStartTime;
-                                                 if (pressDuration >= 1000) { twistLong = !twistLong; if (twistLong) status(twistStatus[12]); else status(twistStatus[13]); }                                                          
-                                                 twistPressed = false; }
-                                                         
-       if (twistLong && twist.isMoved()) { twist.getCount(); twistStep = twist.getDiff();
-                                           if (twistLong) { twistcurrOption = (twistcurrOption + twistStep) % 16; if (twistcurrOption < 0) { twistcurrOption += 16; }                                                                   
-                                                            twistMacro = twistStatus[14][14] = twistOption[twistcurrOption]; status(twistStatus[14]); twist.isClicked(); } } }
-  
-  if ( Twist1 && !twistLong) if ((nowTwist - lastTwist) >= time2Twist )
-     { lastTwist = nowTwist; twistChanged = false;            
-       if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();
-                              if (twistMacro!=0x00) { while (twistStep > 0) { twistVal = 1;  DoTwistMacro(); twistStep--; }
-                                                      while (twistStep < 0) { twistVal = -1; DoTwistMacro(); twistStep++; } }
-                              else { twistVal = twistStep; DoTwistFile(); } }
-                                     
-       if (twist.isClicked()) { twistChanged = pressTwist = true; twistVal = 0; if (twistMacro==0x00) DoTwistFile(); else { twistVal = twistStep; DoTwistMacro(); } pressTwist = false; }              
-              
-       if (twistChanged && BackLightOn)  { twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); }                          
-       if (twistChanged && !BackLightOn) { DoWakeUp(); } }        
-  
+          BackLightOn = false;   }                              // Until keypress 
+          
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  }                                      
            
   if (KeyOn) { if (KeyOnVal[5]==10) DoAltEsc(); else delay(KeyOnValDelay[KeyOnVal[5]]);  KeyOnVal[3] = LayerAD; KeyOnVal[4] = Layout; Layout = KeyOnVal[2]; 
@@ -1053,6 +1031,37 @@ void loop()
   if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                             
 } // main Loop
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+void CheckTwist()  // Expand to more twists Twst2,3,4 etc by using same framework as for Twist1
+////////////////////////////////////////////////////////////////////////////////////////////////
+{  bool currentState = twist.isPressed();
+   if (currentState && !twistPressed) {  twistPressed = true; pressStartTime = millis(); }
+   else if (!currentState && twistPressed) { unsigned long pressDuration = millis() - pressStartTime;
+                                             if (pressDuration >= twistPressedTime) { twistLong = !twistLong; if (twistLong) status(twistStatus[12]); else status(twistStatus[13]); }                                                          
+                                              twistPressed = false; }
+                                                         
+   if (twistLong && twist.isMoved()) { twist.getCount(); twistStep = twist.getDiff();
+                                       if (twistLong) { twistcurrOption += twistStep;                                   // Could be more than one step + or -
+                                                        if (twistcurrOption < 0) twistcurrOption = twistOptionSz - 1;   // % solutions have blank=0x00 + * problem 
+                                                        else if (twistcurrOption >= twistOptionSz) twistcurrOption = 0; 
+                                                        if (twistStep<0 && twistcurrOption==0) twistcurrOption = twistOptionSz - 1; // Else stuck at v if anti-clockwise                                                        
+                                                        twistMacro = twistOption[twistcurrOption];                     
+                                                        twistStatus[14][14] = (twistMacro == 0x00) ? '*' : twistMacro; status(twistStatus[14]); twist.isClicked(); } } 
+  
+   if ( !twistLong) if ((nowTwist - lastTwist) >= time2Twist )
+      { lastTwist = nowTwist; twistChanged = false;            
+        if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();
+                               if (twistMacro!=0x00) { while (twistStep > 0) { twistVal = 1;  DoTwistMacro(); twistStep--; }
+                                                       while (twistStep < 0) { twistVal = -1; DoTwistMacro(); twistStep++; } }
+                               else { twistVal = twistStep; DoTwistFile(); } }
+                                     
+       if (twist.isClicked()) { twistChanged = pressTwist = true; twistVal = 0; if (twistMacro==0x00) DoTwistFile(); else { twistVal = twistStep; DoTwistMacro(); } pressTwist = false; }              
+              
+       if (twistChanged && BackLightOn)  { twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); }                          
+       if (twistChanged && !BackLightOn) { DoWakeUp(); } }   
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void DoCMTimers(byte TimerArr[], byte Num) // Num = 0-7 Timers = 1-8
 ///////////////////////////////////////////////////////////////////////////////
@@ -5755,4 +5764,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 5758 *****************/
+/************* EOF line 5767 *****************/
