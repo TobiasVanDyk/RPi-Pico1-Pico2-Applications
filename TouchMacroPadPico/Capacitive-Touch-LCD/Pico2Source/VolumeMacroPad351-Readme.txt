@@ -18,8 +18,8 @@ Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Ardui
 Using library GT911_Lite at version 1.0.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\GT911_Lite 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad351.ino.elf"
-Sketch uses 275752 bytes (13%) of program storage space. Maximum is 2088960 bytes.
-Global variables use 65744 bytes (12%) of dynamic memory, leaving 458544 bytes for local variables. Maximum is 524288 bytes.
+Sketch uses 275672 bytes (13%) of program storage space. Maximum is 2088960 bytes.
+Global variables use 65752 bytes (12%) of dynamic memory, leaving 458536 bytes for local variables. Maximum is 524288 bytes.
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -38,8 +38,9 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
                 #define SPI_READ_FREQUENCY  500000     // 500kHz used - 250kHz to 800kHz needed for Pico 2 
 
 New changes:
-1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
-   Long-press Twist again to exit the encoder options mode. 
+1. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB. Long-press Twist again
+   to exit the encoder options mode. If the star * option is chosen the Twist mode will change from the coded options Volume, Scroll, Zoom 
+   etc. to Twist File macros. To cahnge back from file macros choose any of coded macros such as S V Z etc. 
 2. ILI9488 and GT911 LCD and Touch display 
 If calibration does not run on first start force by *ro*  
 Connections: GT911: Use Pico gpio 4 and 5 for i2c (Wire). Use the connections in User_Setup.h for the rest (same as Waveshare LCDs)
