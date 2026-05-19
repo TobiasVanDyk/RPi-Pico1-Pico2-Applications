@@ -911,7 +911,7 @@ void loop()
           OptNum = VarNum = 0;                                            // [Key] and [Opt] Keys reset to unpressed state
           BackLightOn = false;   }                                        // Until keypress 
 
-  CheckTwist();
+  if (Twist1) CheckTwist(); 
            
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  } 
 
@@ -946,25 +946,25 @@ void loop()
                 
 } // main Loop
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void CheckTwist()  // Expand to more twists Twst2,3,4 etc by using same framework as for Twist1
 ////////////////////////////////////////////////////////////////////////////////////////////////
-{
-  if ( Twist1 ) 
-     { bool currentState = twist.isPressed();
-       if (currentState && !twistPressed) {  twistPressed = true; pressStartTime = millis(); }
-       else if (!currentState && twistPressed) { unsigned long pressDuration = millis() - pressStartTime;
-                                                 if (pressDuration >= twistPressedTime) { twistLong = !twistLong; if (twistLong) status(twistStatus[12]); else status(twistStatus[13]); }                                                          
-                                                 twistPressed = false; }
+{  bool currentState = twist.isPressed();
+   if (currentState && !twistPressed) {  twistPressed = true; pressStartTime = millis(); }
+   else if (!currentState && twistPressed) { unsigned long pressDuration = millis() - pressStartTime;
+                                             if (pressDuration >= twistPressedTime) { twistLong = !twistLong; if (twistLong) status(twistStatus[12]); else status(twistStatus[13]); }                                                          
+                                              twistPressed = false; }
                                                          
-       if (twistLong && twist.isMoved()) { twist.getCount(); twistStep = twist.getDiff();
-                                           if (twistLong) { twistcurrOption += twistStep;  
-                                                            while (twistcurrOption < 0) twistcurrOption += twistOptionSz; 
-                                                            while (twistcurrOption >= twistOptionSz) twistcurrOption -= twistOptionSz;                                                                  
-                                                            twistMacro = twistOption[twistcurrOption]; 
-                                                            twistStatus[14][14] = (twistMacro == 0x00) ? '*' : twistMacro; status(twistStatus[14]); twist.isClicked(); } } }
+   if (twistLong && twist.isMoved()) { twist.getCount(); twistStep = twist.getDiff();
+                                       if (twistLong) { twistcurrOption += twistStep;                                   // Could be more than one step + or -
+                                                        if (twistcurrOption < 0) twistcurrOption = twistOptionSz - 1;   // % solutions have blank=0x00 + * problem 
+                                                        else if (twistcurrOption >= twistOptionSz) twistcurrOption = 0; 
+                                                        if (twistStep<0 && twistcurrOption==0) twistcurrOption = twistOptionSz - 1; // Else stuck at v if anti-clockwise                                                        
+                                                        twistMacro = twistOption[twistcurrOption];                     
+                                                        twistStatus[14][14] = (twistMacro == 0x00) ? '*' : twistMacro; status(twistStatus[14]); twist.isClicked(); } } 
   
-  if ( Twist1 && !twistLong) if ((nowTwist - lastTwist) >= time2Twist )
+  if ( !twistLong) if ((nowTwist - lastTwist) >= time2Twist )
      { lastTwist = nowTwist; twistChanged = false;            
        if (twist.isMoved()) { twistChanged = true; twist.getCount(); twistStep = twist.getDiff();
                               if (twistMacro!=0x00) { while (twistStep > 0) { twistVal = 1;  DoTwistMacro(); twistStep--; }
@@ -976,6 +976,7 @@ void CheckTwist()  // Expand to more twists Twst2,3,4 etc by using same framewor
        if (twistChanged && BackLightOn)  { twistcurrColour[0] = twist.getRed(); twistcurrColour[1] = twist.getGreen(); twistcurrColour[2] = twist.getBlue(); }                          
        if (twistChanged && !BackLightOn) { DoWakeUp(); } }   
 }
+
 /////////////////////////////////////////////////////////////////////
 void DoCMTimers(byte TimerArr[], byte Num) // Num = 0-7 Timers = 1-8
 /////////////////////////////////////////////////////////////////////
@@ -5709,4 +5710,5 @@ void showKeyData(byte Option)
          SerPr2;  }          
  }
 
-/************* EOF line 5712 *****************/
+
+/************* EOF line 5714 *****************/

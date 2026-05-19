@@ -17,7 +17,7 @@ Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino
 Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0\libraries\Wire 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad334.ino.elf"
-Sketch uses 261424 bytes (12%) of program storage space. Maximum is 2088960 bytes.
+Sketch uses 261440 bytes (12%) of program storage space. Maximum is 2088960 bytes.
 Global variables use 65584 bytes (12%) of dynamic memory, leaving 458704 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.0/tools/uf2conv.py --serial COM3 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad334.ino.uf2 
 Resetting COM3
