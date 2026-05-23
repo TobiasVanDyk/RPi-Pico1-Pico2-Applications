@@ -104,6 +104,19 @@ volatile bool BusyCNS = false;         // Lock changes when in CNS callback
 bool ResetOnce = true;
 bool ResetOnceEnable = false;
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CircuitPython Device Control to/from Macropad and to/from PC App - device can be both outpur RGB LED OLED, LCD etc, or input KeyBrd, Rotary Encoder, Pot, Touch control etc.
+const int cyPMax = 32;                // Maximum of 32 filenames controllable - made active, renamed, delete, copy, etc
+char cPyFiles[cyPMax][40] = {"rgbled1.py", "keybrd1.py", "a.py", "b.py", "c.py", "d.py", "e.py", "f.py", "g.py", "h.py", "i.py", "j.py", "k.py", "l.py", "m.py", "n.py" }; // Filenames CP Device
+int cPyFilesNum = 0;                  // Number of .py files on list max 32 max 39+0x00 chars (1,280 bytes max)
+bool cPyDevice = false;               // Device detected on PC
+int cPyDevType = 0;                   // 0 = unknown 1 - 10 known controllable device for macropad input and output
+int cPyActiveFileIndex = -1;          // -1 if no active file
+char cPyDrive[3] = "D:";              // Driveletter of CircuitPython device A: - Z:
+char cPyArr1[7] = "<Ccnn>";           // cPy commands a activate and d delete file at index nn = 00-99
+char cPyArr2[40] = "<CcnnFilename>";  // cPy commands r rename and c copy file at index nn = 00-99 to Filename - if renamed or copied to code.py will activate as well
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 byte OptionOS = 0;   // 0 Windows 1 Linux 2 RPiOS 3 MacOS
 char OSName[4][18]   = {"Microsoft Windows","GNU/Linux","Raspberry Pi OS","Apple macOS" }; 
 char OSChr [4][2]    = {"W",                "L",        "R",              "A"           };   // Use "w" if "W" too large for space
@@ -504,28 +517,28 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 134; // StarCodes Count 16+16+16+16+16+16+16+16+6 StarNum = 0-133
+const static int StarCodesMax = 135; // StarCodes Count 16+16+16+16+16+16+16+16+7 StarNum = 0-134
 const static char StarCode[StarCodesMax][3] =    
-{ "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cr", "ct", "cx", "c1", 
-  "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", "fo",   
-  "fs", "ft", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", "ls", "lt", 
-  "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", "nd", 
-  "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", "r0", "r1", 
-  "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", "st", "sx", 
-  "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", "wa", 
-  "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", "0s", 
-  "0t", "0x", "1s", "1e", "2s", "2e"  };
+{ "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cp", "cr", "ct", "cx", 
+  "c1", "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", 
+  "fo", "fs", "ft", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", "ls", 
+  "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", 
+  "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", "r0", 
+  "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", "st", 
+  "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", 
+  "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", 
+  "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
-{ 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    50,   8,    51,   63,   
-  64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   13,   
-  11,   11,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   55,   55,   
-  58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   76,   
-  73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   37,   26,   
-  40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   81,   
-  31,   4,    91,   90,   89,   31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   80,   
-  35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   48,  
-  54,   52,   82,   83,   84,   85    };
+{ 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    93,   50,   8,    51,   
+  63,   64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   
+  13,   11,   11,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   55,   
+  55,   58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   
+  76,   73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   37,   
+  26,   40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   
+  81,   31,   4,    91,   90,   89,   31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   
+  80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   
+  48,   54,   52,   82,   83,   84,   85    };
   
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -1170,11 +1183,10 @@ bool CheckStarCode(byte a) // Tested ok with <*bb*75> with [A-D] brown A, <*xy*n
 //////////////////////
 bool GetMatch(byte a)
 //////////////////////
-{ int i, n = 0;
+{ int ASize, i = 0, m = 0, n = 0;  
   byte *BytePtr;
   bool GlyphBank = false, Found = false, Label = false, mEdt = false, tTime = false, aTime = false, pTime = false, wTime = false, L = true;
-  byte r5, r6, r7, c = 0;
-  int ASize;
+  byte r5, r6, r7, c = 0;  
   char mst134 = '0', LabelFile[40] = "LabelM"; 
   char fname[16] = "file";  
   char fnumber[8] = ""; 
@@ -1196,11 +1208,15 @@ bool GetMatch(byte a)
   Glyph     = (a==55);        // 0x67 = 'g' // MathHexNum received from PC App <gHHHHds> HHHH unicode symbol hexnumber d = delay s = 0 Send button 1 Automatic send  
   GlyphBank = (a==23);        // 0x17 - 'G' MathBank data received as in mathkeys.h 3 arrays inbetween <Gn > n = 0-9 MathBank number
   FileSend  = (a==22||a==54); // 0x46 - 'F' or 'f' List of Files sent [Select and Send Files] button in Comms Tab=F or nKeys Tab=f Final path = fdir + fname + fnumber=1-999
-
+  cPyDevice = (a==19);        // 0x43 - 'C' CircuitPython Device present and list of filenames (40 char max) maximum 32 attached 
 
   Label = (a==61 || a==67 || a==68);   // a = m,s,t is labelfile name which points to another file with new labels for 24 M,S,T keys;
   Found = (a<10);                      // a = 1 to 6 - only 6 Keys on every Layer A-D
-
+  
+  if (cPyDevice) { cPyActiveFileIndex = -1; i = 2; n = m = 0; cPyDrive[0] = RecBytes[1]; // RecBytes[2] = ':' Drive letter X: for Circuitpython device as A to Z
+                   while (RecBytes[i+1]!=0x00 && m<cyPMax) { if (RecBytes[i+1]==';') { cPyFiles[m][n]=0x00; cPyActiveFileIndex=m; m++; n=0; if (RecBytes[i+2]==',') { i++; } }
+                                                             else if (RecBytes[i+1]==',') { cPyFiles[m][n]=0x00; m++; n=0; } else { if (n<39) { cPyFiles[m][n]=RecBytes[i+1]; n++; } } i++; }
+                   if (m<cyPMax) { cPyFiles[m][n]=0x00; cPyFilesNum = m + 1; } else { cPyFilesNum = m; } status("CircuitPython File List received"); cPyDevice = true; return Found; }
   if (Label) { for (n=0; n<40; n++) LabelFile[n] = 0x00; if (NumBytes!=145) { strcpy(LabelFile, "LabelX"); LabelFile[5]=RecBytes[0]-32; }
                else { strcpy(LabelFile, "label1"); if (a==61) mst134='1'; if (a==67) mst134='2'; if (a==68) mst134='3'; LabelFile[5]=mst134; L=false; }     
                BytePtr = MacroBuff;    // Is it a labelfile or LabelMST file then +48-32 = M, S, T from m, s, t originally
@@ -1208,8 +1224,7 @@ bool GetMatch(byte a)
                if (LayerAxD) f = SDFS.open(LabelFile, "w"); else f = LittleFS.open(LabelFile, "w"); // Filename LabelM,S,T ot label1,2,3 or label0
                f.write(BytePtr, NumBytes-1);                                                      // Write filename to SDCard or Flash
                if (L) f.print('\0'); f.close();                                                   // Add NULL to end of filename in File LabelX  
-               strcat(LabelFile, " saved"); status(LabelFile); return Found; }
-               
+               strcat(LabelFile, " saved"); status(LabelFile); return Found; }               
   if (FileSend)  { if (a==54) { strcpy(NameStr1, fname); if (fnum<10) strcpy(fname, "n0"); else strcpy(fname, "n"); fname[0] = nChar; } 
                    memmove(RecBytes, RecBytes+1, NumBytes-1); NumBytes--; Timer2Str(fnumber, 2, fnum); strcpy(fpath, fdir); strcat(fpath, fname); strcat(fpath, fnumber);  // Remove F or f                   
                    File f1 = SDFS.open(fpath, "w"); f1.write(RecBytes, NumBytes);  f1.close();  fnum++; status(fpath); if (a==54) strcpy(fname, NameStr1); return Found; } // save as file1-File9999
@@ -4340,6 +4355,20 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         if (knum >= 10) { for (n=0; n<3; n++) { twistColour[n] = hex2byte(p); twistColour[n+3] = hex2byte(p)/twistDim; p += 2; } }
         if (knum == 16) { twistRconnect = hex2int8(p); p += 2; twistGconnect = hex2int8(p); p += 2; twistBconnect = hex2int8(p); }
         twistOption = 3; twistStatus[4][19] = k4; status(twistStatus[7]); UpdateTwist(twistOption); SaveTwist = StarOk = true; break; }  
+        case 93: ///////////////////// KeyBrdByte[1]=='c'&&KeyBrdByte[2]=='p' -> *cp* CircuitPython filelist *cp*cnn c=command nn filelist index=00-99 *cp*cnnfilename...        
+      { if (knum==4) { Serial.print("CircuitPython device Files: "); Serial.print(cPyFilesNum); SerPr1; Serial.print(cPyDrive);      
+                       if (cPyActiveFileIndex == -1) { Serial.println(" Active file index NA"); }         //               012345                   012345678...39
+                       else { Serial.print(" Active file index "); Serial.println(cPyActiveFileIndex); }  // cPyArr1[7] = "<Ccnn>"); cPyArr2[40] = "<CcnnFilename>";      
+                       for (n=0; n<cPyFilesNum; n++) { Serial.print(n); SerPr1; Serial.print(cPyFiles[n]); 
+                       if (n==cPyActiveFileIndex) { Serial.println(" [A]"); } else { Serial.println(); }  } StarOk = true; break; } 
+        if (knum==7) { if (k4=='a'||k4=='d') { cPyArr1[2] = k4; cPyArr1[3] = k5; cPyArr1[4] = k6;     // a Activate or d delete file index nn  
+                       Serial.println(cPyArr1); status(cPyArr1); StarOk = true; break; }  
+                       if (k4!='r'||k4!='c') { cPyArr1[2] = k4; cPyArr1[3] = k5; cPyArr1[4] = k6;     // CircuitPython device configure change or control or as output 
+                       Serial.println(cPyArr1); status(cPyArr1); StarOk = true; break; }  }           // Can go direct to CircuitPy device via serial or Macropad->PCApp->CircuitPyDevice
+        if (knum>=8) { if (k4=='r'||k4=='c') { cPyArr2[2] = k4; cPyArr2[3] = k5; cPyArr2[4] = k6;     // r Rename or c Copy  
+                       for (n=0; n<knum-7; n++) cPyArr2[n+5] = NameStr3[n] = KeyBrdByte[n+7]; cPyArr2[n+5] = '>'; cPyArr2[n+6] = NameStr3[n] = 0x00; 
+                       Serial.println(cPyArr2); status(cPyArr2); StarOk = true; break; }  }                                                  
+        break; }           
       } return StarOk;                
 }
                        
@@ -5730,4 +5759,4 @@ void showKeyData(byte Option)
          SerPr2;  } 
          
  } 
-/************* EOF line 5733 *****************/
+/************* EOF line 5762 *****************/

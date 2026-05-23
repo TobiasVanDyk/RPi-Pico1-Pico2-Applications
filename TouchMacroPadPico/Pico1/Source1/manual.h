@@ -956,7 +956,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     Default volume vV - *tm*char = vV uU zZ sS xX dD wW etc in vuzsxdbVUZSXDB coded macro options volume =/-/mute
     undo/redo zoom +/-/reset scroll +/- X /* x -= backspace/delete Wallaper-Next Photoshop Brush Size = b Hardness = B
     *tm*0 same as *tm* switch to file-based macros for Twist not the coded macros as in *tm*char = vuzsxdwbVUZSXDWB
-    
+(Aa) CircuitPython device control and used as input and/or output for Pico macropad and/or PC App. 
+     *cp* CircuitPython filelist *cp*cnn c=command a,d,r,c nn=filelist index=00-99 *cp*cnnfilename a Activate, 
+     d Delete, r Rename, c Copy
+     *cp*cnn a-z, nn=00-99 Commands to control CircuitPy device a-z excludes a,c,d,r. Commands sent to CPy device as 
+     <Ccnn> or <CcnnFileName>
+     Pico macropad receives CircuitPy device filelist as <CX:File1.py,File2.py;File3.py> with File2.py the active 
+     function and X: the driveletter.    
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
