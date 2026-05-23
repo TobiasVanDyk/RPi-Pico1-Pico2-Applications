@@ -4341,7 +4341,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                        if (n==cPyActiveFileIndex) { Serial.println(" [A]"); } else { Serial.println(); }  } StarOk = true; break; } 
         if (knum==7) { if (k4=='a'||k4=='d') { cPyArr1[2] = k4; cPyArr1[3] = k5; cPyArr1[4] = k6;     // a Activate or d delete file index nn  
                        Serial.println(cPyArr1); status(cPyArr1); StarOk = true; break; }  
-                       if (k4!='r'||k4!='c') { cPyArr1[2] = k4; cPyArr1[3] = k5; cPyArr1[4] = k6;     // CircuitPython device configure change or control or as output 
+                       if (k4!='r'&&k4!='c') { cPyArr1[2] = k4; cPyArr1[3] = k5; cPyArr1[4] = k6;     // CircuitPython device configure change or control or as output 
                        Serial.println(cPyArr1); status(cPyArr1); StarOk = true; break; }  }           // Can go direct to CircuitPy device via serial or Macropad->PCApp->CircuitPyDevice
         if (knum>=8) { if (k4=='r'||k4=='c') { cPyArr2[2] = k4; cPyArr2[3] = k5; cPyArr2[4] = k6;     // r Rename or c Copy  
                        for (n=0; n<knum-7; n++) cPyArr2[n+5] = NameStr3[n] = KeyBrdByte[n+7]; cPyArr2[n+5] = '>'; cPyArr2[n+6] = NameStr3[n] = 0x00; 
