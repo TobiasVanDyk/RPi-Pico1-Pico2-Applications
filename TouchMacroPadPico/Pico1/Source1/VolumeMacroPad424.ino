@@ -4306,8 +4306,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                                 } break; }  
         case 87: ///////////////////// KeyBrdByte[1]=='v'&&KeyBrdByte[2]=='+','-','m' *v+* *v-* *vm* Volume + - mute or *v+,-*00-99
       { if (knum==4)  { if (k2=='+') { usb_hid.sendReport16(HIDCons, VolUp);   delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Up");   StarOk = true; break; } 
-                        if (k2=='-') { usb_hid.sendReport16(HIDCons, VolDown); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Mute"); StarOk = true; break; }                                                                                 
-                        if (k2=='m') { usb_hid.sendReport16(HIDCons, VolMute); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Down"); StarOk = true; break; } }
+                        if (k2=='-') { usb_hid.sendReport16(HIDCons, VolDown); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Down"); StarOk = true; break; }                                                                                 
+                        if (k2=='m') { usb_hid.sendReport16(HIDCons, VolMute); delay(dt50); usb_hid.sendReport16(HIDCons, 0); status("Volume Mute"); StarOk = true; break; } }
         if (knum==6)  { if (k2=='+') { for (n=0; n<=c99; n++) { usb_hid.sendReport16(HIDCons, VolUp);   delay(dt50); usb_hid.sendReport16(HIDCons, 0); delay(dt50); } StarOk = true; break; }                                                                                                       
                         if (k2=='-') { for (n=0; n<=c99; n++) { usb_hid.sendReport16(HIDCons, VolDown); delay(dt50); usb_hid.sendReport16(HIDCons, 0); delay(dt50); } StarOk = true; break; } } }
         case 88: ///////////////////// KeyBrdByte[1]=='p'&&KeyBrdByte[2]=='+','-','s','p' *p+* *p-* *pp* *ps* Play Media Next Previous Play/Pause Stop
