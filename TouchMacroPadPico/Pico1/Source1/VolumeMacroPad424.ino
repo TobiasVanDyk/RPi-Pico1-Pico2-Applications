@@ -2303,7 +2303,8 @@ void buttonpress(int Button)
        if (Button==16||Button==12) {PadKeys = true; LayerADLetter[0] = 65 + LayerAD; optionsindicators(0); ConfigMacroButtons(); return; }
        if ((Button==13&&Layout==1)||(Button==14&&Layout==3)||(Button==15&&Layout==4))              // If own Padkey pressed in own Layout
           { LayerAxD = !LayerAxD; if (LayerAxD) status("SDCard Used"); else status ("Flash Used"); optionsindicators(0); return; } 
-       Layout = Button-11-(Button==13); PadKeys = true; status(" "); ConfigButtons(1); optionsindicators(0); return;   // pad MST = button 13,14,15 = Layout 0,2,4 
+       Kbrd = MouseK  = NumKeys = Math = false; Layout = Button-11-(Button==13); PadKeys = true; status(" "); 
+       ConfigButtons(1); optionsindicators(0); return;   // pad MST = button 13,14,15 = Layout 0,2,4 
      } // Button>11 and Layout!=2  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
