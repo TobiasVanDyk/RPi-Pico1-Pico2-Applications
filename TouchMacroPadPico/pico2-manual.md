@@ -985,7 +985,23 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      <Ccnn> or <CcnnFileName> Can go direct to CircuitPy device via serial or Macropad->PCApp->CircuitPyDevice.
      Pico macropad receives CircuitPy device filelist as <CX:File1.py,File2.py;File3.py> with File2.py the active 
      function and X: the driveletter.
-         
+(Ab) *i1*parameters MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked seequence of macros or 
+     single macro, and set outputs using star codes. 
+     *i1*a Change i2c addresses from list *i1*01234567 in any order such as 674013 and any length up to 8
+     *i1*A Default i2c addresses = 0x20 - 0x27
+     *i1*d Change mcp delay in mS - blocking delays used in set outputs on/off
+     *i1*D Change mcp delay in Seconds - blocking delays in set outputs on/off
+     *i1*r Change mcp repeat 0,1-99 - repeat outputs in sequence not parallel in set outputs on/off
+     *i1*R Change mcp repeat*1000 0,1-99000 - repeat outputs in sequence not parallel in set outputs on/off
+     *i1*L mcp button do link sequence of macro actions
+     *i1*l mcp button do single macro actions        
+     *i1*opinlist Switch pins on/off - after *i1*o list 0 or 1 for on or off up to eight values such as *i1*o001101
+     *i1*Opinlist Switch pins on/off with delay and repeat using values in mcpDelay and mcpRepeat
+     *i1*I Execute macro actions if input(s) low latched
+     *i1* MCP230xx re-initialised - discover current devices connected or disconnected
+     *i1*Xm Set new config all I/O to same m = 0,1,2 for device X=0-7
+     *i1*Xpinsmodelist Set new config I/O according to list up to 8 modes 0,1,2 for 8 devices X=0-7    
+     Use the list data *ld* option for a list of active GPIO expnader devices attached on the 12c bus
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 

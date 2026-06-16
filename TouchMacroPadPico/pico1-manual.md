@@ -962,6 +962,30 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      <Ccnn> or <CcnnFileName>
      Pico macropad receives CircuitPy device filelist as <CX:File1.py,File2.py;File3.py> with File2.py the active 
      function and X: the driveletter.    
+(Ab) *i1*parameters Controls i/O of MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked 
+     seequence of macros or single macro. Can sett outputs and simulate inputs using star codes. 8 devices hard-coded to use 
+     mcp0 to mcp3 as MCP23017 (or MCP23018), and mcp4 to mcp7 as MCP23008. 8 adresses can be changed to be in ay order, default
+     is 0x20 to 0x27 for mcp9=0 to mcp7.
+     *i1*x0,1 Enable/Disable MPC23018 inverted output for relays, LED etc. 
+     Disabled=0: MCP23018/MCP23008 LED=ON = GPIO=HIGH = MCP23017  Enabled=1: MCP23018 LED=ON = GPIO=LOW = MCP23018 
+     *i1*a Change i2c addresses from list *i1*01234567 in any order such as 674013 and any length up to 8
+     *i1*A Default i2c addresses = 0x20 - 0x27
+     *i1*d Change mcp delay in mS - blocking delays used in set outputs on/off
+     *i1*D Change mcp delay in Seconds - blocking delays in set outputs on/off
+     *i1*r Change mcp repeat 0,1-99 - repeat outputs in sequence not parallel in set outputs on/off
+     *i1*R Change mcp repeat*1000 0,1-99000 - repeat outputs in sequence not parallel in set outputs on/off
+     *i1*L mcp button do link sequence of macro actions
+     *i1*l mcp button do single macro actions        
+     *i1*o pinlist Switch pins on/off - after *i1*o list 0 or 1 for on or off up to eight values such as *i1*o001101
+     *i1*O pinlist Switch pins on/off with delay (blocking) and repeat using values in mcpDelay and mcpRepeat
+     *i1*i Execute macro actions as if input(s) low pressed
+     *i1*I Execute macro actions as if input(s) low pressed with delay (blocking) and repeat using values in mcpDelay 
+     and mcpRepeat
+     *i1*0j 037 Press button on device mcp0 pin 7       
+     *i1* MCP230xx re-initialised - discover current devices connected or disconnected
+     *i1*Xm Set new config all I/O to same m = 0,1,2 for device X=0-7
+     *i1*Xpinsmodelist Set new config I/O according to list up to 8 modes 0,1,2 for 8 devices X=0-7    
+     Use the list data *ld* option for a list of active GPIO expnader devices attached on the 12c bus 
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
