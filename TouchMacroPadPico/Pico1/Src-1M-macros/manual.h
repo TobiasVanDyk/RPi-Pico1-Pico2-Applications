@@ -1,3 +1,4 @@
+/*
 # Pico 1 Touch Macropad with SDCard
 ```
 manual.h
@@ -155,7 +156,7 @@ taskbar, and are indicated by GuiL + Key0 - Key9 etc in macroBanks.h WinMacro co
 
 The keys in Layouts 1, 3, and 4 (M, S, and T 1-24 each) are linked to either a lowercase (m01-m23. s01-s24, t02-t24)
 or uppercase (M01-M24, S01-S24, T01-T24), group of 24 files containg macros and/or text strings. Use the [Cf][Opt] 
-keys to toggle between Upper and Lower case names or use the [*Cm] key to send *up*. 
+keys to toggle between Upper and Lower case names or use the [*Cm] key to send *up*, or use *up*0,1 off/on.  
 
 The 8-cycle [A-D] key in Layout 2: If the A-D indicator shows a white A, B. C, or D then the Layouts 
 Mx Sx Tx use FlashMem macrofiles or linkfiles, or the actions assigned with *fm* *fs* *ft* strings. If the indicator
@@ -281,7 +282,6 @@ storage (Flash or SDCard), to be executed.
                                     Select M S T MacroBanks 1-5, Select SDCard File Set 1-21 use Pads [o] and [n], 
                                     Send SD+Flash File lists,  Custom Key Labels On/Off for Keys M,S,T 
                       [Key] Mode  - Select 24 options for [Del], [Ret], [Cut,Copy,Paste] keys
------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
 Layout 2 - Full Media Mode - Play Controls On - Volume Controls On - Tone Controls On 
 -----------------------------------------------------------------------------------------------------------------------
@@ -807,7 +807,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     *lf* /store/+/new/ lists all flash files in the folder /new and the sdcard files in folder /store.
     *lf* /+/new/ lists all flash files in the folder /new and all the sdcard files (the folder is now root /).
     *lf* /+/ lists all flash files and all the sdcard files (the folder for both is now root /).
-(y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names*up*, or use *up*0,1 off/on. 
+(y) *up* or use the [Cf][Opt] keys to toggle between Upper and Lower case macro file names, or use *up*0,1 off/on. 
 (z) *im,s,t*numberlist Macro instruction list numberlist = maximum 12 single characters 0-9 or a-k. Can add less
     than 16 characters after *im,s,t* but last character added must be a zero 0. To see the instruction list use
     *ld* when a serial terminal is connected to the TouchLCD.
@@ -940,7 +940,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     Previous Play/Pause Stop. For *v+*nn and *v-*nn the nn is not and absolute number but an increase or decrease of the 
     existing value  divided by two - i.e. if the existing value is 40 and you send *v+*20 then the new volume will be 50
     (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
-    <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.*
+    <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.
 (Z) Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
     Long-press Twist encoder until "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
     Long-press Twist again to exit the encoder options mode. If the star * option is chosen the Twist mode will change 
@@ -961,7 +961,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *cp*cnn a-z, nn=00-99 Commands to control CircuitPy device a-z excludes a,c,d,r. Commands sent to CPy device as 
      <Ccnn> or <CcnnFileName>
      Pico macropad receives CircuitPy device filelist as <CX:File1.py,File2.py;File3.py> with File2.py the active 
-     function and X: the driveletter.    
+     function and X: the driveletter.
 (Ab) *i1*parameters Controls i/O of MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked 
      seequence of macros or single macro. Can sett outputs and simulate inputs using star codes. 8 devices hard-coded to use 
      mcp0 to mcp3 as MCP23017 (or MCP23018), and mcp4 to mcp7 as MCP23008. 8 adresses can be changed to be in ay order, default
@@ -986,6 +986,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *i1*Xm Set new config all I/O to same m = 0,1,2 for device X=0-7
      *i1*Xpinsmodelist Set new config I/O according to list up to 8 modes 0,1,2 for 8 devices X=0-7    
      Use the list data *ld* option for a list of active GPIO expnader devices attached on the 12c bus 
+              
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
@@ -1157,4 +1158,4 @@ Panic mode reset. If for any reason your keypad becomes unresponsive or behaves 
 
 
 ```
-
+*/
