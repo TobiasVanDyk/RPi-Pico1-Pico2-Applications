@@ -43,7 +43,48 @@
 #include "sdcard.h"       // 20 Sets of 24 files stored on SDCard + 96 n-keys aA01-xX96 001-996
 #include <Wire.h>
 #include "gt911_lite.h"   // Has added LCD size descriptor to https://github.com/tonywestonuk/gt911-arduino library
-#include "SparkFun_Qwiic_Twist_Arduino_Library.h" // RGB Rotary Encoder i2c 
+#include "SparkFun_Qwiic_Twist_Arduino_Library.h" // RGB Rotary Encoder i2c
+#include <Adafruit_MCP23X17.h>                    // Adafruit 16 port i2c GPIO I/O expander 14 In 16 Out
+#include <Adafruit_MCP23X08.h>                    // Adafruit  8 port i2c GPIO I/O expander 8 In + Out
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Adafruit_MCP23X17 mcp0;   // Address 0x20 Use this if MCP23018 used AddrPin GND
+Adafruit_MCP23X17 mcp1;   // Address 0x21 Use a fixed 4 x MCP23017 mcp0-mcp3 + 4 x MCP23008 mcp4-mcp7 
+Adafruit_MCP23X17 mcp2;   // Address 0x22 mcpType[] = 2,2,2,2,1,1,1,1 if all 8 devices connected else 0 for no device
+Adafruit_MCP23X17 mcp3;   // Address 0x23 If mcp23018=true the MCP23018 connected to this slot with GND-1k5-3k3-3v3 0x22 switch Rs then 0x25
+//Adafruit_MCP23X17 mcp4; // Address 0x24 For MCP23018 0x23 GND-5k6-6k8-3v3 GND-2k7-3k3-3v3.
+//Adafruit_MCP23X17 mcp5; // Address 0x25 MCP23018 has 10k pullup resistors on all GPIO, Reset, SCL, SDA
+//Adafruit_MCP23X17 mcp6; // Address 0x26 MCP23018 if LED used GPIO-470ohm-LED-3v3 then LED on if GPIO=low, LED off GPIO=high
+//Adafruit_MCP23X17 mcp7; // Address 0x27 0x27 if MCP23018 used AddrPin 3v3
+//Adafruit_MCP23X08 mcp0; // Address 0x20 0x20 if MCP23018 used AddrPin GND
+//Adafruit_MCP23X08 mcp1; // Address 0x21
+//Adafruit_MCP23X08 mcp2; // Address 0x22
+//Adafruit_MCP23X08 mcp3; // Address 0x23
+Adafruit_MCP23X08 mcp4;   // Address 0x24 Use a fixed 4 x MCP23017 mcp0-mcp3 + 4 x MCP23008 mcp4-mcp7 
+Adafruit_MCP23X08 mcp5;   // Address 0x25
+Adafruit_MCP23X08 mcp6;   // Address 0x26
+Adafruit_MCP23X08 mcp7;   // Address 0x27
+Adafruit_MCP23XXX* mcp[] = { &mcp0, &mcp1, &mcp2, &mcp3, &mcp4, &mcp5, &mcp6, &mcp7 };  // Adjust from 1-8 devices { &mcp0, &mcp1, &mcp2, &mcp3, &mcp4, &mcp5, &mcp6, &mcp7 };
+uint8_t mcpAddr[] = { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27 };  // Can adjust to actual address on device such as { 0x20, 0x27, 0x22 }
+int mcpN = 0;                  // Will adjust 0-8 depending on mcpDev[]->begin_I2C(0x20, &Wire1);  successfull 
+int mcpNum = 8;                // Declared number of devices - ok if fewer connected
+bool mcpState[8][16] = {0};    // Detect current button pressed on input GPIO
+bool mcpPrev[8][16]  = {0};    // Detect previous button pressed on input GPIO
+bool mcpFound[8] = { false };  // Current active devices - mcpType fixed 1,2 or 0 - is mcpFound still required?
+uint8_t mcpType[8] = {0};      // 0 = Not Present, 1 = MCP23008 (8-pin), 2 = MCP23017 or MCP23018 (16-pin)
+uint8_t mcpPins[8][16] = { 2,2,1,1,1,1,1,1, 2,2,2,2,2,2,2,2,  2,2,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,    // 0,1=Input+State 2=Output -1=MCP23008 Size=8x16=128
+                           2,2,1,1,2,2,2,2, 1,1,1,1,1,1,1,1,  2,2,1,1,2,2,2,2, 1,1,1,1,1,1,1,1,    // Default config MCP23017 PortA 0,1=Output 2=7=Input PortB0=Output PortB1-7=Input
+                           2,2,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,  2,2,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,    // Default config MCP23008 Port 0,1=Output 2=7=Input
+                           2,2,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,  2,2,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, }; // 0=Input 1=Input+Pullup
+int mcpTime = 100;                  // Check GPIO every 100 mS for I/O event
+unsigned long int mcpNow, mcpLast;  // Difference is Time to check
+char mcpStr[20] = "mcpXnn";         // files mcp11-mcp116 to mcp81-mcp816 in folder /mcp
+char mcpDir[20] = "/mcp/";          // folder /mcp
+bool mcpLink = false;               // Links action or single macro
+int mcpRepeat = 1;                  // Repeat GPIO output on/off or off/on
+int mcpDelay = 0;                   // Delay before GPIO Output on/off or off/on
+bool SaveMCP = false;               // File "mcpC" saved with mcp Config 61 bytes
+bool mcp23018 = false;              // If true slots mcp2 and mcp3 (address 0x20 0x22 0x23 0x27 easy setting) has MCP23018 - only LED/Relay type outputs inverted affected
+// struct MCP_Inspector : public Adafruit_MCP23XXX { static uint8_t getPinCount(Adafruit_MCP23XXX* device) { return ((MCP_Inspector*)device)->pinCount; } }; 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SparkFun Qwiic Twist - RGB Rotary Encoder Breakout https://www.sparkfun.com/sparkfun-qwiic-twist-rgb-rotary-encoder-breakout.html
 // To upgrade version: Programming-the-Sparkfun-Twist-RGB-Rotary-Encoder-from-its-source-code-using-an-Arduino-Uno-as-ISP-Programmer.pdf
@@ -497,28 +538,28 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 135; // StarCodes Count 16+16+16+16+16+16+16+16+7 StarNum = 0-134
+const static int StarCodesMax = 136; // StarCodes Count 16+16+16+16+16+16+16+16+8 StarNum = 0-135
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cp", "cr", "ct", "cx", 
   "c1", "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", 
-  "fo", "fs", "ft", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", "ls", 
-  "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", "mZ", 
-  "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", "r0", 
-  "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", "st", 
-  "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", "vm", 
-  "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", "0p", 
-  "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
+  "fo", "fs", "ft", "i1", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", 
+  "ls", "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", 
+  "mZ", "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", 
+  "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", 
+  "st", "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", 
+  "vm", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", 
+  "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    93,   50,   8,    51,   
   63,   64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   
-  13,   11,   11,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   55,   
-  55,   58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   70,   
-  76,   73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   37,   
-  26,   40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   28,   
-  81,   31,   4,    91,   90,   89,   31,   31,   31,   33,   32,   43,   61,   87,   87,   87,   
-  80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   47,   
-  48,   54,   52,   82,   83,   84,   85    };
+  13,   11,   11,   94,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   
+  55,   55,   58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   
+  70,   76,   73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   
+  37,   26,   40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   
+  28,   81,   31,   4,    91,   90,   89,   31,   31,   31,   33,   32,   43,   61,   87,   87,   
+  87,   80,   35,   35,   35,   35,   35,   35,   35,   35,   35,   35,   34,   45,   53,   46,   
+  47,   48,   54,   52,   82,   83,   84,   85    };
   
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 5 Small Config Buttons between 1 st and 3rd row Red Blue Green SkyBlue Gold - if MacroUL=1 then o->O m s t -> M S T
@@ -910,13 +951,18 @@ void setup()
 
   pinMode(LCDBackLight, OUTPUT);    // Used for Backlight HIGH is ON
   //digitalWrite(LCDBackLight, HIGH); // Switch on here to prevent blank screen when Coordinates missing 
-
+  
+  Wire.setSDA(4);                                 // TWIST GPIO 4 5 26 27 SDA SCL
+  Wire.setSCL(5);                                 //
   Wire.begin(); Wire.setClock(400000);  // Twist GPIO 4 5 SDA SCL white yellow red 3v3 black Gnd
+  
   Twist1 = twist.begin(Wire);           // True if Encoder plugged in in i2c port 1
   if (Twist1) UpdateTwist(4);           // Setup twist
   
   //if (!LittleFS.begin()) {LittleFS.format(); LittleFS.begin(); }   
   LittleFS.begin(); // LittleFs automatically format the filesystem if one is not detected
+
+  InitMCP23xx(1);
 
   usb_hid.setPollInterval(2);
   usb_hid.setReportDescriptor(desc_hid_report, sizeof(desc_hid_report));  
@@ -984,7 +1030,7 @@ void loop()
   //                  else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
 
   NowMillis = millis();
-  wiggleCheck = nowTwist = NowMillis;
+  wiggleCheck = nowTwist = mcpNow = NowMillis;
 
   if (Twist1) CheckTwist();  
   
@@ -1014,7 +1060,9 @@ void loop()
           if (!Kbrd) status("");                                // Clear the status line if KeyBrd not active
           OptNum = VarNum = 0;                                  // [Key] and [Opt] Keys reset to unpressed state
           BackLightOn = false;   }                              // Until keypress 
-          
+
+  if (mcpN>0) if ((mcpNow - mcpLast) >= mcpTime) { mcpLast = mcpNow; mcpCheck(); }    
+      
   if (wiggleTime>0) { if ((wiggleCheck - wiggleLast) >= wigglePeriod/4) { wiggleLast = wiggleCheck; MouseWiggler(wiggle); wiggle++; if (wiggle>4) wiggle = 1; }  }                                      
            
   if (KeyOn) { if (KeyOnVal[5]==10) DoAltEsc(); else delay(KeyOnValDelay[KeyOnVal[5]]);  KeyOnVal[3] = LayerAD; KeyOnVal[4] = Layout; Layout = KeyOnVal[2]; 
@@ -1044,6 +1092,44 @@ void loop()
   if (Change && !BusyCNS) { indicators(); DoWakeUp(); Change = false; }
                             
 } // main Loop
+
+
+/////////////////
+void mcpCheck()
+/////////////////
+{ int i, n; 
+  for (i=0; i<mcpNum; i++) {if (!mcpFound[i]) continue;    
+                            int maxPins = (mcpType[i] == 1) ? 8 : 16; 
+                            for (n=0; n<maxPins; n++) { if (mcpPins[i][n]==0 || mcpPins[i][n]==1) { mcpPrev[i][n] = mcpState[i][n];
+                                                                                                    bool rawPinState = mcp[i]->digitalRead(n);
+                                                                                                    if (mcpPins[i][n]==1) { mcpState[i][n] = !rawPinState; }
+                                                                                                                     else { mcpState[i][n] = rawPinState;  }
+                                                                                                    if (mcpState[i][n] && !mcpPrev[i][n]) { mcpInput(i, n); } } } }  
+}
+
+///////////////////////////////
+void InitMCP23xx(bool Option)
+///////////////////////////////
+{ int i, n;    
+  if (Option) { mcpN = 0; for (i=0; i<8; i++) { mcpFound[i] = false; mcpType[i] = (i<4) ? 2:1; }    
+                for (i=0; i<mcpNum; i++) { mcpFound[i] = mcp[i]->begin_I2C(mcpAddr[i], &Wire);             
+                                           if (mcpFound[i]) { mcpN++; } else { mcpType[i] = 0; } } } // Option>0
+                                               
+  for (i=0; i<mcpNum; i++) { if (!mcpFound[i]) continue;     
+                             int loopPins = (mcpType[i]==1) ? 8:16;
+                             for (n = 0; n < loopPins; n++) { if (mcpPins[i][n]==1)       mcp[i]->pinMode(n, INPUT_PULLUP);
+                                                              else if (mcpPins[i][n]==2)  mcp[i]->pinMode(n, OUTPUT);                                                                   
+                                                                   else                   mcp[i]->pinMode(n, INPUT); } }  // Option=0
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void mcpInput(int i, int n) // Execute contents of file mcp101-mcp116, mcp801-mcp816 in folder /mcp
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+{ 
+  snprintf(mcpStr, sizeof(mcpStr), "mcp%d%02d", i+1, n+1);  // Generate mcpXnn X=1-8 nn=01-16
+  // Serial.println(mcpStr);                                // file /mcp/mcp104 GPIO3 button pressed device mcp0 
+  if (mcpLink) DoKey16(n); else MacroKeys(n, 4);            // mcp gpio button linked-macros or single macro
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void CheckTwist()  // Expand to more twists Twst2,3,4 etc by using same framework as for Twist1
@@ -1733,9 +1819,12 @@ void DoKey16(byte Num)        // Currently the same as DoKeyMST() but will chang
   int n123 = Numkeys123;   // Save Numkeys123 
   
   LayerAxDSave = LayerAxD;        // Save if DoLinkStr no change restore
-  DoMSTLinkName(Num-27, 5);       // Layout = 5 filename such as K01Link
-  strcpy(NameStr1, MSTLinkName);  // KxxLink + 0x00 length = 8                        
- 
+  
+  if (Num>16) { DoMSTLinkName(Num-27, 5);         // Layout = 5 filename such as K01Link Num-27 KxxLink starts at BsdCodes[27]
+                strcpy(NameStr1, MSTLinkName); }  // KxxLink + 0x00 length = 8 } 
+                                      
+  if (Num<20) { strcat(mcpDir, mcpStr); strcpy(NameStr1, mcpDir); }  // mcpXn-mcpXnn files in folder /mcp    
+  
   do { if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
        NameStr1[0] = 0x00; n++; // Only do DoLinkStr() once unless L0nXnn loads new NameStr1 
@@ -1996,6 +2085,12 @@ bool MacroKeys(byte c, byte Option)
       if (AppState==2 && Layout==AppL134) { strcpy(AppStr, AppDir); strcat(AppStr, MSTAName); } else strcpy(AppStr, MSTAName); // Key [M11] executes file /AppDir/ + m11 = /AppDir/m11 always SDCard      
       MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);   
       if (MacroBuffSize==0) return MacroKeysOK; }
+
+  if (Option==4)          // MCP23xx GPIO input keys pressed mcpStr has /mcp/filename=mcp1 to mcp128
+     {BPtr = MacroBuff; strcpy(AppStr, mcpDir); strcat(AppStr, mcpStr);    
+      // SerPr2; Serial.print("MacroKeys4"); SerPr1; Serial.print(AppStr); SerPr1; Serial.print(mcpStr); SerPr1; Serial.print(mcpDir); SerPr2;     
+      MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD);   
+      if (MacroBuffSize==0) return false; }     
   
   if (Option==0)   // Some callers already copied into MacroBuff
   { if (Layout==1) { for (n=0; n<ByteSize; n++) { MacroBuff[n] = Mtr1to12[c][n]; if (MacroBuff[n]==0x00) break; } }
@@ -3421,6 +3516,7 @@ void InitCfg(bool Option)    // Only 1 on cold start or reboot
   if (LittleFS.exists("TimersData")) ReadTimers(1); else ReadTimers(2); // If not exist create TimersData with default data
   if (LittleFS.exists("Time4data")) read4Time();                // Get saved Time
   if (LittleFS.exists("twistCfg")) readTwist();                 // Get Twist rotary encoder settings
+  if (LittleFS.exists("mcpC")) readMCP();                       // Get Twist rotary encoder settings
   
   if (MLabel) DoMSTLabel(0, 1); if (SLabel) DoMSTLabel(0, 3); if (TLabel) DoMSTLabel(0, 4);
 
@@ -3628,6 +3724,7 @@ void GetSysInfo(int Action)
   if (SaveOptionOS) { WriteConfig1(1); SaveOptionOS = false; }  
   if (SaveTime4Data) { save4Time(); SaveTime4Data = false; } 
   if (SaveTwist) { saveTwist(); SaveTwist = false; } 
+  if (SaveMCP) { saveMCP(); SaveMCP = false; } 
   
   Serial.println("Version: VolumeMacroPad424 Tobias van Dyk April 2026 License GPL3");
   Serial.println("Hardware: Waveshare Pico 1 or 2 RP2040 ILI9488 Resistive TouchLCD 3.5inch"); 
@@ -3911,7 +4008,7 @@ void MouseZero(byte b)
 bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be = '*'
 /////////////////////////////////////////////////////////////////////////////////////// 
 { unsigned long T, z;    // t = timeclock struct
-  uint8_t a, b, c, d, h, n, i, k2, k4, k5, k6, k7, k8, k9, knum;
+  uint8_t a, b, c, d, h, n, p, i, k2, k4, k5, k6, k7, k8, k9, knum;
   bool UnLink = false, StarOk = false, Ok = true;  
   int m, nStrLen, e, d99 = 0, c99 = 0, e99 = 0, c999 = 0, d999 = 0, e999 = 0;  
   File f, f1;
@@ -4312,9 +4409,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         for (n=0; n<10; n++)            Serial.print(nKeysLnkChar[n]);        Serial.println(); 
         Serial.println(MouseK);         Serial.println(Twist1);               Serial.println(twistOption);         
         for (n=0; n<6; n++)             Serial.println(twistColour[n]);       
-        Serial.println(twistRconnect);  Serial.println(twistGconnect);        Serial.println(twistBconnect);     Serial.println(twistcurrOption);   Serial.println(twistLimit);     
-        Serial.println(twistDim);       Serial.println("EOC");         
-        status("Text Data sent to PC"); StarOk = true; break; } } 
+        Serial.println(twistRconnect);  Serial.println(twistGconnect);        Serial.println(twistBconnect);     Serial.println(twistcurrOption);   Serial.println(twistDim);     
+        Serial.println(twistLimit);     Serial.println(mcpLink);              Serial.println(mcpDelay);          Serial.println(mcpRepeat);         Serial.println(mcpTime); 
+        for (n=0; n<8; n++)             Serial.print(mcpFound[n]);            Serial.println();   
+        for (n=0; n<8; n++)             Serial.print(mcpType[n]);             Serial.println();   
+        for (n=0; n<8; n++)             Serial.print(mcpAddr[n]-32);          Serial.println();   
+        for (n=0; n<8; n++) { for (i=0; i<16; i++)                            Serial.print(mcpPins[n][i]);      Serial.println(); }
+        Serial.println(mcpDir);         Serial.println(mcpStr);               Serial.println(mcp23018);         Serial.println("EOC");         
+        status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
             else for (n=0; n<knum-4; n++) NameStr3[n] = KeyBrdByte[n+4]; NameStr3[n] = 0x00;
@@ -4434,8 +4536,50 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         if (knum>=8) { if (k4=='r'||k4=='c') { cPyArr2[2] = k4; cPyArr2[3] = k5; cPyArr2[4] = k6;     // r Rename or c Copy  
                        for (n=0; n<knum-7; n++) cPyArr2[n+5] = NameStr3[n] = KeyBrdByte[n+7]; cPyArr2[n+5] = '>'; cPyArr2[n+6] = NameStr3[n] = 0x00; 
                        Serial.println(cPyArr2); status(cPyArr2); StarOk = true; break; }  }                                                  
-        break; }          
-      } return StarOk;                
+        break; }
+        case 94: ///////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='1' *i1* re-init *i1*X0,1,2 X=mcp0-8 set all=0,1,2 *i1*n0..78..15 set specific 
+        { int maxLen, maxAddrItems, loopLen, maxPins = 16; 
+          uint8_t invState, state = 0;
+          if (k4=='x') { mcp23018 = (k5=='1'); if (mcp23018) status("MCP23018 used");     // mcp2 is MCP23018 address is 0x20-0x27 - LED=ON = GPIO=LOW  = MCP23018
+                         else status("MCP23017 used"); SaveMCP = StarOk = true; break; }  // mcp2 is MCP23017 address is 0x20-0x27 - LED=ON = GPIO=HIGH = MCP23017
+          if (k4=='a') { maxAddrItems=(knum-4 > 8) ? 8:(knum-4); for (n=0; n<maxAddrItems; n++) { mcpAddr[n] = 0x20 + (KeyBrdByte[4+n]-48); } StarOk = true; break; } 
+          if (k4=='A') { for (n=0; n<8; n++) { mcpAddr[n] = 0x20 + n; } StarOk = true; break; } // Change addresses from list *i1*01234567 or default addresses = 0x20 - 0x27
+          if (k4=='d') { mcpDelay = d99; status("Delay d"); SaveMCP = StarOk = true; break; }             // Change mcp delay in mS - blocking delays
+          if (k4=='D') { mcpDelay = d99 * 1000; status("Delay D"); SaveMCP = StarOk = true; break; }      // Change mcp delay in Seconds - blocking delays
+          if (k4=='r') { mcpRepeat = d99 + (d99== 0?1:0); status("Repeat r"); SaveMCP = StarOk = true; break; }         // Change mcp repeat 0,1-99 - repeat outputs in sequence not parallel
+          if (k4=='R') { mcpRepeat = (d99 * 1000) + (d99==0?1000:0); status("Repeat R"); SaveMCP=StarOk=true; break; }  // Change mcp repeat*1000 0,1-99000 - repeat outputs in sequence not parallel
+          if (k4=='L') { mcpLink = true; status("Link Macros"); SaveMCP = StarOk = true; break; }         // mcp button do link macro actions
+          if (k4=='l') { mcpLink = false; status("Single Macros"); SaveMCP = StarOk = true; break; }      // mcp button do single macro actions
+          if (k4=='f') { maxLen=(knum-4 >= (int)sizeof(mcpDir)) ? (int)sizeof(mcpDir) - 1:(knum-4);       // *i1*f/mcp/ new mcpDir up to 20 chars for /mcpDir/mcpStr
+                         for (n=0; n<maxLen; n++) mcpDir[n] = KeyBrdByte[n+4]; mcpDir[n]=0x00; SaveMCP = StarOk = true; break; } 
+          if (k4=='F') { maxLen=(knum-4 >= (int)sizeof(mcpStr)) ? (int)sizeof(mcpStr) - 1:(knum-4);       // *i1*FmcpXnn new mcpStr only mcp changable 
+                         for (n=0; n<maxLen; n++) mcpStr[n] = KeyBrdByte[n+4]; mcpStr[n]=0x00; SaveMCP = StarOk = true; break; }
+          if (k5=='o' || k5=='O') { if (b>7 || !mcpFound[b]) break; maxPins=(b>=4)?8:16;                  // Switch pins on/off delay and repeat - Slots 4-7 are 8-bit MCP23008
+                                    loopLen=(knum-6>maxPins)?maxPins:(knum-6);            
+                                    if (k5=='o') { for (n=0; n<loopLen; n++) { if (mcpPins[b][n]>1) { state=KeyBrdByte[6+n]-48; if (mcp23018) state=!state; mcp[b]->digitalWrite(n, state); } } } 
+                                            else { for (n=0; n<loopLen; n++) { if (mcpPins[b][n]>1) { state=KeyBrdByte[6+n]-48; if (mcp23018) state=!state; invState=!state; 
+                                                                               for (m=0; m<mcpRepeat; m++) { mcp[b]->digitalWrite(n, state); delay(mcpDelay); mcp[b]->digitalWrite(n, invState); 
+                                                                                                             if (mcpRepeat>1 && m<mcpRepeat-1) delay(mcpDelay); } } } }
+                                    StarOk = true; break; } 
+          if (k5=='p' || k5=='P') { if (b>7 || !mcpFound[b]) break; p = (k7-48) + (8*(k6-48)); maxPins = (b >= 4)?8:16;         // *i1*4p001 MCP23008 works LED on/off on right-click
+                                    if (p >= maxPins || mcpPins[b][p]<2) break; state = k8-48; if (mcp23018) state=!state;      // *i1*0p001 MCP23017 works LED on/off on right-click
+                                    if (k5=='p') { mcp[b]->digitalWrite(p, state); } 
+                                            else { invState = !state; for (m=0; m<mcpRepeat; m++) { mcp[b]->digitalWrite(p, state); delay(mcpDelay); 
+                                                                                                    mcp[b]->digitalWrite(p, invState);
+                                                                                                    if (mcpRepeat>1 && m<mcpRepeat-1) delay(mcpDelay); } }
+                                    StarOk = true; break; }
+          if (k5=='i') { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                          // Input low once latch
+                         for (n=0; n<loopLen; n++) { if (mcpPins[b][n]<2) mcpInput(b, n); } StarOk = true; break; }
+          if (k5=='I') { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                          // Input low repeat
+                         for (m=0; m<mcpRepeat; m++) for (n=0; n<loopLen; n++) { if (mcpPins[b][n]<2) mcpInput(b, n); delay(mcpDelay+20); } StarOk = true; break; } 
+          if (k5=='j') { if (b>7) break; p = (k7-48) + (8*(k6-48)); if (mcpPins[b][p]<2) mcpInput(b, p); StarOk = true; break; }  // <*i1*0j03> Press button on device mcp0 pin 7                        
+          // if (k5=='j') { p = (k7-48) + (8*(k6-48)); maxPins=(b>=4)?8:16; if (p < maxPins && mcpPins[b][p] < 2) mcpInput(b, p); StarOk = true; break; }        // *i1*0j07 Press button on device mcp0 pin 7                             
+          if (knum==4) { InitMCP23xx(1); status("MCP230xx re-initialised"); mcpShow(0); StarOk = true; break; }                                                  // Discover current devices
+          if (knum==6) { if (b>7) break; maxPins=(b>=4)?8:16; for (n=0; n<maxPins; n++) mcpPins[b][n] = k5-48; InitMCP23xx(0); SaveMCP = StarOk = true; break; } // Set new config all I/O the same 0,1,2
+          if (knum>5)  { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                                                         // Set new config I/O  
+                         for (n=0; n<loopLen; n++) mcpPins[b][n] = KeyBrdByte[5+n]-48; InitMCP23xx(0); SaveMCP = StarOk = true; break; } 
+          break; } 
+      } return StarOk; 
 }
                        
 int8_t hex2int8(const byte* p) { return (int8_t)hex2byte(p); }
@@ -4632,6 +4776,49 @@ void readTwist()
     file.read((uint8_t *)&twistFDone, 1);    
     file.read((uint8_t *)twistOption, sizeof(twistOption));    
     twistMacro = twistOption[twistcurrOption];
+  }
+  file.close();
+}
+
+////////////////////////////////////////
+// GPIO Expander MCP23xxx read and save 
+////////////////////////////////////////
+void saveMCP() 
+{
+  File file = LittleFS.open("mcpC", "w");
+  if (!file) return;  
+  
+  // All pointers must be cast to (uint8_t *)
+  file.write((uint8_t *)mcpDir, 20);
+  file.write((uint8_t *)mcpStr, 20);
+  file.write((uint8_t *)&mcpLink, 1); 
+  file.write((uint8_t *)mcpAddr, 8);
+  file.write((uint8_t *)&mcpTime, sizeof(mcpTime));
+  file.write((uint8_t *)&mcpRepeat, sizeof(mcpRepeat));
+  file.write((uint8_t *)&mcpDelay, sizeof(mcpDelay));
+  file.write((uint8_t *)mcpPins, sizeof(mcpPins));
+  file.write((uint8_t *)&mcp23018, 1);
+  file.close();
+  SaveMCP = false;
+}
+ 
+void readMCP() 
+{ 
+  File file = LittleFS.open("mcpC", "r");
+  if (file.size()!=190) { file.close(); saveMCP(); return; }
+  
+  if (file.available()) 
+  { 
+    // Cast to (uint8_t *) to fill the memory address correctly
+    file.read((uint8_t *)mcpDir, 20);
+    file.read((uint8_t *)mcpStr, 20);
+    file.read((uint8_t *)&mcpLink, 1); 
+    file.read((uint8_t *)mcpAddr, 8); 
+    file.read((uint8_t *)&mcpTime, sizeof(mcpTime));
+    file.read((uint8_t *)&mcpRepeat, sizeof(mcpRepeat));
+    file.read((uint8_t *)&mcpDelay, sizeof(mcpDelay));
+    file.read((uint8_t *)mcpPins, sizeof(mcpPins));
+    file.read((uint8_t *)&mcp23018, 1);
   }
   file.close();
 }
@@ -5647,7 +5834,29 @@ void MakeKBMacro()
 { int n;
   for (n=0; n<100; n++) { KBMacro[n][0] = 'a';  KBMacro[n][1] = ((n+1)/10) + 48; KBMacro[n][2] = n + 49;  KBMacro[n][3] = 0x00; b++;}  
 }*/
-
+//////////////////////////
+void mcpShow(byte Option)
+//////////////////////////
+{ int i, n, p = 16;
+  if (Option) { SerPr2; Serial.print("GPIO Expanders: "); Serial.print(mcpN); SerPr2; 
+                Serial.print("Delay: "); Serial.print(mcpDelay); Serial.print(" Repeat: "); Serial.print(mcpRepeat); Serial.print(" Link Macro: "); Serial.print(mcpLink); SerPr2; }
+                
+  for (i=0; i<mcpNum; i++) { if (mcpFound[i]) { Serial.print("Slot mcp["); Serial.print(i); Serial.print("] Found Addr 0x"); Serial.print(mcpAddr[i], HEX); Serial.print(" -> ");
+                                                if (mcpType[i] == 1) { Serial.print("MCP23008 (8 GPIO)"); p = 8; }
+                                                if (mcpType[i] == 2) { Serial.print("MCP23017 (16 GPIO)");       }
+                                                if ((mcpType[i] == 2 && (mcp23018)) || mcpType[i] == 3) { Serial.print("MCP23018 (16 GPIO)");       }
+                                                SerPr1; for (n=0; n<p; n++) Serial.print(mcpPins[i][n]); SerPr2;
+                                              } else { Serial.print("Slot mcp["); Serial.print(i);
+                                                       Serial.print("] Empty Addr 0x"); Serial.print(mcpAddr[i], HEX);
+                                                       Serial.print(" -> None"); 
+                                                       SerPr1; for (n=0; n<p; n++) Serial.print(mcpPins[i][n]); SerPr2; }  }
+                                                             
+ if (Option>1) { SerPr2; Serial.println("mcpPins:");
+                 for (i=0; i<mcpNum; i++) { if (Option>2) if (!mcpFound[i]) continue;
+                                            Serial.print("MCP["); Serial.print(i); Serial.print("] 0x"); Serial.print(mcpAddr[i], HEX);
+                                            Serial.print(" A:");  for (n=0; n<8; n++) Serial.print(mcpPins[i][n]);
+                                            if (mcpType[i] != 1) { Serial.print(" B:"); for (n=8; n<16; n++) Serial.print(mcpPins[i][n]); } SerPr2; } SerPr2; }                                   
+}
 /////////////////////////////////
 void showKeyData(byte Option) 
 /////////////////////////////////
@@ -5735,6 +5944,8 @@ void showKeyData(byte Option)
    Serial.print("Twist Dim Value (/3 /5): "); Serial.print(twistDim); SerPr2; 
    Serial.print("Twist Limit (0-24): "); Serial.print(twistLimit); SerPr2; 
    Serial.print("Twist Options: "); Serial.print(twistcurrOption); SerPr1; if (twistMacro!=0x00) Serial.print(twistMacro); else Serial.print("0x00"); SerPr1; Serial.print(twistOption); SerPr2;
+
+   mcpShow(1); 
         
    SerPr2;
    Serial.print("Buff 20bytes " ); Serial.print(MacroBuffSize); SerPr1;
@@ -5792,4 +6003,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 5767 *****************/
+/************* EOF line 5795 *****************/
