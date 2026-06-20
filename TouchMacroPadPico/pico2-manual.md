@@ -967,8 +967,10 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (Z) Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders.
     Long-press Twist encoder until "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB.
     Long-press Twist again to exit the encoder options mode. If the star * option is chosen the Twist mode will change 
-    from the coded options Volume, Scroll, Zoom etc to Twist File macros. To cahnge back from file macros choose any of 
-    coded macros such as S V Z etc,
+    from the coded options Volume, Scroll, Zoom etc to Twist File macros. To change back from file macros choose any of 
+    coded macros such as S V Z etc. If more than one Twist device choose which Twist device to configure and control
+    with the star commands through *tc**n with n = 0-7 where 0 is when one Twist device connected. For example four 
+    Twist devices connected but control the second device through starcodes and the PC App, then use *tc**1.
     *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
     *tc* = version *tc*d,D = dimmed value *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
     *tc* = version *tc*l,L = limit value l=0 no limits (version 1.0) L=24 steps limit such as -12 0 +12
