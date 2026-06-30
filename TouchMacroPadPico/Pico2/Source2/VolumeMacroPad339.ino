@@ -97,52 +97,55 @@ bool mcp23018 = false;              // If true slots mcp2 and mcp3 (address 0x20
 // at https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/tree/main/TouchMacroPadPico
 // NB: For more than one Twist make sure that Wire1.setClock(400000) is positioned after all twist.begin() code
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define twX 2                                       // Number of twistDevices - currently tested only for two at 0x3E and 0x3F
+#define twX 3                                       // Number of twistDevices - three at 0x3D, 0x3E and 0x3F
 #define TWIST_SDA 26                                // 4 5 SDA SCL Port 0 Wire
 #define TWIST_SCL 27                                // 26 27 SDA SCL Port 1 Wire1
 #define twistLo 100                                 // Colour RGB levels 100 or 200 
 #define twistHi 200                                 //
 TWIST twist[twX];                                   // Create instances of this object
-bool Twist[twX] = { false, false } ;                // True if Encoders plugged into i2c 1 or 2
+bool Twist[twX] = { false, false, false };          // True if Encoders plugged into i2c 1 or 2
 int twistStar  = 0;                                 // Used to determine which twist 1,2,3 etc must be changed with star options - change with *tc**n n = 0-9  
-char twistF[twX][7] = { "twist", "twistB" };        // Filename containing the 3 twist macro path/filenames Size=21 for default twist1,2,3 used in readTwist() 
-char twistC[twX][10] = { "twistCfg", "twistBCfg" }; // Filename containing the twist configuration values size = 34 bytes
+char twistF[twX][7] = { "twist", "twistB", "twistC" };             // Filename containing the 3 twist macro path/filenames Size=21 for default twist1,2,3 used in readTwist() 
+char twistC[twX][10] = { "twistCfg", "twistBCfg", "twistCCfg" };   // Filename containing the twist configuration values size = 34 bytes
 int16_t twistConfig[twX][3][15] = { 240,15,162,80,5,54,10,0,-12,3,24,0,  140,0,200,0,0,30,-9,0,9,5,24,0,  101,101,101,0,30,0,7,0,-12,3,24,0,  
+                                    240,15,162,80,5,54,10,0,-12,3,24,0,  140,0,200,0,0,30,-9,0,9,5,24,0,  101,101,101,0,30,0,7,0,-12,3,24,0, 
                                     240,15,162,80,5,54,10,0,-12,3,24,0,  140,0,200,0,0,30,-9,0,9,5,24,0,  101,101,101,0,30,0,7,0,-12,3,24,0 }; // 3 choice default values 
-int twistNum[twX] = { 0 };                          // 0 1 2 set of twistConfig[3] 
-bool twistFDone[twX] = { true };                    // If false use twist1 twist2 twist3 if false read new names from file twist
+int twistNum[twX] = { 0,0,0 };                      // 0 1 2 set of twistConfig[3] 
+bool twistFDone[twX] = { true, true, true };        // If false use twist1 twist2 twist3 if false read new names from file twist
 int time2Twist = 20;                                // Check rotary encoder status every 20mS - helps to debounce press-switch
-unsigned long int nowTwist[twX] = { 0 };            // 
-unsigned long int lastTwist[twX] = { 0 };           // nowTwist - lastTwist) >= time2Twist
-int16_t twistVal[twX] = { 0 };                      // -24 to +24
-bool pressTwist[twX] = { false };                   // pressed 
+unsigned long int nowTwist[twX] = { 0,0,0 };        // 
+unsigned long int lastTwist[twX] = { 0,0,0 };       // nowTwist - lastTwist) >= time2Twist
+int16_t twistVal[twX] = { 0,0,0 };                  // -24 to +24
+bool pressTwist[twX] = { false, false, false };     // pressed 
 int twistStep = 0;                                  // Multiple turns
-char twistMacro[twX] = { 'v', 'v' };                // Default volume vV - *tm*char vV uU zZ sS xX dD code definitions - *tm* twistMacro=0x00 Use symbolic link file twist
+char twistMacro[twX] = { 'v', 's', 'x' };           // Default volume vV - *tm*char vV uU zZ sS xX dD code definitions - *tm* twistMacro=0x00 Use symbolic link file twist
 char twistOption[17] = "vuzsxdwbVUZSXDWB";          // twist coded macro options volume undo/redo zoom scroll lines-= backspace/delete Wallpaper Photoshop Brush size b +/- Hardness B +/- 0x00
-const byte twistOptionSz = sizeof(twistOption);     // Size of Twist Options string - 0x00 is a valid choice else use size-1
-byte twistcurrOption[twX]  = { 0 };                 // Index into twistOption[] - same info value as twistMacro
-char twistRLP[twX][240]  = { "", "" };              // *t+,-,p* all
-char twistR[twX][80]  = { "", "" };                 // *t+*Name turn right
-char twistL[twX][80]  = { "", "" };                 // *t-*Name turn left
-char twistP[twX][80]  = { "", "" };                 // *tp*Name press
-int16_t twistRconnect[twX] = {  10, 10 };           // -9 R-connect -255 to +255
-int16_t twistGconnect[twX] = {   0, 0  };           // 0 G-connect -255 to +255
-int16_t twistBconnect[twX] = { -12, 12 };           // 9 B-connect -255 to +255
-uint8_t twistcurrColour[twX][3] = { 0 };            // current Red Green Blue twist colour
-uint8_t twistSavedColour[twX][3] = { 0 } ;          // 
-uint8_t twistColour[twX][6] = { 240,15,162,30,5,26, 240,15,162,30,5,26 };  // = { 140,0,200,0,0,30 }; RGB-On RGB-dim - if dim-to-green change the connect to green as well
-bool twistChanged[twX] = { false };                 // Something happened to twist
+const byte twistOptionSz = strlen(twistOption);     // Size of Twist Options string - 0x00 is a valid choice else use size-1
+byte twistcurrOption[twX]  = { 0,0,0 };             // Index into twistOption[] - same info value as twistMacro
+char twistRLP[twX][240]  = { "", "", "" };          // *t+,-,p* all
+char twistR[twX][80]  = { "", "", "" };             // *t+*Name turn right
+char twistL[twX][80]  = { "", "", "" };             // *t-*Name turn left
+char twistP[twX][80]  = { "", "", "" };             // *tp*Name press
+int16_t twistRconnect[twX] = {  10, 5, 20 };        // -9 R-connect -255 to +255
+int16_t twistGconnect[twX] = {   0, 0, 0  };        // 0 G-connect -255 to +255
+int16_t twistBconnect[twX] = { -12, 12, -6 };       // 9 B-connect -255 to +255
+uint8_t twistcurrColour[twX][3] = { 0,0,0 };        // current Red Green Blue twist colour
+uint8_t twistSavedColour[twX][3] = { 0,0,0 };       // 
+uint8_t twistColour[twX][6] = { 240,15,162,30,5,26, 240,15,162,30,5,26, 240,15,162,30,5,26 };  // = { 140,0,200,0,0,30 }; RGB-On RGB-dim - if dim-to-green change the connect to green as well
+bool twistChanged[twX] = { false, false, false };   // Something happened to twist
 bool SaveTwist = false;                             // Save to Twist data to Flash if true
-byte twistDim = 3;                                  // 33% or 20% dimfactor
+byte twistDim = 3;                                  // 0% = off (in loop() and WakeUp()) or 33% or 20% dimfactor
 byte twistLimit = 0;                                // 0 or 24 if version 1.2
-bool twistLong[twX] = { false };                    // Long press to change Twist Options s -W
-long int pressStartTime[twX] = { 0 };               // Measure long - press
-bool twistPressed[twX] = { false };                 // Twist Pressed state
+bool twistLong[twX] = { false, false, false };      // Long press to change Twist Options s -W
+long int pressStartTime[twX] = { 0,0,0 };           // Measure long - press
+bool twistPressed[twX] = { false, false, false };   // Twist Pressed state
 int twistPressedTime = 1000;                        // Twist long-press trigger time
-char twistStatus[16][28] = {"Twist Files Macros",    "Twist Coded Macros X",  "Twist File Macro Removed",  "Twist File Macro Saved",   "Twist default X saved", 
-                            "Twist Dimmed updated",  "Twist Limit updated",   "Twist Colours updated X",   "Twist version: ",          "Twist Config updated X",  
-                            "Twist Config saved",    "Twist Config read" ,    "Twist Options d-Z Ready",   "Twist Options Off",        "Twist Option:  ",     
-                            "TwistStar: " };  
+char twistStatus[16][28] = {"Twist Files Macros",  "Twist Coded Macros X",  "Twist File Macro Removed",  "Twist File Macro Saved",   "Twist default X saved", 
+                            "Twist Dimmed:  ",     "Twist Limit updated",   "Twist Colours updated X",   "Twist version: ",          "Twist Config updated X",  
+                            "Twist Config saved",  "Twist Config read" ,    "Twist Options d-Z Ready",   "Twist Options Off",        "Twist Option:  ",     
+                            "TwistStar:  " };  
+int LastButton = 0, LastLayout = 0;                 // Used for Twist option x to simulate repeated keypresses such as [*Cm] held in, Text keys such as [S1] or [Del]ete key
+char twistX[5]  = { "*/=-" };                       // Characters used in option X Twist turned + or - 
                             
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -874,7 +877,7 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);     // Used for Caps Num Scroll lock
   digitalWrite(LED_BUILTIN, LOW);   
 
-  pinMode(LCDBackLight, OUTPUT);    // Used for Backlight HIGH is ON
+  pinMode(LCDBackLight, OUTPUT);      // Used for Backlight HIGH is ON
   //digitalWrite(LCDBackLight, HIGH); // Switch on here to prevent blank screen when Coordinates missing   
 
   LittleFS.begin(); // LittleFs automatically format the filesystem if one is not detected
@@ -921,7 +924,8 @@ void setup()
   Wire1.setSDA(TWIST_SDA); Wire1.setSCL(TWIST_SCL);                           // TWIST GPIO 4 5 26 27 SDA SCL                                 
   // Twist[0] = twist[0].begin(Wire1, 0x3F);                                  // True if Encoder 1 plugged in in i2c port 1 starts Wire1.begin()
   // Twist[1] = twist[1].begin(Wire1, 0x3E);                                  // True if Encoder 2 plugged in in i2c port 1 starts Wire1.begin() again
-  // if (Twist[0] || Twist[1]) UpdateTwist(4);                                // Setup twist 0, 1   
+  // Twist[2] = twist[2].begin(Wire1, 0x3D);                                  // True if Encoder 3 plugged in in i2c port 1 starts Wire1.begin() again
+  // if (Twist[0] || Twist[1] || Twist[2]) UpdateTwist(4);                    // Setup twist 0, 1, 2   
   for (int i=0; i<twX; i++) { Twist[i] = twist[i].begin(Wire1, 0x3F-i); }     // Set many Twist devices address 0x3F (+ or -) 0-7
   for (int i=0; i<twX; i++) { if (Twist[i]) { UpdateTwist(4); break; }  }     // Only do UpdateTwist once
   Wire1.setClock(400000);                                                     // Twist devices > 1 only works if done this way
@@ -944,10 +948,9 @@ void loop()
 { if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
                    else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
   
-  NowT = now();                                                                // Time from TimeLib
-  // NowMillis = nowTwist[0] = nowTwist[1] = mcpNow = wiggleCheck = millis();  // get the current time (number of milliseconds since started) if 2 Twists only
+  NowT = now();                                                                // Time from TimeLib 
   NowMillis = mcpNow = wiggleCheck = millis();                                 // get the current time (number of milliseconds since started)
-  for (int i=0; i<twX; i++) nowTwist[i] = NowMillis;                           // Set Twist time
+  for (int i=0; i<twX; i++) nowTwist[i] = NowMillis;                           // Set Twist time // NowMillis = nowTwist[0] = nowTwist[1] = = nowTwist[2] = mcpNow = wiggleCheck = millis();
 
   if (powerEnable) { if (setPower == 1) { if (pMinute != 0 && (NowMillis - pMinute) > tMin) pMinute = 0;
                                           if (hour() == power.Hour && minute() == power.Minute && pMinute == 0) { power_fired = true; pMinute = NowMillis; } }
@@ -970,15 +973,15 @@ void loop()
       if (!BLOnOffToggle)                                                 // Is toggled ON after Black Key Pressed for OFF state
          {if (DimVal==0) digitalWrite(LCDBackLight, LOW);                 // Backlight Off
                     else analogWrite(LCDBackLight, DimVal);               // Backlight Dimmed          
-          if (BackLightOn) { for (int i=0; i<twX; i++) { twistSavedColour[i][0] = twist[i].getRed(); twistSavedColour[i][1] = twist[i].getGreen(); twistSavedColour[i][2] = twist[i].getBlue(); 
-                                                         twist[i].setColor(twistColour[i][3], twistColour[i][4], twistColour[i][5]); } }  // Set Twist dim                
+          if (BackLightOn && twistDim>0) { for (int i=0; i<twX; i++) { twistSavedColour[i][0] = twist[i].getRed(); twistSavedColour[i][1] = twist[i].getGreen(); twistSavedColour[i][2] = twist[i].getBlue(); 
+                                                                       twist[i].setColor(twistColour[i][3], twistColour[i][4], twistColour[i][5]); } }  // Set Twist dim                  
           LastMillis = NowMillis;                                         // Start Timer again
           RepLast = RepNow = NowMillis;                                   // Reset repeat key timer      
           if (!Kbrd) status("");                                          // Clear the status line if KeyBrd not active
           OptNum = VarNum = 0;                                            // [Key] and [Opt] Keys reset to unpressed state
           BackLightOn = false;   }                                        // Until keypress 
   
-  for (int i=0; i<twX; i++) { if (Twist[i]) CheckTwist(i); }     // if (Twist[0]) CheckTwist(0); if (Twist[1]) CheckTwist(1); // if 2 Twists only
+  for (int i=0; i<twX; i++) { if (Twist[i]) CheckTwist(i); }     // if (Twist[0]) CheckTwist(0); if (Twist[1]) CheckTwist(1); if (Twist[2]) CheckTwist(2); // if 3 Twists only
 
   if (mcpN>0) if ((mcpNow - mcpLast) >= mcpTime) { mcpLast = mcpNow; mcpCheck(); }
            
@@ -998,9 +1001,10 @@ void loop()
   RepNow = millis(); KeyHeld = 0; KeyHeldLayout = Layout;                      // get the current time and save KeyHeld 
   for ( uint8_t b = 0; b < NumButtons; b++) 
       { if (key[b].justReleased()) {key[b].drawButton(false); RepLast = RepNow; }                      // draw normal - code at release time
-        if (key[b].justPressed())  {key[b].drawButton(true); { buttonpress(b); RepLast = millis(); }}  // draw invert - code at press time  
+        if (key[b].justPressed())  {LastButton = b; LastLayout = Layout; 
+                                    key[b].drawButton(true); { buttonpress(b); RepLast = millis(); }}  // draw invert - code at press time  
             else if (((RepNow - RepLast) >= RepTimePeriod) && (key[b].isPressed()))                    // code while the button is held
-                      {buttonpress(b); KeyHeld = b;}    }                                              // Do button number b always 17 on loop exit
+                      {LastButton = b; LastLayout = Layout; buttonpress(b); KeyHeld = b;}    }         // Do button number b always 17 on loop exit
 
   if (KeyHeld==7&&KeyHeldEnable) { Layout = KeyHeldLayout;                    // Swop Keys [L1-L4] to Key [Vo] if key held in > 600 millisecond
                     if (!MuteOn) { if (Layout==1) Layout=4; else Layout--; }  // RepTimePeriod = 600 Try 500-700 After this key repeat is active 
@@ -1062,7 +1066,7 @@ void CheckTwist(int i)  // Expand to more twists by calling for each Twist else 
                                                 twistPressed[i] = false; }
                                                          
    if (twistLong[i] && twist[i].isMoved()) { twist[i].getCount(); twistStep = twist[i].getDiff();
-                                             twistcurrOption[i] += twistStep;                                   // Could be more than one step + or -
+                                             twistcurrOption[i] += twistStep;                                      // Could be more than one step + or -
                                              if (twistcurrOption[i] < 0) twistcurrOption[i] = twistOptionSz - 1;   // % solutions have blank=0x00 + * problem 
                                              else if (twistcurrOption[i] >= twistOptionSz) twistcurrOption[i] = 0; 
                                              if (twistStep<0 && twistcurrOption[i]==0) twistcurrOption[i] = twistOptionSz - 1; // Else stuck at v if anti-clockwise                                                        
@@ -2300,6 +2304,7 @@ void DoAltEsc()  // Move focus to next open app
   usb_hid.keyboardRelease(HIDKbrd); 
   delay(dt100); 
 }
+
 ///////////////////////////////////////////////////
 void DoWakeUp()  // Wake up LCD + Twist if dimmed
 ///////////////////////////////////////////////////
@@ -2309,9 +2314,11 @@ void DoWakeUp()  // Wake up LCD + Twist if dimmed
   if (NormVal==0) digitalWrite(LCDBackLight, HIGH);
              else analogWrite(LCDBackLight, NormVal);  
   
-  for (int i=0; i<twX; i++) { twist[i].setColor(twistSavedColour[i][0], twistSavedColour[i][1], twistSavedColour[i][2]);
-  twistcurrColour[i][0] = twistSavedColour[i][0]; twistcurrColour[i][1] = twistSavedColour[i][1]; twistcurrColour[i][2] = twistSavedColour[i][2]; }
+  if (twistDim>0) for (int i=0; i<twX; i++) { twist[i].setColor(twistSavedColour[i][0], twistSavedColour[i][1], twistSavedColour[i][2]);
+                                              twistcurrColour[i][0] = twistSavedColour[i][0]; twistcurrColour[i][1] = twistSavedColour[i][1]; 
+                                              twistcurrColour[i][2] = twistSavedColour[i][2]; }
 }
+
 /////////////////////////////
 void buttonpress(int Button)
 /////////////////////////////
@@ -4322,27 +4329,27 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
       { KeyBrdDirect = true; optionsindicators(0); status("KeyBoard Direct ON"); StarOk = true; break; }    // On Macroeditor exit KeyBrdDirect = false; 
       case 72: ///////////////////// KeyBrdByte[1]=='p'KeyBrdByte[2]=='c' *pc* Send to PC Serial2Pico current config
       { if (knum==4) { for (n=0; n<Config1Size; n++) Serial.write(Config1[n]); status("Raw Data sent to PC"); StarOk = true; break; }  
-        if (knum==5) { for (n=0; n<6; n++)                                         Serial.println(BsDLabel[XNum[n]]);  Serial.println(BsDLabel[BsDNum]);    Serial.println(BsDLabel[RetNum]);
-        Serial.println(Layout);              Serial.println(LayerAD);              Serial.println(LayerAxD);           Serial.println(VolOn);               Serial.println(MuteOn);      
-        Serial.println(ToneOn);              Serial.println(MediaConfig[0]);       Serial.println(Media);              Serial.println(Vol1);                Serial.println(Vol3);          
-        Serial.println(Vol4);                Serial.println(MathSet);              Serial.println(MathX);              Serial.println(Math);                Serial.println(NumKeys);           
-        Serial.println(nChar);               Serial.println(nKeysPage);            Serial.println(nKeys34);            Serial.println(nKeysShow);           Serial.println(Numkeys123); 
-        Serial.println(CapsLock);            Serial.println(NumLock);              Serial.println(ScrollLock);         Serial.println(OptionOS);            Serial.println(CheckSerial); 
-        Serial.println(SDNum);               Serial.println(MLabel);               Serial.println(SLabel);             Serial.println(TLabel);              Serial.println(NormVal);           
-        Serial.println(DimVal);              Serial.println(TimePeriod);           Serial.println(TimeSet);            Serial.println(StartMarker);         Serial.println(EndMarker);
-        Serial.println(Rotate180);           Serial.println(KeyHeldEnable);        Serial.println(KeySkip);            Serial.println(SDCardArr[2]);        Serial.println(nKeysL134);
+        if (knum==5) { for (n=0; n<6; n++)                                         Serial.println(BsDLabel[XNum[n]]);  Serial.println(BsDLabel[BsDNum]);     Serial.println(BsDLabel[RetNum]);
+        Serial.println(Layout);              Serial.println(LayerAD);              Serial.println(LayerAxD);           Serial.println(VolOn);                Serial.println(MuteOn);      
+        Serial.println(ToneOn);              Serial.println(MediaConfig[0]);       Serial.println(Media);              Serial.println(Vol1);                 Serial.println(Vol3);          
+        Serial.println(Vol4);                Serial.println(MathSet);              Serial.println(MathX);              Serial.println(Math);                 Serial.println(NumKeys);           
+        Serial.println(nChar);               Serial.println(nKeysPage);            Serial.println(nKeys34);            Serial.println(nKeysShow);            Serial.println(Numkeys123); 
+        Serial.println(CapsLock);            Serial.println(NumLock);              Serial.println(ScrollLock);         Serial.println(OptionOS);             Serial.println(CheckSerial); 
+        Serial.println(SDNum);               Serial.println(MLabel);               Serial.println(SLabel);             Serial.println(TLabel);               Serial.println(NormVal);           
+        Serial.println(DimVal);              Serial.println(TimePeriod);           Serial.println(TimeSet);            Serial.println(StartMarker);          Serial.println(EndMarker);
+        Serial.println(Rotate180);           Serial.println(KeyHeldEnable);        Serial.println(KeySkip);            Serial.println(SDCardArr[2]);         Serial.println(nKeysL134);
         Serial.println(iList);          
-        for (i=0; i<3; i++) { for (n=0; n<iListMax; n++)                           Serial.print(b2Hex[MacroInstructionList[i][n]]);                         Serial.println(); }    
-        for (n=0; n<10; n++)                 Serial.print(nKeysCharSet[n]);        Serial.println();     
-        for (n=0; n<10; n++)                 Serial.print(nKeysLnkChar[n]);        Serial.println(); 
-        Serial.println(MouseK);              Serial.println(Twist[twS]);           Serial.println(twistOption[twS]);         
+        for (i=0; i<3; i++) { for (n=0; n<iListMax; n++)                           Serial.print(b2Hex[MacroInstructionList[i][n]]);                          Serial.println(); }    
+        for (n=0; n<10; n++)                                                       Serial.print(nKeysCharSet[n]);                                            Serial.println();     
+        for (n=0; n<10; n++)                                                       Serial.print(nKeysLnkChar[n]);                                            Serial.println(); 
+        Serial.println(MouseK);              Serial.println(Twist[twS]);           Serial.println(twistOption);         
         for (n=0; n<6; n++)                  Serial.println(twistColour[twS][n]);       
         Serial.println(twistRconnect[twS]);  Serial.println(twistGconnect[twS]);   Serial.println(twistBconnect[twS]); Serial.println(twistcurrOption[twS]); Serial.println(twistDim);     
         Serial.println(twistLimit);          Serial.println(mcpLink);              Serial.println(mcpDelay);           Serial.println(mcpRepeat);            Serial.println(mcpTime); 
         for (n=0; n<8; n++)                  Serial.print(mcpFound[n]);            Serial.println();   
         for (n=0; n<8; n++)                  Serial.print(mcpType[n]);             Serial.println();   
         for (n=0; n<8; n++)                  Serial.print(mcpAddr[n]-32);          Serial.println();   
-        for (n=0; n<8; n++) { for (i=0; i<16; i++)                                 Serial.print(mcpPins[n][i]);        Serial.println(); }
+        for (n=0; n<8; n++) { for (i=0; i<16; i++)                                 Serial.print(mcpPins[n][i]);                                              Serial.println(); }
         Serial.println(mcpDir);              Serial.println(mcpStr);               Serial.println(mcp23018);           Serial.println(twistStar);            Serial.println("EOC");         
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
@@ -4451,7 +4458,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                        if (k4=='8') { twistGconnect[twS] = -1*(twistRconnect[twS] = -8); twistBconnect[twS] = 0; }
                        if (k4=='9') { twistBconnect[twS] = -1*(twistGconnect[twS] = -8); twistRconnect[twS] = 0; }                       
                        UpdateTwist(twistOption); twistStatus[4][21] = k4; status(twistStatus[9]); SaveTwist = StarOk = true; break; }  
-        if (knum==6) { if (k4=='*') { twistStar = k5 - 48; twistStatus[15][12] = k5; status(twistStatus[15]); StarOk = true; break; } break; }  // twistStar change with *tc**n n=0-9              
+        if (knum==6) { if (k4=='*') { twistStar = k5 - 48; twistStatus[15][10] = k5; status(twistStatus[15]); StarOk = true; break; }   // twistStar change with *tc**n n=0-9  
+                       if (k4=='d' || k4=='D') { twistDim = k5-48; if (twistDim==0) status("Twist Dim Off"); 
+                                                                   else { twistStatus[5][14]=k5; status(twistStatus[5]); } SaveTwist = StarOk = true; break; } break; }  
+        if (knum==8) { for (n=0; n<4; n++) twistX[n] = KeyBrdByte[n+4]; status(twistX); StarOk = true; break; }   // twist option X chrs changed with *tc*abcd abcd = 4 chars default */=-                                                                                
         if (knum >= 10) { for (n=0; n<3; n++) { twistColour[twS][n] = hex2byte(p); twistColour[twS][n+3] = hex2byte(p)/twistDim; p += 2; } }
         if (knum == 16) { twistRconnect[twS] = hex2int8(p); p += 2; twistGconnect[twS] = hex2int8(p); p += 2; twistBconnect[twS] = hex2int8(p); }
         twistOption = 3; twistStatus[4][19] = k4; status(twistStatus[7]); UpdateTwist(twistOption); SaveTwist = StarOk = true; break; }  
@@ -4567,42 +4577,40 @@ void DoTwistMacro(int t)
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
                      break;  
            case 'B': if (pressTwist[t]) twistMacro[t] = (twistMacro[t] == 'b') ? 'B' : 'b';                 // b Brush size B Brush hardness
-                     if (twistVal[t]>0) Action = 0x30; if (twistVal[t]<0) Action = 0x2F;                 // Shift + [ ] brush hardness
+                     if (twistVal[t]>0) Action = 0x30; if (twistVal[t]<0) Action = 0x2F;                    // Shift + [ ] brush hardness
                      keycode[0] = ShfL; keycode[1] = Action; keycode[2] = 0x00; 
                      usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50); break;
            case 'b': if (pressTwist[t]) twistMacro[t] = (twistMacro[t] == 'b') ? 'B' : 'b';                 // b Brush size B Brush hardness
-                     if (twistVal[t]>0) Action = ']'; if (twistVal[t]<0) Action = '[';                   // [ ] brush size
+                     if (twistVal[t]>0) Action = ']'; if (twistVal[t]<0) Action = '[';                      // [ ] brush size
                      usb_hid.keyboardPress(HIDKbrd, Action);             delay(dt50); 
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50);
                      break;                                                 
-           case 'X': if (twistVal[t]>0) Action = '*'; else Action = '/'; 
+           case 'X': if (twistVal[t]>0) Action = twistX[0]; else Action = twistX[1]; 
                      usb_hid.keyboardPress(HIDKbrd, Action);             delay(dt50);
                      usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50); 
                      break;           
-           case 'x': if (twistVal[t]>0) Action = '-'; else Action = '=';  
-                     usb_hid.keyboardPress(HIDKbrd, Action);             delay(dt50);
-                     usb_hid.keyboardRelease(HIDKbrd);                   delay(dt50); 
+           case 'x': if (LastButton >= 0 && LastButton < NumButtons) { Layout = LastLayout; buttonpress(LastButton); }  // Repeat last touchscreen key
                      break; 
            case 'Y': if (pressTwist[t]) { keycode[0] = KeyD; keycode[1] = 0x00; keycode[2] = 0x00; 
-                                       tud_hid_keyboard_report(HIDKbrd, ModGuiL, keycode); delay(dt50); 
-                                       tud_task();   // call before releasing the keys
-                                       keycode[0] = 0x00;
-                                       tud_hid_keyboard_report(HIDKbrd, 0x00, keycode); }
+                                          tud_hid_keyboard_report(HIDKbrd, ModGuiL, keycode); delay(dt50); 
+                                          tud_task();   // call before releasing the keys
+                                          keycode[0] = 0x00;
+                                          tud_hid_keyboard_report(HIDKbrd, 0x00, keycode); }
                      break;                      
            case 'y': if (pressTwist[t]) { keycode[0] = GuiL; keycode[1] = KeyD; keycode[2] = 0x00; 
-                                       usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
-                                       usb_hid.keyboardRelease(HIDKbrd);                   delay(1000); }
+                                          usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                                          usb_hid.keyboardRelease(HIDKbrd);                   delay(1000); }
                      break;  
            case 'W':                                        
            case 'w': if (twistVal[t]>0) { keycode[0] = ShfL; keycode[1] = F10; keycode[2] = 0x00; 
-                                       usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
-                                       usb_hid.keyboardRelease(HIDKbrd);                   delay(dt200);
-                                       usb_hid.keyboardPress(HIDKbrd, 'n');                delay(dt50);
-                                       usb_hid.keyboardRelease(HIDKbrd);                   delay(1000); }                
+                                          usb_hid.keyboardReport(HIDKbrd, 0, keycode);        delay(dt50); 
+                                          usb_hid.keyboardRelease(HIDKbrd);                   delay(dt200);
+                                          usb_hid.keyboardPress(HIDKbrd, 'n');                delay(dt50);
+                                          usb_hid.keyboardRelease(HIDKbrd);                   delay(1000); }                
                      break;                                                 
            default:  break;
-         }  return; 
+        }  return; 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -5918,7 +5926,7 @@ void showKeyData(byte Option)
    SerPr2;
    Serial.print("Twist RGB rgb Colour Set: "); for (int i = 0; i < 6; i++) { Serial.print(twistColour[twistStar][i], HEX); SerPr1; } SerPr2;
    Serial.print("Twist Connect RGB Set: "); Serial.print(twistRconnect[twistStar]); SerPr1; Serial.print(twistGconnect[twistStar]); SerPr1; Serial.print(twistBconnect[twistStar]); SerPr2;
-   Serial.print("Twist Dim Value (/3 /5): "); Serial.print(twistDim); SerPr2; 
+   Serial.print("Twist Dim Value (0=Off /3 /5): "); Serial.print(twistDim); SerPr2; 
    Serial.print("Twist Limit (0-24): "); Serial.print(twistLimit); SerPr2; 
    Serial.print("Twist Options: "); Serial.print(twistcurrOption[twistStar]); SerPr1; if (twistMacro[twistStar]!=0x00) Serial.print(twistMacro[twistStar]); else Serial.print("0x00"); SerPr1; Serial.print(twistOption); SerPr2;
 
