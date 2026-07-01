@@ -942,7 +942,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     with the star commands through *tc**n with n = 0-9 where 0 is when one Twist device connected. For example four 
     Twist devices connected but control the second device through starcodes and the PC App, then use *tc**1.
     *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
-    *tc* = version *tc*d,D = dimmed value *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
+    *tc* = version *tc*d,D = dimmed value  *tc*d0-9,D0-9 set dim value 0 = dim off  
+    *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
     *tc* = version *tc*l,L = limit value l=0 no limits (version 1.0) L=24 steps limit such as -12 0 +12
     *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
     *tf*s,r = Save or Read twist config file twistCfg 
