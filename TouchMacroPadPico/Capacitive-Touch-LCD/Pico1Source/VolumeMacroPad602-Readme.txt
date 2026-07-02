@@ -33,7 +33,7 @@ If a different display is used the Arduino-Pico build code must be deleted befor
 
 New changes:
 1. Fixed Key Repeat and KeyHeld Vol Mute change - reverted to previous code.
-2. Fixed missed Twist device 0 and limited scanning for Twists devices to actaul connected devices
+2. Fixed missed Twist device 0 and limited scanning for Twists devices to actual connected devices
 3. Changed option x to repeat the last key pressed when Twist is turned - it is a very useful option. Whether the [S1] is pressed that types a text string, 
    or the [Del]ete key, or the nKeys page-up [+] key, or the [*Cm] key that runs through all the star options - all four repeat when turning the Twist knob. 
    Option capital X can now be assigned two characters - enter *tc*abcd and and b will replace the / and * typed when the Twist is turned.
