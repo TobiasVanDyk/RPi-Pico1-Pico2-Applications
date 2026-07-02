@@ -103,6 +103,7 @@ bool mcp23018 = false;              // If true slots mcp2 and mcp3 (address 0x20
 #define twistLo 100                                 // Colour RGB levels 100 or 200 
 #define twistHi 200                                 //
 TWIST twist[twX];                                   // Create instances of this object
+int twC = 1;                                        // Determine number of twists actually connected with *tc**n=0-(twX-1) then *tc* if version = 0.0 not connected 
 bool Twist[twX] = { false, false, false };          // True if Encoders plugged into i2c 1 or 2
 int twistStar  = 0;                                 // Used to determine which twist 1,2,3 etc must be changed with star options - change with *tc**n n = 0-9  
 char twistF[twX][7] = { "twist", "twistB", "twistC" };             // Filename containing the 3 twist macro path/filenames Size=21 for default twist1,2,3 used in readTwist() 
@@ -950,7 +951,7 @@ void loop()
   
   NowT = now();                                                                // Time from TimeLib 
   NowMillis = mcpNow = wiggleCheck = millis();                                 // get the current time (number of milliseconds since started)
-  for (int i=0; i<twX; i++) nowTwist[i] = NowMillis;                           // Set Twist time // NowMillis = nowTwist[0] = nowTwist[1] = = nowTwist[2] = mcpNow = wiggleCheck = millis();
+  for (int i=0; i<twC; i++) nowTwist[i] = NowMillis;                           // Set Twist time // NowMillis = nowTwist[0] = nowTwist[1] = = nowTwist[2] = mcpNow = wiggleCheck = millis();
 
   if (powerEnable) { if (setPower == 1) { if (pMinute != 0 && (NowMillis - pMinute) > tMin) pMinute = 0;
                                           if (hour() == power.Hour && minute() == power.Minute && pMinute == 0) { power_fired = true; pMinute = NowMillis; } }
@@ -973,7 +974,7 @@ void loop()
       if (!BLOnOffToggle)                                                 // Is toggled ON after Black Key Pressed for OFF state
          {if (DimVal==0) digitalWrite(LCDBackLight, LOW);                 // Backlight Off
                     else analogWrite(LCDBackLight, DimVal);               // Backlight Dimmed          
-          if (BackLightOn && twistDim>0) { for (int i=0; i<twX; i++) { twistSavedColour[i][0] = twist[i].getRed(); twistSavedColour[i][1] = twist[i].getGreen(); twistSavedColour[i][2] = twist[i].getBlue(); 
+          if (BackLightOn && twistDim>0) { for (int i=0; i<twC; i++) { twistSavedColour[i][0] = twist[i].getRed(); twistSavedColour[i][1] = twist[i].getGreen(); twistSavedColour[i][2] = twist[i].getBlue(); 
                                                                        twist[i].setColor(twistColour[i][3], twistColour[i][4], twistColour[i][5]); } }  // Set Twist dim                  
           LastMillis = NowMillis;                                         // Start Timer again
           RepLast = RepNow = NowMillis;                                   // Reset repeat key timer      
@@ -981,7 +982,7 @@ void loop()
           OptNum = VarNum = 0;                                            // [Key] and [Opt] Keys reset to unpressed state
           BackLightOn = false;   }                                        // Until keypress 
   
-  for (int i=0; i<twX; i++) { if (Twist[i]) CheckTwist(i); }     // if (Twist[0]) CheckTwist(0); if (Twist[1]) CheckTwist(1); if (Twist[2]) CheckTwist(2); // if 3 Twists only
+  for (int i=0; i<twC; i++) { if (Twist[i]) CheckTwist(i); }     // if (Twist[0]) CheckTwist(0); if (Twist[1]) CheckTwist(1); if (Twist[2]) CheckTwist(2); // if 3 Twists only
 
   if (mcpN>0) if ((mcpNow - mcpLast) >= mcpTime) { mcpLast = mcpNow; mcpCheck(); }
            
@@ -2314,7 +2315,7 @@ void DoWakeUp()  // Wake up LCD + Twist if dimmed
   if (NormVal==0) digitalWrite(LCDBackLight, HIGH);
              else analogWrite(LCDBackLight, NormVal);  
   
-  if (twistDim>0) for (int i=0; i<twX; i++) { twist[i].setColor(twistSavedColour[i][0], twistSavedColour[i][1], twistSavedColour[i][2]);
+  if (twistDim>0) for (int i=0; i<twC; i++) { twist[i].setColor(twistSavedColour[i][0], twistSavedColour[i][1], twistSavedColour[i][2]);
                                               twistcurrColour[i][0] = twistSavedColour[i][0]; twistcurrColour[i][1] = twistSavedColour[i][1]; 
                                               twistcurrColour[i][2] = twistSavedColour[i][2]; }
 }
@@ -4649,7 +4650,9 @@ void UpdateTwist(byte Option)
 //////////////////////////////
 { int i;  
   bool found = false;
-  for (i=1 ; i<twX; i++) if (Twist[i]) { found = true; break; }  // if (!Twist[0] && !Twist[1]) return;  // If only 2 Twists
+  twC = 0;
+  
+  for (i=0 ; i<twX; i++) if (Twist[i]) { found = true; twC = i+1; break; }  // if (!Twist[0] && !Twist[1]) return;  // If only 2 Twists
   if (!found) return;
   
   for (i=0; i<twX; i++) { twist[i].setLimit(twistLimit);         // Twist -24 to +24 not availale if version < 1.2 else it is -x 0 + x
@@ -5924,6 +5927,7 @@ void showKeyData(byte Option)
    Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); } SerPr2;
 
    SerPr2;
+   Serial.print("Twist Connected (0-3): "); Serial.print(twC); SerPr2;   
    Serial.print("Twist RGB rgb Colour Set: "); for (int i = 0; i < 6; i++) { Serial.print(twistColour[twistStar][i], HEX); SerPr1; } SerPr2;
    Serial.print("Twist Connect RGB Set: "); Serial.print(twistRconnect[twistStar]); SerPr1; Serial.print(twistGconnect[twistStar]); SerPr1; Serial.print(twistBconnect[twistStar]); SerPr2;
    Serial.print("Twist Dim Value (0=Off /3 /5): "); Serial.print(twistDim); SerPr2; 
