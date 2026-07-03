@@ -12,7 +12,7 @@ Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\D
 Using library Adafruit_MCP23017_Arduino_Library at version 2.3.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit_MCP23017_Arduino_Library 
 Using library Adafruit_BusIO at version 1.17.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit_BusIO 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad428.ino.elf"
-Sketch uses 291520 bytes (27%) of program storage space. Maximum is 1044480 bytes.
+Sketch uses 291640 bytes (27%) of program storage space. Maximum is 1044480 bytes.
 Global variables use 71216 bytes (27%) of dynamic memory, leaving 190928 bytes for local variables. Maximum is 262144 bytes.
 Resetting COM9
 Converting to uf2, output size: 663040, start address: 0x2000
@@ -27,24 +27,26 @@ If a different display is used the Arduino-Pico build code must be deleted befor
 
 
 New changes:
-1. Changed option x to repeat the last key pressed when Twist is turned - it is a very useful option. Whether the [S1] is pressed that types a text string, 
-   or the [Del]ete key, or the nKeys page-up [+] key, or the [*Cm] key that runs through all the star options - all four repeat when turning the Twist knob. 
+1. Fixed 2nd and 3rd Twist not changing colour when turned
+2. Fixed missed Twist device 0 and limited scanning for Twists devices to actual connected devices.
+3. Changed option x to repeat the last key pressed when Twist is turned - it is a very useful option. Whether the [S1] is pressed that types a text string, 
+   or the [Del]ete key, or the [*Cm] key that runs through all the star options - all three repeat when turning the Twist knob. 
    Option capital X can now be assigned two characters - enter *tc*abcd and and b will replace the / and * typed when the Twist is turned.
-2. Added up to 7 Sparkfun Twist Encoder i2c devices - default is 2 but change #define twX 2 to the required number 0-7 of twistDevices.
+4. Added up to 7 Sparkfun Twist Encoder i2c devices - default is 2 but change #define twX 2 to the required number 0-7 of twistDevices.
    If more than one Twist device choose which Twist device to configure and control with the star commands through *tc**n with n = 0-7 
    where 0 is when one Twist device connected. For example four Twist devices connected but control the second device through starcodes 
    and the PC App, then use *tc**1.
-3. Added MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked seequence of macros or single macro, and set outputs
+5. Added MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked seequence of macros or single macro, and set outputs
    using star codes. Can toggle inputs and outputs on the PC App. See manual section (Ab) for details.
-4. CircuitPython device control and used as input and/or output for Pico macropad and/or PC App. 
+6. CircuitPython device control and used as input and/or output for Pico macropad and/or PC App. 
    *cp* CircuitPython filelist *cp*cnn c=command a,d,r,c nn=filelist index=00-99 *cp*cnnfilename a Activate, d Delete, r Rename, c Copy
    *cp*cnn a-z, nn=00-99 Commands to control CircuitPy device a-z excludes a,c,d,r. Commands sent to CPy device as <Ccnn> or <CcnnFileName>
    Pico macropad receives CircuitPy device filelist as <CX:File1.py,File2.py;File3.py> with File2.py the active function and X: the driveletter.
-5. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB. Long-press Twist again
+7. Rotary Encoder long-press for "Twist Options d-Z Ready" shows. Then turn encoder for the options vuzsxdwbVUZSXDWB. Long-press Twist again
    to exit the encoder options mode. If the star * option is chosen the Twist mode will change from the coded options Volume, Scroll, Zoom 
    etc. to Twist File macros. To cahnge back from file macros choose any of coded macros such as S V Z etc.
-6. Added Key Threshold *ke*nnn nnn = 100-999 Use *kh* for Key Hold enable if VolMute.
-7. Added Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders and example Files4Twist.zip
+8. Added Key Threshold *ke*nnn nnn = 100-999 Use *kh* for Key Hold enable if VolMute.
+9. Added Rotary Encoder plugin with support for coded functions and symbolic link to macro actions in App folders and example Files4Twist.zip
    *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
    *tc* = version *tc*d,D = dimmed value *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
    *tc* = version *tc*l,L = limit value l=0 no limits (version 1.0) L=24 steps limit such as -12 0 +12
@@ -55,14 +57,12 @@ New changes:
    undo/redo zoom +/-/reset scroll +/- X /* x -= backspace/delete Wallaper-Next Photoshop Brush Size = b Hardness = B
    *tm*0 same as *tm* switch to file-based macros for Twist not the coded macros as in *tm*char = vuzsxdwbVUZSXDWB 
    Use Sparkfun Qwiic Twist version 1.2 https://www.sparkfun.com/sparkfun-qwiic-twist-rgb-rotary-encoder-breakout.html and connect to 3v3 Gnd and GPIO 26 GPIO 27 for SDA SCL
-8. Support Mouse keys page on PC App
-9. Added Volume and Play Media Star Codes: Use *v+* *v-* *vm* Volume + - mute or *v+,-*nn = 00-99 and *p+* *p-* *pp* *ps* Play Media Next Previous Play/Pause Stop. 
+10. Support Mouse keys page on PC App
+11. Added Volume and Play Media Star Codes: Use *v+* *v-* *vm* Volume + - mute or *v+,-*nn = 00-99 and *p+* *p-* *pp* *ps* Play Media Next Previous Play/Pause Stop. 
    For *v+*nn and *v-*nn the nn is not and absolute number but an increase or decrease of the existing value  divided by two - i.e. if the existing value is 40 and
    you send *v+*20 then the new volume will be 50 (not 60 or 20). To set the volume to a specific value first send <*v-*50> which will set it to 0 and mute, then send 
    <*v+*value/2> i.e. send <*v+*25> if the volume is to be set at 50 percent.
-10. Expanded iList options to 20 and added colour copy defaults to iList
-11. Added pre-coded M1-M24 text string as stringm24.h - use new iList number 14 to send without loading or saving the text strings - similar to Do2=1 option
-12. Fixed regression errors for Timers and Clocks + 1 minute lock fix
+12. Expanded iList options to 20 and added colour copy defaults to iList
 
 
 

@@ -105,6 +105,7 @@ bool mcp23018 = false;              // If true slots mcp2 and mcp3 (address 0x20
 #define twistLo 100                                 // Colour RGB levels 100 or 200 
 #define twistHi 200                                 //
 TWIST twist[twX];                                   // Create instances of this object
+int twC = 1;                                        // Determine number of twists actually connected with *tc**n=0-(twX-1) then *tc* if version = 0.0 not connected 
 bool Twist[twX] = { false, false, false };          // True if Encoders plugged into i2c 1 or 2
 int twistStar  = 0;                                 // Used to determine which twist 1,2,3 etc must be changed with star options - change with *tc**n n = 0-9  
 char twistF[twX][7] = { "twist", "twistB", "twistC" };             // Filename containing the 3 twist macro path/filenames Size=21 for default twist1,2,3 used in readTwist() 
@@ -977,7 +978,7 @@ void loop()
 
   NowMillis = millis();
   wiggleCheck = mcpNow = NowMillis;
-  for (int i=0; i<twX; i++) nowTwist[i] = NowMillis;       // Set Twist time
+  for (int i=0; i<twC; i++) nowTwist[i] = NowMillis;       // Set Twist time
   
   if (powerEnable || alarmEnable || timerEnable) { rtc_get_datetime(&t); }
 
@@ -998,7 +999,7 @@ void loop()
       if (!BLOnOffToggle)                                       // Is toggled ON after Black Key Pressed for OFF state
          {if (DimVal==0) digitalWrite(LCDBackLight, LOW);       // Backlight Off
                     else analogWrite(LCDBackLight, DimVal);     // Backlight Dimmed
-          if (BackLightOn && twistDim>0) { for (int i=0; i<twX; i++) { twistSavedColour[i][0] = twist[i].getRed(); twistSavedColour[i][1] = twist[i].getGreen(); twistSavedColour[i][2] = twist[i].getBlue(); 
+          if (BackLightOn && twistDim>0) { for (int i=0; i<twC; i++) { twistSavedColour[i][0] = twist[i].getRed(); twistSavedColour[i][1] = twist[i].getGreen(); twistSavedColour[i][2] = twist[i].getBlue(); 
                                                                        twist[i].setColor(twistColour[i][3], twistColour[i][4], twistColour[i][5]); } }  // Set Twist dim                       
           LastMillis = NowMillis;                               // Start Timer again
           RepLast = RepNow = NowMillis;                         // Reset repeat key timer      
@@ -1006,7 +1007,7 @@ void loop()
           OptNum = VarNum = 0;                                  // [Key] and [Opt] Keys reset to unpressed state
           BackLightOn = false;   }                              // Until keypress  
   
-  for (int i=0; i<twX; i++) { if (Twist[i]) CheckTwist(i); }  // if (Twist[0]) CheckTwist(0); if (Twist[1]) CheckTwist(1); if (Twist[2]) CheckTwist(2); // if 3 Twists only
+  for (int i=0; i<twC; i++) { if (Twist[i]) CheckTwist(i); }    // if (Twist[0]) CheckTwist(0); if (Twist[1]) CheckTwist(1); if (Twist[2]) CheckTwist(2); // if 3 Twists only
         
   if (mcpN>0) if ((mcpNow - mcpLast) >= mcpTime) { mcpLast = mcpNow; mcpCheck(); }
 
@@ -1100,7 +1101,7 @@ void CheckTwist(int i)  // Expand to more twists by calling for each Twist else 
   
    if ( !twistLong[i]) if ((nowTwist[i] - lastTwist[i]) >= time2Twist )
       { lastTwist[i] = nowTwist[i]; twistChanged[i] = false;            
-        if (twist[i].isMoved()) { twistChanged[i] = true; twist[i].getCount(); twistStep = twist[i].getDiff();
+        if (twist[i].isMoved()) { twistChanged[i] = true; twist[i].getCount(); twistStep = twist[i].getDiff();        
                                   if (twistMacro[i]!=0x00) { while (twistStep > 0) { twistVal[i] = 1;  DoTwistMacro(i); twistStep--; }
                                                              while (twistStep < 0) { twistVal[i] = -1; DoTwistMacro(i); twistStep++; } }
                                   else { twistVal[i] = twistStep; DoTwistFile(i); } }
@@ -2383,7 +2384,7 @@ void DoWakeUp()  // Wake up LCD + Twist if dimmed
   if (NormVal==0) digitalWrite(LCDBackLight, HIGH);
              else analogWrite(LCDBackLight, NormVal);  
   
-  if (twistDim>0) for (int i=0; i<twX; i++) { twist[i].setColor(twistSavedColour[i][0], twistSavedColour[i][1], twistSavedColour[i][2]);
+  if (twistDim>0) for (int i=0; i<twC; i++) { twist[i].setColor(twistSavedColour[i][0], twistSavedColour[i][1], twistSavedColour[i][2]);
                                               twistcurrColour[i][0] = twistSavedColour[i][0]; twistcurrColour[i][1] = twistSavedColour[i][1]; 
                                               twistcurrColour[i][2] = twistSavedColour[i][2]; }
 }
@@ -4468,11 +4469,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         if (knum>10) { for (n=4; n<knum; n++) twistRLP[twS][n] = KeyBrdByte[n+4]; twistRLP[twS][n] =0x00; if (LayerAxD) f = SDFS.open(twistF[twS], "w"); else f = LittleFS.open(twistF[twS], "w");
                        if (f) { f.write(twistRLP[twS], n); f.close(); status(twistStatus[3]); SaveTwist = StarOk = true; } break; } } 
         case 91: ///////////////////// KeyBrdByte[1]=='t'&&KeyBrdByte[2]=='c' *tc* set Twist options, colours and connect *tc*RRGGBBCrCgCb RGB colours Cx Connect -128 to +127
-      { const byte* p = KeyBrdByte + 4; byte twistOption = 0; if (knum>16) break;   // *tc* version *tc*d,D dimed value *tc*X = rR gG bB yY wW pP 0-9
+      { const byte* p = KeyBrdByte + 4; byte twistOption = 0; if (knum>16) break;   // *tc* version *tc*d,D dimmed value *tc*X = rR gG bB yY wW pP 0-9
         if (knum==4) { m = twist[twS].getVersion(); SerPr2; Serial.print(twistStatus[8]); Serial.print(m & 0xFF); Serial.print("."); Serial.println(m >> 8); StarOk = true; break; }
-        if (knum==5) { if (k4=='d' || k4=='D') { twistDim = 3 + 2*(k4=='D'); status(twistStatus[5]); SaveTwist = StarOk = true; break; }
+        if (knum==5) { if (k4=='d' || k4=='D') { twistDim = 2 + 3*(k4=='D'); status(twistStatus[5]); SaveTwist = StarOk = true; break; }
                        if (k4=='l' || k4=='L') { twistLimit = 0 + 24*(k4=='L'); twist[twS].setLimit(twistLimit); status(twistStatus[8]); SaveTwist = StarOk = true; break; }
-                       if (b>9) for (n=0; n<3; n++) { twistColour[twS][n+3] = twistColour[twS][n] = 0; twistOption = 2; } // Set to 0 for following config r - c, 0-9
+                       if (b>9) for (n=0; n<3; n++) { twistColour[twS][n+3] = twistColour[twS][n] = 0; twistOption = 2; } // Set to option 0 for following config r - c, 0-9
                        if (b<10) { twistRconnect[twS] = twistGconnect[twS] = twistBconnect[twS] = 0; twistOption = 1; }
                        if (k4=='r' || k4=='R') twistColour[twS][0] = (k4=='R') ? twistHi : twistLo; 
                        if (k4=='g' || k4=='G') twistColour[twS][1] = (k4=='G') ? twistHi : twistLo; 
@@ -4496,7 +4497,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                        if (k4=='d' || k4=='D') { twistDim = k5-48; if (twistDim==0) status("Twist Dim Off"); 
                                                                    else { twistStatus[5][14]=k5; status(twistStatus[5]); } SaveTwist = StarOk = true; break; } break; }  
         if (knum==8) { for (n=0; n<4; n++) twistX[n] = KeyBrdByte[n+4]; status(twistX); StarOk = true; break; }   // twist option X chrs changed with *tc*abcd abcd = 4 chars default */=-                                                                                
-        if (knum >= 10) { for (n=0; n<3; n++) { twistColour[twS][n] = hex2byte(p); twistColour[twS][n+3] = hex2byte(p)/twistDim; p += 2; } }
+        if (knum >= 10) { for (n=0; n<3; n++) { twistColour[twS][n] = hex2byte(p); if (twistDim>0) twistColour[twS][n+3] = hex2byte(p)/twistDim; p += 2; } }
         if (knum == 16) { twistRconnect[twS] = hex2int8(p); p += 2; twistGconnect[twS] = hex2int8(p); p += 2; twistBconnect[twS] = hex2int8(p); }
         twistOption = 3; twistStatus[4][19] = k4; status(twistStatus[7]); UpdateTwist(twistOption); SaveTwist = StarOk = true; break; }  
         case 93: ///////////////////// KeyBrdByte[1]=='c'&&KeyBrdByte[2]=='p' -> *cp* CircuitPython filelist *cp*cnn c=command nn filelist index=00-99 *cp*cnnfilename...        
@@ -4577,7 +4578,7 @@ void DoTwistMacro(int t)
   char ScrollM[] = "*ms* ", ScrollX[] = "*m1*10", VolumeX[] = "*v *";  
   
   for (int n=0; n<6; n++) keycode[n] = 0x00;
-  twist[t].setColor(twistcurrColour[t][0], twistcurrColour[t][1], twistcurrColour[t][2]);
+  // twist[t].setColor(twistcurrColour[t][0], twistcurrColour[t][1], twistcurrColour[t][2]);  // If this runs it stops 2nd encoder changing colour when turned
   
   switch (twistMacro[t])  
          { case 'V': if (pressTwist[t]) usb_hid.sendReport16(HIDCons, VolMute);
@@ -4677,29 +4678,32 @@ void DoTwistFile(int t)
   //if (twistVal[t]<0) { while (twistL[t][n]!=0x00) { MacroBuff[n] = twistL[t][n]; n++; } MacroBuffSize = n; MacroKeys(0, 4); } 
 }
 
-//////////////////////////////
+//////////////////////////////////////////
 void UpdateTwist(byte Option)
-//////////////////////////////
-{ int i;  
-  bool found = false;
-  for (i=1 ; i<twX; i++) if (Twist[i]) { found = true; break; }  // if (!Twist[0] && !Twist[1]) return;  // If only 2 Twists
-  if (!found) return;
+//////////////////////////////////////////
+{ int i, n, twS, z; 
+                        
+  z = twC = 0;  n = twX, twS = twistStar; // Option=4 SetUp // Option=3 PC App *codes Colour+Connect changes // Option=2 all colours=0 // Option=1 all connect=0 // Option=0 config r - c, 0-9
+                        
+  if (Option<4) { z = n = twS; n++; }     // Used in for (i=z; i<n; i++)  n++ do at least once
   
-  for (i=0; i<twX; i++) { twist[i].setLimit(twistLimit);         // Twist -24 to +24 not availale if version < 1.2 else it is -x 0 + x
-                          twist[i].clearInterrupts(); 
-                          twist[i].setCount(0);  }               // Reset to 0 
+  for (i=0 ; i<twX; i++) if (Twist[i]) { twC = i + 1;                   // Actual connected devices no address gaps start from 0x3F -> 0x3E -> 0x3D
+                                         twist[i].setLimit(twistLimit); // Twist -24 to +24 not availale if version < 1.2 else it is -x 0 + x
+                                         twist[i].clearInterrupts(); 
+                                         twist[i].setCount(0);     }    // Reset to 0 
+  if (twC==0) return;                                                   // No connected devices 
     
-  if (Option>1 )                                                                                         // Option=4 SetUp - Option=2 Set all colours=0 - Option=3 Colour + Connect changes
-  { for (i=0; i<twX; i++) { twist[i].setColor(twistColour[i][0], twistColour[i][1], twistColour[i][2]);  // Set Red Green Blue LED brightnesses values from InitCfg(1)
-                            twistSavedColour[i][0] = twistcurrColour[i][0] = twistColour[i][0]; 
-                            twistSavedColour[i][1] = twistcurrColour[i][1] = twistColour[i][1];
-                            twistSavedColour[i][2] = twistcurrColour[i][2] = twistColour[i][2];  }  
+  if (Option!=1 )                                                                                      // Option=1 all connect=0 
+  { for (i=z; i<n; i++) { twist[i].setColor(twistColour[i][0], twistColour[i][1], twistColour[i][2]);  // Set Red Green Blue LED brightnesses values from InitCfg(1) if option=4
+                          twistSavedColour[i][0] = twistcurrColour[i][0] = twistColour[i][0]; 
+                          twistSavedColour[i][1] = twistcurrColour[i][1] = twistColour[i][1];
+                          twistSavedColour[i][2] = twistcurrColour[i][2] = twistColour[i][2];  }  
   }
     
-  if (Option<2 || Option==3)                                            // Option=4 Setup - Option=1 Set all Connect=0 - Option=3 Colour + Connect changes
-  { for (i=0; i<twX; i++) { twist[i].connectRed(twistRconnect[i]);      // Red LED will go down or up with each encoder tick -R +R
-                            twist[i].connectGreen(twistGconnect[i]);    // Green LED disconnected if 0
-                            twist[i].connectBlue(twistBconnect[i]); }   // Blue LED will go down or up with each encoder tick -B +B
+  if (Option!=2)                                                      // Option=2 all colours=0 
+  { for (i=z; i<n; i++) { twist[i].connectRed(twistRconnect[i]);      // Red LED will go down or up with each encoder tick -R +R
+                          twist[i].connectGreen(twistGconnect[i]);    // Green LED disconnected if 0
+                          twist[i].connectBlue(twistBconnect[i]); }   // Blue LED will go down or up with each encoder tick -B +B                          
   }    
 }
 
@@ -5948,7 +5952,8 @@ void showKeyData(byte Option)
    SerPr2;
    Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); } SerPr2;
 
-SerPr2;
+   SerPr2;
+   Serial.print("Twist Connected (0-3): "); Serial.print(twC); SerPr2;  
    Serial.print("Twist RGB rgb Colour Set: "); for (int i = 0; i < 6; i++) { Serial.print(twistColour[twistStar][i], HEX); SerPr1; } SerPr2;
    Serial.print("Twist Connect RGB Set: "); Serial.print(twistRconnect[twistStar]); SerPr1; Serial.print(twistGconnect[twistStar]); SerPr1; Serial.print(twistBconnect[twistStar]); SerPr2;
    Serial.print("Twist Dim Value (0=Off /3 /5): "); Serial.print(twistDim); SerPr2; 
