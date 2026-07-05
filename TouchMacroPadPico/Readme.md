@@ -1,10 +1,10 @@
 # Raspberry Pi Pico 1 (RP2040) and Pico 2 (RP2350) Touch Macropads
 
 <p align="left">
-<img src="images/pad05.jpg" height="180" /> 
-<img src="images/pad02.jpg" height="180" /> 
-<img src="images/Pico2A42.png" height="180" />  
-<img src="macro.gif" height="180" /> 
+<img src="images/pad05.jpg" height="160" /> 
+<img src="images/pad02.jpg" height="160" /> 
+<img src="images/Pico2A42.png" height="160" />  
+<img src="macro.gif" height="160" /> 
 </p>
 
 <p align="left">
