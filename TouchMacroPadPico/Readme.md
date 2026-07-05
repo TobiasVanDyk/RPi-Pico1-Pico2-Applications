@@ -3,7 +3,7 @@
 <p align="left">
 <img src="images/pad05.jpg" height="180" /> 
 <img src="images/pad02.jpg" height="180" /> 
-<img src="images/DoubleTwist.png" height="180" />  
+<img src="images/Pico2A42.png" height="180" />  
 <img src="macro.gif" height="180" /> 
 </p>
 
