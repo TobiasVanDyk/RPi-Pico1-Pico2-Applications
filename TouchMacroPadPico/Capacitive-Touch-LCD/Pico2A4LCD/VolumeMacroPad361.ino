@@ -147,34 +147,44 @@ char twistX[5]  = { "*/=-" };                       // Characters used in option
 #define FT6X36_ADDR   0x38  // I2C address for FT6336/FT6336U
 
 struct DirectTouchPoint { bool touched; uint16_t x; uint16_t y; };
+uint8_t touch_fail_count = 0;
 
-void initFT6336Touch() // Waveshare chip setup block replacing old tp.begin library routines
-{ pinMode(Touch_RST_PIN, OUTPUT);
+void initFT6336Touch() 
+{ 
+  // Give the chip an explicit moment to breathe on a cold power-up
+  delay(150); 
+
+  pinMode(Touch_RST_PIN, OUTPUT);
   pinMode(Touch_INT_PIN, INPUT_PULLUP);
   digitalWrite(Touch_RST_PIN, LOW);
   delay(60);
   digitalWrite(Touch_RST_PIN, HIGH); 
   delay(200);
- 
-  Wire1.beginTransmission(FT6X36_ADDR);   // Configure operational modes and baseline sensitivity threshold layouts directly
-  Wire1.write(0x00); Wire1.write(0x00);   // Normal Operational Mode
+  
+  Wire1.beginTransmission(FT6X36_ADDR); 
+  Wire1.write(0x00); Wire1.write(0x00); 
   Wire1.endTransmission();
 
   Wire1.beginTransmission(FT6X36_ADDR);
-  Wire1.write(0x80); Wire1.write(0x12);   // Touch threshold sensitivity level register
+  Wire1.write(0x80); Wire1.write(0x12); 
   Wire1.endTransmission();
 
   Wire1.beginTransmission(FT6X36_ADDR);
-  Wire1.write(0x88); Wire1.write(0x0A);  // Active scanner rate cycle delay pointer
+  Wire1.write(0x88); Wire1.write(0x0A); 
   Wire1.endTransmission();
 }
 
-DirectTouchPoint readDirectTouch()       // LOW-LEVEL FT6336 REGISTER SCANNING FUNCTION 
-{ DirectTouchPoint pt = {false, 0, 0}; 
+DirectTouchPoint readDirectTouch() 
+{ 
+  DirectTouchPoint pt = {false, 0, 0}; 
   
-  Wire1.beginTransmission(FT6X36_ADDR);  // Direct forced query sequence to the touch controller status registers
+  Wire1.beginTransmission(FT6X36_ADDR); 
   Wire1.write(0x02); 
+  
+  // If endTransmission returns 0, the device acknowledged the address
   if (Wire1.endTransmission() == 0) {
+    touch_fail_count = 0; // Reset counter on successful I2C ack
+    
     Wire1.requestFrom((uint8_t)FT6X36_ADDR, (size_t)5);
     if (Wire1.available() >= 5) {
       uint8_t touchCount = Wire1.read() & 0x0F;
@@ -184,16 +194,14 @@ DirectTouchPoint readDirectTouch()       // LOW-LEVEL FT6336 REGISTER SCANNING F
         uint8_t yMsb = Wire1.read();
         uint8_t yLsb = Wire1.read();
         
-        // Assemble 12-bit raw values from data registers
-        uint16_t rawX = ((xMsb & 0x0F) << 8) | xLsb;
-        uint16_t rawY = ((yMsb & 0x0F) << 8) | yLsb;
-
-        // CALIBRATED COORDINATE MAPPING (Directly leveraging your successful test matrix)
-        pt.x = rawX; 
-        pt.y = rawY; 
+        pt.x = ((xMsb & 0x0F) << 8) | xLsb; 
+        pt.y = ((yMsb & 0x0F) << 8) | yLsb; 
         pt.touched = true;
       }
     }
+  } else {
+    // Increment failure counter if the chip doesn't respond
+    touch_fail_count++;
   }
   return pt;
 }
@@ -907,13 +915,7 @@ void setup()
     
   Serial.begin(9600);               // serial rate is ignored for usb-serial
   // Serial.ignoreFlowControl(1);   // https://arduino-pico.readthedocs.io/en/latest/serial.html  
-  // if (Serial.available() )    { Serial.println(); Serial.flush();  } // Can also delay a few seconds  
-  
-  Wire1.setSDA(TOUCH_SDA);          // Mount high expansion pins 34 and 35 safely into i2c1 framework
-  Wire1.setSCL(TOUCH_SCL);
-  Wire1.begin(); 
-  Wire1.setClock(100000);           // Set clean stable standard bus communication speed  
-  initFT6336Touch();                // Fire up hardware reset and operational default states
+  // if (Serial.available() )    { Serial.println(); Serial.flush();  } // Can also delay a few seconds
   
   pinMode(LCDBackLight, OUTPUT);    // Used for Backlight HIGH is ON
   digitalWrite(LCDBackLight, HIGH); // Switch on here to prevent blank screen when Coordinates missing  
@@ -957,6 +959,12 @@ void setup()
   ConfigKeyCount = 0;                                      // Start up
   ConfigButtons(0);                                        // Draw Buttons and Labels 0 = All 3+5 rows
 
+  Wire1.setSDA(TOUCH_SDA);          // Mount high expansion pins 34 and 35 safely into i2c1 framework
+  Wire1.setSCL(TOUCH_SCL);
+  Wire1.begin(); 
+  Wire1.setClock(100000);           // Set clean stable standard bus communication speed  
+  initFT6336Touch();                // Fire up hardware reset and operational default states
+
   Wire.setSDA(TWIST_SDA); Wire.setSCL(TWIST_SCL);                            // TWIST GPIO 4 5 i2c0 Wire0 
   for (int i=0; i<twX; i++) { Twist[i] = twist[i].begin(Wire, 0x3F-i); }     // Set many Twist devices address 0x3F (+ or -) 0-7
   for (int i=0; i<twX; i++) { if (Twist[i]) { UpdateTwist(4); break; }  }    // Only do UpdateTwist once  
@@ -978,7 +986,8 @@ void setup()
 // Main Loop
 /////////////////////////////
 void loop() 
-{ bool pressed = false;  // Redefine TinyUSB pressed as local var  
+{ bool pressed = false;  // Redefine TinyUSB pressed as local var   
+  if (touch_fail_count >= 5) { initFT6336Touch(); touch_fail_count = 0; } // Watchdog: If touch controller has choked 5 times consecutively, revive it
   DirectTouchPoint p = readDirectTouch();
   if (p.touched) { if (Rotate180) { t_x = p.y; t_y = 320 - p.x; } else { t_x = 480 - p.y; t_y = p.x; } 
                    t_x = constrain(t_x, 0, 479); t_y = constrain(t_y, 0, 319); pressed = true; }
