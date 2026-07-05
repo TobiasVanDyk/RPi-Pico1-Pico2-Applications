@@ -149,10 +149,8 @@ char twistX[5]  = { "*/=-" };                       // Characters used in option
 struct DirectTouchPoint { bool touched; uint16_t x; uint16_t y; };
 uint8_t touch_fail_count = 0;
 
-void initFT6336Touch() 
-{ 
-  // Give the chip an explicit moment to breathe on a cold power-up
-  delay(150); 
+void initFT6336Touch() // Waveshare chip setup block replacing old tp.begin library routines
+{ delay(150);          // Extra delay for cold power-up
 
   pinMode(Touch_RST_PIN, OUTPUT);
   pinMode(Touch_INT_PIN, INPUT_PULLUP);
@@ -161,32 +159,31 @@ void initFT6336Touch()
   digitalWrite(Touch_RST_PIN, HIGH); 
   delay(200);
   
-  Wire1.beginTransmission(FT6X36_ADDR); 
-  Wire1.write(0x00); Wire1.write(0x00); 
+  Wire1.beginTransmission(FT6X36_ADDR); // Configure operational modes and baseline sensitivity threshold layouts directly
+  Wire1.write(0x00); Wire1.write(0x00); // Normal Operational Mode
   Wire1.endTransmission();
 
   Wire1.beginTransmission(FT6X36_ADDR);
-  Wire1.write(0x80); Wire1.write(0x12); 
+  Wire1.write(0x80); Wire1.write(0x12); // Touch threshold sensitivity level register
   Wire1.endTransmission();
 
   Wire1.beginTransmission(FT6X36_ADDR);
-  Wire1.write(0x88); Wire1.write(0x0A); 
+  Wire1.write(0x88); Wire1.write(0x0A); // Active scanner rate cycle delay pointer
   Wire1.endTransmission();
 }
 
-DirectTouchPoint readDirectTouch() 
+DirectTouchPoint readDirectTouch()      // Low-level FT6336 register scanning function 
 { 
   DirectTouchPoint pt = {false, 0, 0}; 
   
   Wire1.beginTransmission(FT6X36_ADDR); 
   Wire1.write(0x02); 
   
-  // If endTransmission returns 0, the device acknowledged the address
-  if (Wire1.endTransmission() == 0) {
-    touch_fail_count = 0; // Reset counter on successful I2C ack
+  if (Wire1.endTransmission() == 0) // If endTransmission returns 0, the device acknowledged the address
+  { touch_fail_count = 0; // Reset counter on successful I2C ack
     
-    Wire1.requestFrom((uint8_t)FT6X36_ADDR, (size_t)5);
-    if (Wire1.available() >= 5) {
+     Wire1.requestFrom((uint8_t)FT6X36_ADDR, (size_t)5);
+     if (Wire1.available() >= 5) {
       uint8_t touchCount = Wire1.read() & 0x0F;
       if (touchCount > 0 && touchCount <= 2) {
         uint8_t xMsb = Wire1.read();
@@ -199,12 +196,11 @@ DirectTouchPoint readDirectTouch()
         pt.touched = true;
       }
     }
-  } else {
-    // Increment failure counter if the chip doesn't respond
-    touch_fail_count++;
-  }
+  } else { touch_fail_count++; } // Increment failure counter if the chip doesn't respond
+  
   return pt;
 }
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 volatile bool Change = false;          // Indicators changed at any time
@@ -5990,4 +5986,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 5984 *****************/
+/************* EOF line 5989 *****************/
