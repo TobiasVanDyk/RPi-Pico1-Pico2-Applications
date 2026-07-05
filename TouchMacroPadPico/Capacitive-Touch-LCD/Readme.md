@@ -1,4 +1,4 @@
-# Raspberry Pi Pico 1 and 2 Capactive Touch Macropads
+# Raspberry Pi Pico 1 and 2 Capacitive Touch Macropads
 
 <p align="left">
 <img src="images/A4b.jpg" height="200" />    
