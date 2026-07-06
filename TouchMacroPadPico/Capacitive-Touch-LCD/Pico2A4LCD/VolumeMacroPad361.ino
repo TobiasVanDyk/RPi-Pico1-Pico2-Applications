@@ -180,7 +180,7 @@ DirectTouchPoint readDirectTouch()      // Low-level FT6336 register scanning fu
   Wire1.write(0x02); 
   
   if (Wire1.endTransmission() == 0) // If endTransmission returns 0, the device acknowledged the address
-  { touch_fail_count = 0; // Reset counter on successful I2C ack
+  { touch_fail_count = 0;           // Reset counter on successful I2C ack
     
      Wire1.requestFrom((uint8_t)FT6X36_ADDR, (size_t)5);
      if (Wire1.available() >= 5) {
@@ -982,8 +982,8 @@ void setup()
 // Main Loop
 /////////////////////////////
 void loop() 
-{ bool pressed = false;  // Redefine TinyUSB pressed as local var   
-  if (touch_fail_count >= 5) { initFT6336Touch(); touch_fail_count = 0; } // Watchdog: If touch controller has choked 5 times consecutively, revive it
+{ bool pressed = false;  
+  if (touch_fail_count >= 5) { initFT6336Touch(); touch_fail_count = 0; } // Watchdog: touch controller has failed 5 times consecutively must revive it
   DirectTouchPoint p = readDirectTouch();
   if (p.touched) { if (Rotate180) { t_x = p.y; t_y = 320 - p.x; } else { t_x = 480 - p.y; t_y = p.x; } 
                    t_x = constrain(t_x, 0, 479); t_y = constrain(t_y, 0, 319); pressed = true; }
@@ -3688,14 +3688,16 @@ void GetSysInfo(int Action)
   if (SaveTwist) { for (i=0; i<twX; i++) { saveTwist(i);  } SaveTwist = false; }
   if (SaveMCP) { saveMCP(); SaveMCP = false; } 
   
-  Serial.println("Version: VolumeMacro360 Tobias van Dyk July 2026 License GPL3");
-  Serial.println("Hardware: Waveshare RP2350B-A4 FT6336 Capacitive Touch ST7796 LCD 3.5 480x320 with RTC and SDCard module"); 
-  Serial.printf("CPU MHz (Pico 1 or RP20240): %d\n\r", fCPU);
-  Serial.printf("FreeHeap: %d\n\r", fHeap);
-  Serial.printf("UsedHeap: %d\n\r", uHeap);
-  Serial.printf("TotalHeap: %d\n\r", tHeap);
-  Serial.printf("Core temperature: %2.1fC\n\r", analogReadTemp());  
-  Serial.println("\n");
+  SerPr2;
+  Serial.println("Version: VolumeMacro361 Tobias van Dyk August 2022 - July 2026 License GPL3");
+  Serial.println("Hardware: Waveshare RP2350B-A4 LCD 3.5 480x320"); 
+  Serial.println("ST7796 LCD FT6336 Capacitive Touch + RTC Sensors Audio SDCard"); 
+  Serial.printf("CPU MHz RP2350B: %d", fCPU); SerPr2;
+  Serial.printf("FreeHeap: %d", fHeap); SerPr2;
+  Serial.printf("UsedHeap: %d", uHeap); SerPr2;
+  Serial.printf("TotalHeap: %d", tHeap); SerPr2;
+  Serial.printf("Core temperature: %2.1fC", analogReadTemp()); SerPr2; 
+  SerPr2;
   
   Serial.println("Flash Files (Number Name Size):");
   ListFiles(0);
@@ -4379,7 +4381,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         for (n=0; n<8; n++)                  Serial.print(mcpType[n]);             Serial.println();   
         for (n=0; n<8; n++)                  Serial.print(mcpAddr[n]-32);          Serial.println();   
         for (n=0; n<8; n++) { for (i=0; i<16; i++)                                 Serial.print(mcpPins[n][i]);                                              Serial.println(); }
-        Serial.println(mcpDir);              Serial.println(mcpStr);               Serial.println(mcp23018);           Serial.println(twistStar);            Serial.println("EOC");         
+        Serial.println(mcpDir);              Serial.println(mcpStr);               Serial.println(mcp23018);           Serial.println(twistStar);            Serial.println(twC);   
+        Serial.println("EOC");       
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -5986,4 +5989,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 5989 *****************/
+/************* EOF line 5992 *****************/
