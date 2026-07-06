@@ -12,17 +12,9 @@
 // shares a similar layout approach to what is used here - their design dates back to early 2021. 
 // https://learn.adafruit.com/touch-deck-diy-tft-customized-control-pad?view=all
 //
-// Adapted by Tobias van Dyk August 2022 - May 2026 for the Pico 2 RP2350 and ILI9488 480x320 LCD
+// Adapted by Tobias van Dyk August 2022 - July 2026 for the Pico 2 RP2350 and ILI9488 480x320 LCD
 // This use the the Waveshare 3.5inch Touch Display Module for Raspberry Pi Pico 1, 2 with included SDCard module:
 // https://www.waveshare.com/pico-restouch-lcd-3.5.htm
-//
-// Use the same code but different coloursDef.h and LCD-dimmed values for the:
-// Waveshare 4inch Touch LCD Arduino Shield with built-in SDCard
-// https://www.waveshare.com/4inch-tft-touch-shield.htm and also the
-// Waveshare Raspberry Pi TouchLCD 3.5 inch Type B with an SDCard SPI reader module added
-// https://www.waveshare.com/product/3.5inch-RPi-LCD-B.htm and also the
-// Waveshare RPi TouchLCD 3.5 inch Type C (125 MHz) TFT with an SDCard SPI reader module added.
-// https://www.waveshare.com/3.5inch-rpi-lcd-c.htm
 //
 // License: GPL3
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -3658,14 +3650,15 @@ void GetSysInfo(int Action)
   if (SaveTwist) { for (i=0; i<twX; i++) { saveTwist(i);  } SaveTwist = false; }
   if (SaveMCP) { saveMCP(); SaveMCP = false; } 
   
-  Serial.println("Version: VolumeMacro339 Tobias van Dyk June 2026 License GPL3");
-  Serial.println("Hardware: Waveshare Pico 2 RP2350-A2 ILI9488 Resistive TouchLCD 3.5inch - Pico 2 A4 wanted $20 reward"); 
-  Serial.printf("CPU MHz (Pico 1 or RP20240): %d\n\r", fCPU);
-  Serial.printf("FreeHeap: %d\n\r", fHeap);
-  Serial.printf("UsedHeap: %d\n\r", uHeap);
-  Serial.printf("TotalHeap: %d\n\r", tHeap);
-  Serial.printf("Core temperature: %2.1fC\n\r", analogReadTemp());  
-  Serial.println("\n");
+  SerPr2;
+  Serial.println("Version: VolumeMacro339 Tobias van Dyk August 2022 - July 2026 License GPL3");
+  Serial.println("Hardware: Waveshare Pico 2 RP2350-A2 ILI9488 Resistive TouchLCD 3.5inch"); 
+  Serial.printf("CPU MHz RP2040: %d", fCPU); SerPr2;
+  Serial.printf("FreeHeap: %d", fHeap); SerPr2;
+  Serial.printf("UsedHeap: %d", uHeap); SerPr2;
+  Serial.printf("TotalHeap: %d", tHeap); SerPr2;
+  Serial.printf("Core temperature: %2.1fC", analogReadTemp()); SerPr2; 
+  SerPr2;
   
   Serial.println("Flash Files (Number Name Size):");
   ListFiles(0);
@@ -4352,7 +4345,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         for (n=0; n<8; n++)                  Serial.print(mcpType[n]);             Serial.println();   
         for (n=0; n<8; n++)                  Serial.print(mcpAddr[n]-32);          Serial.println();   
         for (n=0; n<8; n++) { for (i=0; i<16; i++)                                 Serial.print(mcpPins[n][i]);                                              Serial.println(); }
-        Serial.println(mcpDir);              Serial.println(mcpStr);               Serial.println(mcp23018);           Serial.println(twistStar);            Serial.println("EOC");         
+        Serial.println(mcpDir);              Serial.println(mcpStr);               Serial.println(mcp23018);           Serial.println(twistStar);            Serial.println(twC);   
+        Serial.println("EOC");           
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -5994,4 +5988,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 5968 *****************/
+/************* EOF line 5991 *****************/
