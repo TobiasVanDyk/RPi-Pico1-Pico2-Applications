@@ -588,22 +588,22 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 136; // StarCodes Count 16+16+16+16+16+16+16+16+8 StarNum = 0-135
+const static int StarCodesMax = 137; // StarCodes Count 16+16+16+16+16+16+16+16+9 StarNum = 0-136
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cp", "cr", "ct", "cx", 
   "c1", "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", 
-  "fo", "fs", "ft", "i1", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", 
-  "ls", "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", 
-  "mZ", "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", 
-  "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", 
-  "st", "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", 
-  "vm", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", 
-  "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
+  "fo", "fs", "ft", "i1", "ic", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", 
+  "lm", "ls", "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", 
+  "mW", "mZ", "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", 
+  "ps", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", 
+  "ss", "st", "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", 
+  "v-", "vm", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", 
+  "0n", "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    93,   50,   8,    51,   
   63,   64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   
-  13,   11,   11,   94,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   
+  13,   11,   11,   94,   95,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   
   55,   55,   58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   
   70,   76,   73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   
   37,   26,   40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   
@@ -4553,6 +4553,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
           if (knum>5)  { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                                                         // Set new config I/O  
                          for (n=0; n<loopLen; n++) mcpPins[b][n] = KeyBrdByte[5+n]-48; InitMCP23xx(0); SaveMCP = StarOk = true; break; } 
           break; } 
+         case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner
+       { status("I2C Bus Scan"); runI2CScanner(); StarOk = true; break; }            
       } return StarOk;                
 }
 
@@ -4564,6 +4566,24 @@ byte hex2byte(const byte* p)
   h = (h <= '9') ? (h - '0') : (toupper((char)h) - 'A' + 10);
   l = (l <= '9') ? (l - '0') : (toupper((char)l) - 'A' + 10);
   return (h << 4) | l;
+}
+
+//////////////////////////////////////
+void runI2CScanner() // Google Gemini
+//////////////////////////////////////
+{
+  Serial.println(F("\n Dual-Bus I2C Scan"));  
+  
+  Serial.println(F("Wire i2c0 External Devices on GP4/GP5:")); // Scan External Wire (i2c0 on Breakout Pins GP4/GP5)
+  int countWire = 0;
+  for (uint8_t address = 1; address < 127; address++) { Wire.beginTransmission(address); if (Wire.endTransmission() == 0) { Serial.printf("  Found device address: 0x%02X\n", address); countWire++; }  }
+  if (countWire == 0) Serial.println(F("  No devices detected on Wire i2c0."));
+  
+  Serial.println(F("Wire1 i2c1 Internal Devices GP34/35:")); // Scan External Bus Wire1 (i2c1 on Internal Pins GP34/35)
+  int countWire1 = 0;
+  for (uint8_t address = 1; address < 127; address++) { Wire1.beginTransmission(address); if (Wire1.endTransmission() == 0) { Serial.printf("  Found device address: 0x%02X\n", address); countWire1++; }  }
+  if (countWire1 == 0) Serial.println(F("  No onboard devices detected on Wire1."));
+  SerPr2;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -5923,6 +5943,8 @@ void showKeyData(byte Option)
    SerPr2;
    Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
 
+   runI2CScanner();
+
    SerPr2;
    Serial.print("Twist Connected (0-3): "); Serial.print(twC); SerPr2;
    Serial.print("Twist RGB rgb Colour Set: "); for (int i = 0; i < 6; i++) { Serial.print(twistColour[twistStar][i], HEX); SerPr1; } SerPr2;
@@ -5989,4 +6011,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 5992 *****************/
+/************* EOF line 6014 *****************/
