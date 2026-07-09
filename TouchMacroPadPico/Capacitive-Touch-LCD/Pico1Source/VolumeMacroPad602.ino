@@ -1040,7 +1040,7 @@ void InitMCP23xx(bool Option)
 ///////////////////////////////
 { int i, n;    
   if (Option) { mcpN = 0; for (i=0; i<8; i++) { mcpFound[i] = false; mcpType[i] = (i<4) ? 2:1; }    
-                for (i=0; i<mcpNum; i++) { mcpFound[i] = mcp[i]->begin_I2C(mcpAddr[i], &Wire1);             
+                for (i=0; i<mcpNum; i++) { mcpFound[i] = mcp[i]->begin_I2C(mcpAddr[i], &Wire);             
                                            if (mcpFound[i]) { mcpN++; } else { mcpType[i] = 0; } } } // Option>0
                                                
   for (i=0; i<mcpNum; i++) { if (!mcpFound[i]) continue;     
