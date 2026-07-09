@@ -542,22 +542,22 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 136; // StarCodes Count 16+16+16+16+16+16+16+16+8 StarNum = 0-135
+const static int StarCodesMax = 137; // StarCodes Count 16+16+16+16+16+16+16+16+9 StarNum = 0-136
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cp", "cr", "ct", "cx", 
   "c1", "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", 
-  "fo", "fs", "ft", "i1", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", 
-  "ls", "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", 
-  "mZ", "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", 
-  "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", 
-  "st", "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", 
-  "vm", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", 
-  "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
+  "fo", "fs", "ft", "i1", "ic", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", 
+  "lm", "ls", "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", 
+  "mW", "mZ", "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", 
+  "ps", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", 
+  "ss", "st", "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", 
+  "v-", "vm", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", 
+  "0n", "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    93,   50,   8,    51,   
   63,   64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   
-  13,   11,   11,   94,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   
+  13,   11,   11,   94,   95,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   
   55,   55,   58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   
   70,   76,   73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   
   37,   26,   40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   
@@ -913,12 +913,10 @@ void setup()
   if (SaveLayout>0) Layout = SaveLayout; else Layout = 2;  // if SaveLayout > 0 Layout 1 to 4 else default Layout 2 (Cfg)  
   ConfigKeyCount = 0;                                      // Start up
   ConfigButtons(0);                                        // Draw Buttons and Labels 0 = All 3+5 rows
-
-  Wire1.setSDA(TWIST_SDA); Wire1.setSCL(TWIST_SCL);                           // TWIST GPIO 4 5 26 27 SDA SCL                                 
-  // Twist[0] = twist[0].begin(Wire1, 0x3F);                                  // True if Encoder 1 plugged in in i2c port 1 starts Wire1.begin()
-  // Twist[1] = twist[1].begin(Wire1, 0x3E);                                  // True if Encoder 2 plugged in in i2c port 1 starts Wire1.begin() again
-  // Twist[2] = twist[2].begin(Wire1, 0x3D);                                  // True if Encoder 3 plugged in in i2c port 1 starts Wire1.begin() again
-  // if (Twist[0] || Twist[1] || Twist[2]) UpdateTwist(4);                    // Setup twist 0, 1, 2   
+  
+  Wire.setSDA(4); Wire.setSCL(5); Wire.begin(); Wire.setClock(400000);        // i2c0 external bus at 400kHz communication speed 
+  
+  Wire1.setSDA(TWIST_SDA); Wire1.setSCL(TWIST_SCL);                           // TWIST GPIO 26 27 SDA SCL 
   for (int i=0; i<twX; i++) { Twist[i] = twist[i].begin(Wire1, 0x3F-i); }     // Set many Twist devices address 0x3F (+ or -) 0-7
   for (int i=0; i<twX; i++) { if (Twist[i]) { UpdateTwist(4); break; }  }     // Only do UpdateTwist once
   Wire1.setClock(400000);                                                     // Twist devices > 1 only works if done this way
@@ -4517,6 +4515,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
           if (knum>5)  { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                                                         // Set new config I/O  
                          for (n=0; n<loopLen; n++) mcpPins[b][n] = KeyBrdByte[5+n]-48; InitMCP23xx(0); SaveMCP = StarOk = true; break; } 
           break; } 
+         case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner
+       { status("I2C Bus Scan"); runI2CScanner(); StarOk = true; break; }             
       } return StarOk;                
 }
 
@@ -4528,6 +4528,29 @@ byte hex2byte(const byte* p)
   h = (h <= '9') ? (h - '0') : (toupper((char)h) - 'A' + 10);
   l = (l <= '9') ? (l - '0') : (toupper((char)l) - 'A' + 10);
   return (h << 4) | l;
+}
+
+//////////////////////////////////////
+void runI2CScanner() // Google Gemini
+//////////////////////////////////////
+{ int countWire = 0, countWire1 = 0;
+  uint8_t address = 1;
+  
+  Serial.println(F("\n Dual-Bus I2C Scan"));  
+  
+  Serial.println(F("Wire i2c0 External Devices on GP4/GP5:")); // Scan External Bus Wire (i2c0 on Breakout Pins GP4/GP5) 
+  countWire = 0;
+  for (address=1; address<127; address++) { Wire.beginTransmission(address); 
+                                            if (Wire.endTransmission() == 0) { Serial.printf("  Found device address: 0x%02X\n", address); countWire++; }  }
+  if (countWire == 0) Serial.println(F("  No devices detected on Wire i2c0."));
+  
+  Serial.println(F("Wire1 i2c1 External Devices GP26/GP27:")); // Scan External Bus Wire1 (i2c1 on Internal Pins GP26/GP27) Twist and MPC23xxx
+  countWire1 = 0;
+  for (address=1; address<127; address++) { Wire1.beginTransmission(address); 
+                                            if (Wire1.endTransmission() == 0) { Serial.printf("  Found device address: 0x%02X\n", address); countWire1++; }  }
+  if (countWire1 == 0) Serial.println(F("  No devices detected on Wire1 i2c1"));
+  
+  SerPr2;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -5921,7 +5944,9 @@ void showKeyData(byte Option)
    Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
    SerPr2;
    Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); } SerPr2;
-
+   
+   runI2CScanner();
+   
    SerPr2;
    Serial.print("Twist Connected (0-3): "); Serial.print(twC); SerPr2;   
    Serial.print("Twist RGB rgb Colour Set: "); for (int i = 0; i < 6; i++) { Serial.print(twistColour[twistStar][i], HEX); SerPr1; } SerPr2;
@@ -5984,8 +6009,7 @@ void showKeyData(byte Option)
    for ( m = 0; m<24; m++ ) 
        { Serial.print(m); Serial.print(" Txx 20bytes Size " ); Serial.print(MacroSizeT1T12[m]); Serial.print(" Ttr Status "); Serial.print(MacroT1T12[m]); SerPr1;
          for ( n = 0; n < 20; n++) { b =  Ttr1to12[m][n]; Serial.print(b, HEX); SerPr1; }
-         SerPr2;  }          
+         SerPr2;  }                  
  }
 
-
-/************* EOF line 5991 *****************/
+/************* EOF line 6015 *****************/

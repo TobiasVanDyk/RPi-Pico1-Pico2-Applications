@@ -1007,6 +1007,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *i1*Xm Set new config all I/O to same m = 0,1,2 for device X=0-7
      *i1*Xpinsmodelist Set new config I/O according to list up to 8 modes 0,1,2 for 8 devices X=0-7    
      Use the list data *ld* option for a list of active GPIO expnader devices attached on the 12c bus
+(Ac) Use *ic* to run i2c devices present scanner for addresses on i2c bus 0 and 1 - Wire and Wire1
+     
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
