@@ -12,8 +12,8 @@
 // shares a similar layout approach to what is used here - their design dates back to early 2021. 
 // https://learn.adafruit.com/touch-deck-diy-tft-customized-control-pad?view=all
 //
-// Adapted by Tobias van Dyk August 2022 - July 2026 for Pico 1 RP2040 and ILI9488 480x320 LCD
-// This use the DFRobot DFR0669 3.5inch Capacitve Touch Display Module with ILI9488 and GT911 with included SDCard module:
+// Adapted by Tobias van Dyk August 2022 - July 2026 for Pico 1 RP204
+// DFRobot DFR0669 3.5inch Capacitve Touch Display Module with ILI9488 and GT911 with integrated SDCard module:
 // https://www.dfrobot.com/product-2107.html
 //
 // License: GPL3
@@ -144,8 +144,8 @@ int LastButton = 0, LastLayout = 0;                 // Used for Twist option x t
 char twistX[5]  = { "*/=-" };                       // Characters used in option X Twist turned + or - 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/////////////////// GT911
-#define TOUCH_SDA 26 // 4 // 26 
+//////////////////////////////// GT911
+#define TOUCH_SDA 26 // 4 // 26 i2c1 Wire1
 #define TOUCH_SCL 27 // 5 // 27 
 GT911_Lite tp;
 struct TouchCal { int minX;  int maxX;  int minY;  int maxY;  int minXPad;  int maxXPad;  int minYPad;  int maxYPad; bool valid; };  // Size 36 bytes 8x4byte signed integers + bool
@@ -257,7 +257,7 @@ byte MouseZ = 0;                                  // 0-3 Screen 0,0 position cor
 
 unsigned long NowMillis = 0;           // LCD Backlight Saver
 unsigned long LastMillis = 0;          // LCD Backlight Saver
-unsigned long RepTimePeriod = 600;     // Change with Keyrepeat 200 - 900 milleseconds After this key repeat is active
+unsigned long RepTimePeriod = 500;     // Change with Keyrepeat 200 - 900 milleseconds After this key repeat is active
 unsigned long RepLast = 0;             // Time when key first pressed
 unsigned long RepNow = 0;              // Time when key still pressed
 byte Layout = 1;                       // Layout 1 2 3 4 = M Config+KeyBrds S T
@@ -324,7 +324,7 @@ byte MediaConfig[1] = { 0 };           // Values are 0 - 4 for Media+Volume+Mute
 byte KeyHeld = 0;                      // Key held in number 0 - 17
 bool KeyHeldEnable = true;             // Enable/Disable Volume Mute Processing if [Vo][L1-L4 key is pressed long
 byte KeyHeldLayout = 0;                // Save Layout temporarily while checking KeyHeld
-byte KeyRepeat = 6;                    // Duration before Key Repeat is active in KeyRepeatx100 milliseconds
+byte KeyRepeat = 4;                    // GT911 needs shorter wat - duration before Key Repeat is active in KeyRepeatx100 milliseconds
 byte KeyRepeat2 = 50;                  // Duration for rapid Key Repeat
 bool SaveVar = false;                  // Save if any [Key] key changes
 byte VarNum = 0 ;                      // [Key] 0 = not pressed 1,2,3-5,6-8 1[Del]2[Ret] 3-5 Mkeys 6-8 ST keys changes with bottom Pad (o)
@@ -550,22 +550,22 @@ const static char FxyChr[10][4] = // F01 to F24
 {"F+0", "F+1", "F+2", "F+3", "F+4", "F+5", "F+6", "F+7", "F+8", "F+9" };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CmKey = false;                  // Check if *codes are from pressing [*Cm] key or entered directly
-const static int StarCodesMax = 136; // StarCodes Count 16+16+16+16+16+16+16+16+8 StarNum = 0-135
+const static int StarCodesMax = 137; // StarCodes Count 16+16+16+16+16+16+16+16+9 StarNum = 0-136
 const static char StarCode[StarCodesMax][3] =    
 { "ad", "ae", "am", "ap", "as", "at", "bb", "bl", "br", "ca", "cf", "cm", "cp", "cr", "ct", "cx", 
   "c1", "c2", "db", "de", "df", "dt", "e0", "e1", "e2", "e3", "e4", "e5", "e6", "fa", "fc", "fm", 
-  "fo", "fs", "ft", "i1", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", "lm", 
-  "ls", "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", "mW", 
-  "mZ", "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", "ps", 
-  "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", "ss", 
-  "st", "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", "v-", 
-  "vm", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", "0n", 
-  "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
+  "fo", "fs", "ft", "i1", "ic", "im", "is", "it", "ix", "kb", "ke", "kh", "kr", "ks", "ld", "lf", 
+  "lm", "ls", "lt", "lx", "m0", "m1", "m2", "ma", "mb", "mc", "md", "mm", "ms", "mt", "mT", "mw", 
+  "mW", "mZ", "nd", "nf", "nn", "np", "nt", "nT", "os", "ot", "oT", "pc", "po", "p+", "p-", "pp", 
+  "ps", "r0", "r1", "r2", "r3", "rm", "rn", "ro", "rt", "rT", "sa", "sd", "se", "sf", "sF", "sm", 
+  "ss", "st", "sx", "ta", "tb", "tc", "tf", "tm", "tp", "tt", "tw", "ua", "ul", "up", "vx", "v+", 
+  "v-", "vm", "wa", "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "0R", "09", "0d", 
+  "0n", "0p", "0s", "0t", "0x", "1s", "1e", "2s", "2e"  };
 
 const static byte StarCodeType[StarCodesMax] =    
 { 57,   59,   1,    86,   1,    1,    2,    36,   5,    6,    56,   7,    93,   50,   8,    51,   
   63,   64,   3,    9,    17,   60,   10,   10,   10,   10,   10,   10,   10,   11,   12,   11,   
-  13,   11,   11,   94,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   
+  13,   11,   11,   94,   95,   44,   44,   44,   44,   14,   39,   92,   38,   15,   16,   42,   55,   
   55,   55,   58,   67,   18,   19,   62,   66,   20,   65,   71,   66,   20,   20,   68,   69,   
   70,   76,   73,   74,   75,   21,   21,   22,   23,   23,   72,   25,   88,   88,   88,   88,   
   37,   26,   40,   41,   77,   49,   27,   24,   24,   28,   29,   30,   78,   79,   28,   28,   
@@ -667,6 +667,7 @@ bool KeyBrdDirect = false;       // Echo Keyboard keys to PC as they are typed
 bool DoUpKey = false;            // Set true by SendBytes to let Upkey know valid macro can be saved
 bool KeySkip = true;             // Skip first key pressed in LCD in dimmed state - used to wake LCD - toggle with *ks*
 bool LinkOk = false;             // Used in DoKeyMST() DoKey16() DoLinkStr() test if linkfile executed ok
+unsigned long keyRepeatLast[17] = {0}; // Used to smooth GT911 KeyHeld repeats per key
 
 char MSTAName[80]  = "xnn";      // Longer if nDir or AppDir added to MSTA filename usually a01-a99 m01-m24 s01-s24 t01-t24 from Option1 = 0-23 Option2 = 0-23                             
 char MSTName[80]   = "xnn";      // Longer if nDir or AppDir to MST filename usually m01-m24 s01-s24 t01-t24 from Layout = 1-4 
@@ -878,10 +879,7 @@ void setup()
   pinMode(LCDBackLight, OUTPUT);    // Used for Backlight HIGH is ON
   //digitalWrite(LCDBackLight, HIGH); // Switch on here to prevent blank screen when Coordinates missing 
   
-  Wire.setSDA(TWIST_SDA); Wire.setSCL(TWIST_SCL);                            // TWIST GPIO 4 5 26 27 SDA SCL                                 
-  // Twist[0] = twist[0].begin(Wire, 0x3F);                                  // True if Encoder 1 plugged in in i2c port 1 starts Wire1.begin()
-  // Twist[1] = twist[1].begin(Wire, 0x3E);                                  // True if Encoder 2 plugged in in i2c port 1 starts Wire1.begin() again
-  // if (Twist[0] || Twist[1]) UpdateTwist(4);                               // Setup twist 0, 1   
+  Wire.setSDA(TWIST_SDA); Wire.setSCL(TWIST_SCL);                            // TWIST GPIO 4 5 i2c0
   for (int i=0; i<twX; i++) { Twist[i] = twist[i].begin(Wire, 0x3F-i); }     // Set many Twist devices address 0x3F (+ or -) 0-7
   for (int i=0; i<twX; i++) { if (Twist[i]) { UpdateTwist(4); break; }  }    // Only do UpdateTwist once
   Wire.setClock(400000);                                                     // Twist devices > 1 only works if done this way
@@ -919,9 +917,9 @@ void setup()
   tft.setTextSize(KEY_TEXTSIZE); 
   BackLightOn = true;                   // TFT init will turn it on  
    
-  Wire1.setSDA(TOUCH_SDA);               // GT911 GPIO 4 5 SDA SCL
+  Wire1.setSDA(TOUCH_SDA);               // GT911 GPIO 4 5 SDA SCL i2c1
   Wire1.setSCL(TOUCH_SCL);
-  Wire1.begin(); Wire1.setClock(400000);            
+  Wire1.begin(); Wire1.setClock(100000);            
   tp.begin(&Wire1);
   tp.setResolution(479, 319);  // 480x320 display but keys in 480x290 area
   loadCalibration(1); 
@@ -942,7 +940,7 @@ void setup()
   KeyBrdDirect = PadKeys = false;               // 5 Small Pads RH side Config Page = Red SkyBlue Yellow Grey Green 
   KeyBrd123 = Numkeys123 = 0;                   // Can skip this
   optionsindicators(0);
-  RepTimePeriod = 300; 
+  RepTimePeriod = 500; 
 }
 
 /////////////////////////////
@@ -950,13 +948,10 @@ void setup()
 /////////////////////////////
 void loop() 
 { bool pressed = false;  // Redefine TinyUSB pressed as local var
-  if (tp.read() && tp.touches>0) { int rawX = tp.points[0].x; int rawY = tp.points[0].y;        
-                                   if (cal.valid) { t_x = map(rawY, cal.minY+cal.minYPad, cal.maxY+cal.maxYPad, 0, 479);  
-                                                    t_y = map(rawX, cal.maxX+cal.maxXPad, cal.minX+cal.minXPad, 0, 319); }
-                                   t_x = constrain(t_x, 0, 479);  t_y = constrain(t_y, 0, 319); pressed = true; }  
-  
-  // if (ResetOnce) { if (!LittleFS.exists("ResetOnce")) {File f = LittleFS.open("ResetOnce", "w"); f.close(); rp2040.reboot(); }
-  //                  else {ResetOnce = false; LittleFS.remove("ResetOnce");}}  // This is not needed anymore
+  if (tp.read()) { delay(8); if (tp.touches>0) { int rawX = tp.points[0].x; int rawY = tp.points[0].y;        
+                                               if (cal.valid) { t_x = map(rawY, cal.minY+cal.minYPad, cal.maxY+cal.maxYPad, 0, 479);  
+                                                                t_y = map(rawX, cal.maxX+cal.maxXPad, cal.minX+cal.minXPad, 0, 319); }
+                                               t_x = constrain(t_x, 0, 479);  t_y = constrain(t_y, 0, 319); pressed = true; } }
 
   NowMillis = millis();
   wiggleCheck = mcpNow = NowMillis;  
@@ -1008,17 +1003,16 @@ void loop()
   if (TinyUSBDevice.suspended() && (pressed)) {TinyUSBDevice.remoteWakeup(); } // Wake up host if in suspend mode + REMOTE_WAKEUP feature enabled by host
      
   RepNow = millis(); KeyHeld = 0; KeyHeldLayout = Layout;                      // get the current time and save KeyHeld 
-  for ( uint8_t b = 0; b < NumButtons; b++) 
-      { if (key[b].justReleased()) {key[b].drawButton(false); RepLast = RepNow; }                      // draw normal - code at release time
-        if (key[b].justPressed())  {LastButton = b; LastLayout = Layout; 
-                                    key[b].drawButton(true); { buttonpress(b); RepLast = millis(); }}  // draw invert - code at press time  
-            else if (((RepNow - RepLast) >= RepTimePeriod) && (key[b].isPressed()))                    // code while the button is held
-                      {LastButton = b; LastLayout = Layout; buttonpress(b); KeyHeld = b;}    }         // Do button number b always 17 on loop exit
-
-  if (KeyHeld==7&&KeyHeldEnable) { Layout = KeyHeldLayout;                    // Swop Keys [L1-L4] to Key [Vo] if key held in > 600 millisecond
-                    if (!MuteOn) { if (Layout==1) Layout=4; else Layout--; }  // RepTimePeriod = 600 Try 500-700 After this key repeat is active 
-                    MuteOn = !MuteOn; ConfigMedia(); ConfigButtons(1);  }  
-                    
+  for (uint8_t b = 0; b < NumButtons; b++) { if (key[b].justReleased()) { key[b].drawButton(false);
+                                                                          keyRepeatLast[b] = RepNow; } // reset this key’s repeat timer
+                                             if (key[b].justPressed()) { LastButton = b; LastLayout = Layout;
+                                                                         key[b].drawButton(true); buttonpress(b); keyRepeatLast[b] = millis(); } // start repeat timer for key
+                                             else if (key[b].isPressed()) { if ((RepNow - keyRepeatLast[b]) >= RepTimePeriod) { LastButton = b; LastLayout = Layout; 
+                                                                                                                                buttonpress(b); KeyHeld = b; 
+                                                                                                                                keyRepeatLast[b] = RepNow; } } } 
+  if (KeyHeld == 7 && KeyHeldEnable) { Layout = KeyHeldLayout; if (!MuteOn) { if (Layout == 1) Layout = 4; else Layout--; }
+                                       MuteOn = !MuteOn; ConfigMedia(); ConfigButtons(1); } 
+                                                        
   if (CheckSerial) RecSerial();  // Switch off serial check with *se* toggle -  CheckSerial default is off
   // if (NewData) showRecData();
   if (NewData) if (!LayerAxD) DoNewData();     // First char 0-6 store file, t, a, p clock alarm timer, 7-9 non-ASCII data, PCData, Foobar, Time  
@@ -4357,7 +4351,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         for (n=0; n<8; n++)             Serial.print(mcpType[n]);             Serial.println();   
         for (n=0; n<8; n++)             Serial.print(mcpAddr[n]-32);          Serial.println();   
         for (n=0; n<8; n++) { for (i=0; i<16; i++)                            Serial.print(mcpPins[n][i]);      Serial.println(); }
-        Serial.println(mcpDir);         Serial.println(mcpStr);               Serial.println(mcp23018);         Serial.println(twistStar);          Serial.println("EOC");         
+        Serial.println(mcpDir);              Serial.println(mcpStr);               Serial.println(mcp23018);           Serial.println(twistStar);            Serial.println(twC);   
+        Serial.println("EOC");         
         status("Text Data sent to PC"); StarOk = true; break; } }        
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -4525,6 +4520,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
           if (knum>5)  { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                                                         // Set new config I/O  
                          for (n=0; n<loopLen; n++) mcpPins[b][n] = KeyBrdByte[5+n]-48; InitMCP23xx(0); SaveMCP = StarOk = true; break; } 
           break; } 
+          case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner
+        { status("I2C Bus Scan"); runI2CScanner(); StarOk = true; break; }           
       } return StarOk; 
 }
                        
@@ -4535,6 +4532,26 @@ byte hex2byte(const byte* p)
   h = (h <= '9') ? (h - '0') : (toupper((char)h) - 'A' + 10);
   l = (l <= '9') ? (l - '0') : (toupper((char)l) - 'A' + 10);
   return (h << 4) | l;
+}
+
+//////////////////////////////////////
+void runI2CScanner() // Google Gemini
+//////////////////////////////////////
+{ uint8_t address = 1;
+  int countWire1 =0, countWire = 0;
+  
+  Serial.println(F("\n Dual-Bus I2C Scan"));  
+  
+  Serial.println(F("Wire1 i2c1 Internal Devices on GP26/GP27:")); // Scan Internal Bus Wire (i2c1 on Breakout Pins GP26/GP27
+  countWire1 = 0;
+  for (uint8_t address=1; address<127; address++) { Wire1.beginTransmission(address); if (Wire1.endTransmission() == 0) { Serial.printf("  Found device address: 0x%02X\n", address); countWire1++; }  }
+  if (countWire1 == 0) Serial.println(F("  No devices detected on Wire1 i2c1."));
+  
+  Serial.println(F("Wire i2c0 External Devices GP4/G5):")); // Scan External Bus Wire (i2c0 on Internal Pins GP4/GP5)
+  countWire = 0;
+  for (uint8_t address=1; address<127; address++) { Wire.beginTransmission(address); if (Wire.endTransmission() == 0) { Serial.printf("  Found device address: 0x%02X\n", address); countWire++; }  }
+  if (countWire == 0) Serial.println(F("  No onboard devices detected on Wire i2c0"));
+  SerPr2;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -5507,7 +5524,7 @@ void MakeStr(int Button)
                      if (Button==9)  {a = b = KeyBrdBrackets[BracketsNum][0]; BracketsNum++; if (BracketsNum==8) BracketsNum=0; }
                      if (Button==8)  {a = b = KeyBrdSymbols[SymbolsNum][0];   SymbolsNum++;  if (SymbolsNum==17) SymbolsNum=0; } 
                      if (Button==6)  {CmKey = true; if (StarNum==StarCodesMax) StarNum = 0;                                      // Return to same *code if [EXE],[Snd] was pressed
-                                      if (KeyBrdDirect) { KeyBrdDirect = false; optionsindicators(0); } delay(10);               // delay else holding in [*Cm] key is too fast
+                                      if (KeyBrdDirect) { KeyBrdDirect = false; optionsindicators(0); }                          // GT911 not ok with repeat [*Cm] key
                                       for (n=0; n<4; n++) { if (n==1||n==2) KBDisp[n] = KeyBrdByte[n] = StarCode[StarNum][n-1]; 
                                                                        else KBDisp[n] = KeyBrdByte[n] = '*'; DelType[n] = 1;  }  // KeyBrdByte[0] already '*' but KeyBrdByte[0] also '*'
                                       KeyBrdByteNum = KBDispPos = 4; status((char *)KBDisp);  StarNum++; return; }            }  // if (KeyBrdX==2)
@@ -5971,7 +5988,9 @@ void showKeyData(byte Option)
    Serial.print("Calibration Data: "); Serial.print(cal.minX); SerPr1; Serial.print(cal.maxX); SerPr1; 
                                        Serial.print(cal.minY); SerPr1; Serial.print(cal.maxY); SerPr1; 
                                        Serial.print(cal.minXPad); SerPr1; Serial.print(cal.maxXPad); SerPr1;
-                                       Serial.print(cal.minYPad); SerPr1; Serial.print(cal.maxYPad); SerPr1; Serial.print(cal.valid);  
+                                       Serial.print(cal.minYPad); SerPr1; Serial.print(cal.maxYPad); SerPr1; Serial.print(cal.valid);
+   runI2CScanner();
+                                            
    SerPr2;
    Serial.print("Twist Connected (0-3): "); Serial.print(twC); SerPr2;
    Serial.print("Twist RGB rgb Colour Set: "); for (int i = 0; i < 6; i++) { Serial.print(twistColour[twistStar][i], HEX); SerPr1; } SerPr2;
@@ -6038,4 +6057,4 @@ void showKeyData(byte Option)
          
  }
  
-/************* EOF line 6041 *****************/
+/************* EOF line 6059 *****************/
