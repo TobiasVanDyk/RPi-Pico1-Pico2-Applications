@@ -1002,6 +1002,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *i1*Xm Set new config all I/O to same m = 0,1,2 for device X=0-7
      *i1*Xpinsmodelist Set new config I/O according to list up to 8 modes 0,1,2 for 8 devices X=0-7    
      Use the list data *ld* option for a list of active GPIO expnader devices attached on the 12c bus
+(Ac) Control and config ES8311 mono codec *ac*function
+     *ac*i Dump ES8311 registers 
+     *ac*r Re-initialise then dump ES8311 registers 
+     *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadata wav files
+     *ac*t Play tone will be extended to *ac*t1-9
+     *ac*v00-99 Adjust volume - still in development an testing check register 0x32
+     *ac*m Mute audio 
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 

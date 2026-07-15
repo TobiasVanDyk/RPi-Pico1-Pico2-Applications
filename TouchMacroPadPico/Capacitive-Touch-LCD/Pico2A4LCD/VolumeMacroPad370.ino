@@ -901,18 +901,17 @@ bool SaveTime4Data = false;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ES8311_ADDR 0x18      // i2c1 Wire1 GPIO 34 35 SDA SCL
 I2S i2s(OUTPUT);              //
-#define I2S_DSDIN  12  // Audio Codec Input (Data out from RP2350) 
-#define I2S_ASDOUT 13  // Audio Codec Output (Data in to RP2350) pDOUT
-#define I2S_MCLK   14  // Master Clock pMCLK
-#define I2S_LRCK   15  // Left/Right Word Clock pWS=pBCLK-1
-#define I2S_SCLK   16  // Bit Clock (Serial Clock) pBCLK
+#define I2S_DSDIN  12         // Audio Codec Input (Data out from RP2350) 
+#define I2S_ASDOUT 13         // Audio Codec Output (Data in to RP2350) pDOUT
+#define I2S_MCLK   14         // Master Clock pMCLK
+#define I2S_LRCK   15         // Left/Right Word Clock pWS=pBCLK-1
+#define I2S_SCLK   16         // Bit Clock (Serial Clock) pBCLK
 #define pDOUT I2S_ASDOUT
 #define pBCLK I2S_SCLK
 #define pWS (pBCLK-1)
 #define pMCLK I2S_MCLK        // optional MCLK pin
 #define MCLK_MUL  256         // Can also try 128 but then must change registers
 const int sampleRate = 24000; // 44100; // 24000; // CPU MHz RP2350B: 153.6 for 24,48,96kHz 135.6 for 44.1KHz
-
 const int bitsPerSample = 16; // Resolution
 uint8_t currentVolume = 30;   // volume level (0-100)
 bool isMuted = false;
@@ -921,40 +920,48 @@ bool SysClkOK = false;
 #define ES8311_SDA 34  // https://github.com/waveshareteam/RP2350-Touch-LCD-3.5/blob/main/examples/C/03_ES8311/lib/config/DEV_Config.h 
 #define ES8311_SCL 35  // DEV_Config.cpp has: void DEV_GPIO_Init(void) { gpio_init(PA_CTRL); gpio_set_dir(PA_CTRL, GPIO_OUT);  gpio_put(PA_CTRL, 1); }
 #define PA_CTRL    17  // Power Amp pin 1 Control (HIGH to enable) schematic has it pulled LOW via 10k resistor
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void initES8311() 
-{
-  es8311_WriteReg(0x00, 0x1F); // Reset
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void initES8311() // Anthropic Claude made it possible
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+{ bool ok = true;
+  ok &= es8311_WriteReg(0x00, 0x1F); // Reset
   delay(10);
-  es8311_WriteReg(0x00, 0x00);
-  es8311_WriteReg(0x00, 0x80); // Power-on
-  
-  es8311_WriteReg(0x01, 0x3F); // Clock + system enable
-  es8311_WriteReg(0x02, 0x00);
-  
-  es8311_WriteReg(0x03, 0x10); // Power + analog
-  es8311_WriteReg(0x04, 0x10);
-  es8311_WriteReg(0x05, 0x00);
-  es8311_WriteReg(0x06, 0x07); 
-  es8311_WriteReg(0x07, 0x00);
-  es8311_WriteReg(0x08, 0xFF); // Critical: power up system core
-  
-  es8311_WriteReg(0x09, 0x0C); // I²S format
-  es8311_WriteReg(0x0A, 0x0C);
-  es8311_WriteReg(0x0B, 0x0C);
+  ok &= es8311_WriteReg(0x00, 0x80); // Power-on
 
-  es8311_WriteReg(0x0C, 0x00);
-  es8311_WriteReg(0x0D, 0x01);
-  es8311_WriteReg(0x0E, 0x02);
-  es8311_WriteReg(0x0F, 0x44); 
-  es8311_WriteReg(0x10, 0x2C);
-  es8311_WriteReg(0x11, 0x2C);
- 
-  es8311_WriteReg(0x12, 0x00);  // Unmute & gains
-  es8311_WriteReg(0x13, 0x10);
-  es8311_WriteReg(0x14, 0x1A);
-  //es8311_WriteReg(0x31, 0x00);  // Bit 6 mute=1 unmute=0
-  //es8311_WriteReg(0x32, 0x00);  // 0x00 default 0xFF +32dB use range 0x00-0x1F only
+  ok &= es8311_WriteReg(0x01, 0x3F); // Clock + system enable
+  ok &= es8311_WriteReg(0x02, 0x00);
+
+  ok &= es8311_WriteReg(0x03, 0x10); // Power + analog
+  ok &= es8311_WriteReg(0x04, 0x10);
+  ok &= es8311_WriteReg(0x05, 0x00);
+  ok &= es8311_WriteReg(0x06, 0x07);
+  ok &= es8311_WriteReg(0x07, 0x00);
+  ok &= es8311_WriteReg(0x08, 0xFF); // Critical: power up system core
+  delay(5);                          // let analog core settle before continuing
+
+  ok &= es8311_WriteReg(0x09, 0x0C); // I2S format
+  ok &= es8311_WriteReg(0x0A, 0x0C);
+  ok &= es8311_WriteReg(0x0B, 0x0C);
+
+  ok &= es8311_WriteReg(0x0C, 0x00);
+  ok &= es8311_WriteReg(0x0D, 0x02);
+  ok &= es8311_WriteReg(0x0E, 0x02);
+  ok &= es8311_WriteReg(0x0F, 0x44);
+  ok &= es8311_WriteReg(0x10, 0x2C);
+  ok &= es8311_WriteReg(0x11, 0x2C);
+
+  ok &= es8311_WriteReg(0x12, 0x00); // Unmute & gains
+  ok &= es8311_WriteReg(0x13, 0x10);
+  ok &= es8311_WriteReg(0x14, 0x1A);
+  delay(5);                          // settle before volume/eq registers
+
+  ok &= es8311_WriteReg(0x16, 0x03);
+  ok &= es8311_WriteReg(0x17, 0xFF);
+  ok &= es8311_WriteReg(0x1B, 0x0C);
+  ok &= es8311_WriteReg(0x1C, 0x6A);
+  ok &= es8311_WriteReg(0x32, 0xB9); // 0x00 default 0xFF +32dB
+
+  // Serial.print("ES8311 init "); Serial.println(ok ? "OK" : "had FAILURES - see above");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4654,19 +4661,32 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          else if (actionChar == 'v' || actionChar == 'V') { setAudioVolume(d99); }                            // *ac*v00-99   
          else if (actionChar == 'm' || actionChar == 'M') { setAudioMute(k5-48); }                            // *ac*m0,1     
          else if (actionChar == 't' || actionChar == 'T') { for (i=0; i<1000; i++) PlayTone3();  }            // Working;
-         else if (actionChar == 's' || actionChar == 'S') { if (knum==5) playWav("chimes.wav"); // *ac*mchimes.wav = *ac*m // Playing ok any length
+         else if (actionChar == 'r' || actionChar == 'R') { status("Re-initialising ES8311"); initES8311(); ES8311Show(); }  // *ac*r Re-init + confirm      
+         else if (actionChar == 's' || actionChar == 'S') { if (knum==5) playWav("chimes.wav"); // *ac*mchimes.wav = *ac*m   // Playing ok any length
                                                             else { for (n=0; n<knum-5; n++) NameStr3[n] = KeyBrdByte[n+5]; NameStr3[n] = 0x00; playWav(NameStr3);} } 
          else { status("Use *ac*v,m,t,s+file.wav t+1-9 v0-99 m0,1"); break; } StarOk = true; break; }
       } return StarOk;                
 }
 
-/////////////////////////////////////////////////////
-void es8311_WriteReg(uint8_t reg, uint8_t val) 
-/////////////////////////////////////////////////////
-{ Wire1.beginTransmission(ES8311_ADDR);
-  Wire1.write(reg);
-  Wire1.write(val);
-  Wire1.endTransmission();
+///////////////////////////////////////////////////////////////////
+bool es8311_WriteReg(uint8_t reg, uint8_t val) // Anthropic Claude
+///////////////////////////////////////////////////////////////////
+{ uint8_t err;
+  for (int attempt = 0; attempt < 3; attempt++)
+  { Wire1.beginTransmission(ES8311_ADDR);
+    Wire1.write(reg);
+    Wire1.write(val);
+    err = Wire1.endTransmission();
+    if (err == 0)
+    { if (es8311_ReadReg(reg) == val) return true;   // verify it actually landed
+      err = 0xFE;                                    // readback mismatch, treat as failure
+    }
+    delay(2);                                         // let the bus/chip settle before retry
+  }
+  Serial.print("ES8311 write FAILED reg 0x"); Serial.print(reg, HEX);
+  Serial.print(" val 0x"); Serial.print(val, HEX);
+  Serial.print(" err="); Serial.println(err);
+  return false;
 }
 //////////////////////////////////////
 byte es8311_ReadReg(byte reg)

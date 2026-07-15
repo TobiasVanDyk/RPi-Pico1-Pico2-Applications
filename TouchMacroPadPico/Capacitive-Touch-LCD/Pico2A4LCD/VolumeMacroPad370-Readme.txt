@@ -23,15 +23,15 @@ Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Ardui
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 Using library Adafruit-MCP23017 at version 2.3.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit-MCP23017 
 Using library Adafruit_BusIO at version 1.17.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit_BusIO 
-"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10LTSC\\Arduino/VolumeMacroPad370.ino.elf"
-Sketch uses 303836 bytes (3%) of program storage space. Maximum is 8380416 bytes.
+"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad370.ino.elf"
+Sketch uses 304068 bytes (3%) of program storage space. Maximum is 8380416 bytes.
 Global variables use 73872 bytes (14%) of dynamic memory, leaving 450416 bytes for local variables. Maximum is 524288 bytes.
-C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.1/tools/uf2conv.py --serial COM12 --family RP2040 --deploy I:\Data\Win10LTSC\Arduino/VolumeMacroPad370.ino.uf2 
-Resetting COM12
-Converting to uf2, output size: 690688, start address: 0x2000
+C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.6.1/tools/uf2conv.py --serial COM14 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad370.ino.uf2 
+Resetting COM14
+Converting to uf2, output size: 691200, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 690688 bytes to D:/NEW.UF2
+Wrote 691200 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -50,8 +50,8 @@ Wire1 i2c1 Internal Devices on GP34/35
 
 
 New changes: (All changes from 6 below were in the last GT911 capacive touch version)
-1. Added ES8311 audio codec use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
-   Arduino-Pico i2s library used. Waveshare (modified) libraries also functional as alternative.
+1. Fixed ES8311 audio codec - use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
+   Arduino-Pico i2s library used. Waveshare (modified) libraries also functional as alternative - refer to wiki.
 2. Added *ic* i2c bus scanner 
 3. Added Twists connected to PC App
 4. Slight tweaking of FT6336 init routines
