@@ -138,8 +138,6 @@ char twistStatus[16][28] = {"Twist Files Macros",  "Twist Coded Macros X",  "Twi
 int LastButton = 0, LastLayout = 0;                 // Used for Twist option x to simulate repeated keypresses such as [*Cm] held in, Text keys such as [S1] or [Del]ete key
 char twistX[5]  = { "*/=-" };                       // Characters used in option X Twist turned + or - 
                             
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /////////////////////////////// FT6336 TOUCH ENGINE CONTROLLER ///// Google Gemini
 #define TOUCH_SDA     34 
 #define TOUCH_SCL     35 
@@ -150,59 +148,34 @@ char twistX[5]  = { "*/=-" };                       // Characters used in option
 struct DirectTouchPoint { bool touched; uint16_t x; uint16_t y; };
 uint8_t touch_fail_count = 0;
 
-void initFT6336Touch() // Waveshare chip setup block replacing old tp.begin library routines
-{ delay(150);          // Extra delay for cold power-up
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define ES8311_ADDR 0x18      // i2c1 Wire1 GPIO 34 35 SDA SCL
+I2S i2s(OUTPUT);              //
+#define I2S_DSDIN  12         // Audio Codec Input (Data out from RP2350) 
+#define I2S_ASDOUT 13         // Audio Codec Output (Data in to RP2350) pDOUT
+#define I2S_MCLK   14         // Master Clock pMCLK
+#define I2S_LRCK   15         // Left/Right Word Clock pWS=pBCLK-1
+#define I2S_SCLK   16         // Bit Clock (Serial Clock) pBCLK
+#define pDOUT I2S_ASDOUT
+#define pBCLK I2S_SCLK
+#define pWS (pBCLK-1)
+#define pMCLK I2S_MCLK        // optional MCLK pin
+#define MCLK_MUL  256         // Can also try 128 but then must change registers
+const int sampleRate = 24000; // 44100; // 24000; // CPU MHz RP2350B: 153.6 for 24,48,96kHz 135.6 for 44.1KHz
+const int bitsPerSample = 16; // Resolution
+uint8_t currentVolume = 30;   // volume level (0-100)
+bool isMuted = false;
+bool i2sNOK = true;
+bool SysClkOK = false;
+#define ES8311_SDA 34        // https://github.com/waveshareteam/RP2350-Touch-LCD-3.5/blob/main/examples/C/03_ES8311/lib/config/DEV_Config.h 
+#define ES8311_SCL 35        // DEV_Config.cpp has: void DEV_GPIO_Init(void) { gpio_init(PA_CTRL); gpio_set_dir(PA_CTRL, GPIO_OUT);  gpio_put(PA_CTRL, 1); }
+#define PA_CTRL    17        // Power Amp pin 1 Control (HIGH to enable) schematic has it pulled LOW via 10k resistor
+int frequency = 440;         // frequency of square wave in Hz
+int amplitude = 500;         // amplitude of square wave
+float duration = 0.8;        // Tone length = 800 mS
+int16_t sample = amplitude;  // current sample value
+int count = 0;
 
-  pinMode(Touch_RST_PIN, OUTPUT);
-  pinMode(Touch_INT_PIN, INPUT_PULLUP);
-  digitalWrite(Touch_RST_PIN, LOW);
-  delay(60);
-  digitalWrite(Touch_RST_PIN, HIGH); 
-  delay(200);
-  
-  Wire1.beginTransmission(FT6X36_ADDR); // Configure operational modes and baseline sensitivity threshold layouts directly
-  Wire1.write(0x00); Wire1.write(0x00); // Normal Operational Mode
-  Wire1.endTransmission();
-
-  Wire1.beginTransmission(FT6X36_ADDR);
-  Wire1.write(0x80); Wire1.write(0x12); // Touch threshold sensitivity level register
-  Wire1.endTransmission();
-
-  Wire1.beginTransmission(FT6X36_ADDR);
-  Wire1.write(0x88); Wire1.write(0x0A); // Active scanner rate cycle delay pointer
-  Wire1.endTransmission();
-}
-
-DirectTouchPoint readDirectTouch()      // Low-level FT6336 register scanning function 
-{ 
-  DirectTouchPoint pt = {false, 0, 0}; 
-  
-  Wire1.beginTransmission(FT6X36_ADDR); 
-  Wire1.write(0x02); 
-  
-  if (Wire1.endTransmission() == 0) // If endTransmission returns 0, the device acknowledged the address
-  { touch_fail_count = 0;           // Reset counter on successful I2C ack
-    
-     Wire1.requestFrom((uint8_t)FT6X36_ADDR, (size_t)5);
-     if (Wire1.available() >= 5) {
-      uint8_t touchCount = Wire1.read() & 0x0F;
-      if (touchCount > 0 && touchCount <= 2) {
-        uint8_t xMsb = Wire1.read();
-        uint8_t xLsb = Wire1.read();
-        uint8_t yMsb = Wire1.read();
-        uint8_t yLsb = Wire1.read();
-        
-        pt.x = ((xMsb & 0x0F) << 8) | xLsb; 
-        pt.y = ((yMsb & 0x0F) << 8) | yLsb; 
-        pt.touched = true;
-      }
-    }
-  } else { touch_fail_count++; } // Increment failure counter if the chip doesn't respond
-  
-  return pt;
-}
-
-///////////////////////////////////////////////////////////////////////////////////
 
 volatile bool Change = false;          // Indicators changed at any time
 volatile bool BusyCNS = false;         // Lock changes when in CNS callback
@@ -898,88 +871,22 @@ static volatile bool alarm_fired = false;  // Set in callback triggers Macro Sen
 static volatile bool power_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Time
 static volatile bool timer_fired = false;  // Set in callback triggers Restart or PowerOff based on Clock Timer
 bool SaveTime4Data = false; 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ES8311_ADDR 0x18      // i2c1 Wire1 GPIO 34 35 SDA SCL
-I2S i2s(OUTPUT);              //
-#define I2S_DSDIN  12         // Audio Codec Input (Data out from RP2350) 
-#define I2S_ASDOUT 13         // Audio Codec Output (Data in to RP2350) pDOUT
-#define I2S_MCLK   14         // Master Clock pMCLK
-#define I2S_LRCK   15         // Left/Right Word Clock pWS=pBCLK-1
-#define I2S_SCLK   16         // Bit Clock (Serial Clock) pBCLK
-#define pDOUT I2S_ASDOUT
-#define pBCLK I2S_SCLK
-#define pWS (pBCLK-1)
-#define pMCLK I2S_MCLK        // optional MCLK pin
-#define MCLK_MUL  256         // Can also try 128 but then must change registers
-const int sampleRate = 24000; // 44100; // 24000; // CPU MHz RP2350B: 153.6 for 24,48,96kHz 135.6 for 44.1KHz
-const int bitsPerSample = 16; // Resolution
-uint8_t currentVolume = 30;   // volume level (0-100)
-bool isMuted = false;
-bool i2sNOK = true;
-bool SysClkOK = false;
-#define ES8311_SDA 34  // https://github.com/waveshareteam/RP2350-Touch-LCD-3.5/blob/main/examples/C/03_ES8311/lib/config/DEV_Config.h 
-#define ES8311_SCL 35  // DEV_Config.cpp has: void DEV_GPIO_Init(void) { gpio_init(PA_CTRL); gpio_set_dir(PA_CTRL, GPIO_OUT);  gpio_put(PA_CTRL, 1); }
-#define PA_CTRL    17  // Power Amp pin 1 Control (HIGH to enable) schematic has it pulled LOW via 10k resistor
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void initES8311() // Anthropic Claude made it possible
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-{ bool ok = true;
-  ok &= es8311_WriteReg(0x00, 0x1F); // Reset
-  delay(10);
-  ok &= es8311_WriteReg(0x00, 0x80); // Power-on
 
-  ok &= es8311_WriteReg(0x01, 0x3F); // Clock + system enable
-  ok &= es8311_WriteReg(0x02, 0x00);
-
-  ok &= es8311_WriteReg(0x03, 0x10); // Power + analog
-  ok &= es8311_WriteReg(0x04, 0x10);
-  ok &= es8311_WriteReg(0x05, 0x00);
-  ok &= es8311_WriteReg(0x06, 0x07);
-  ok &= es8311_WriteReg(0x07, 0x00);
-  ok &= es8311_WriteReg(0x08, 0xFF); // Critical: power up system core
-  delay(5);                          // let analog core settle before continuing
-
-  ok &= es8311_WriteReg(0x09, 0x0C); // I2S format
-  ok &= es8311_WriteReg(0x0A, 0x0C);
-  ok &= es8311_WriteReg(0x0B, 0x0C);
-
-  ok &= es8311_WriteReg(0x0C, 0x00);
-  ok &= es8311_WriteReg(0x0D, 0x02);
-  ok &= es8311_WriteReg(0x0E, 0x02);
-  ok &= es8311_WriteReg(0x0F, 0x44);
-  ok &= es8311_WriteReg(0x10, 0x2C);
-  ok &= es8311_WriteReg(0x11, 0x2C);
-
-  ok &= es8311_WriteReg(0x12, 0x00); // Unmute & gains
-  ok &= es8311_WriteReg(0x13, 0x10);
-  ok &= es8311_WriteReg(0x14, 0x1A);
-  delay(5);                          // settle before volume/eq registers
-
-  ok &= es8311_WriteReg(0x16, 0x03);
-  ok &= es8311_WriteReg(0x17, 0xFF);
-  ok &= es8311_WriteReg(0x1B, 0x0C);
-  ok &= es8311_WriteReg(0x1C, 0x6A);
-  ok &= es8311_WriteReg(0x32, 0xB9); // 0x00 default 0xFF +32dB
-
-  // Serial.print("ES8311 init "); Serial.println(ok ? "OK" : "had FAILURES - see above");
+/////////////////////////////////////////////////////////
+void PlayTone(int freq, float durationSeconds, int amp)
+/////////////////////////////////////////////////////////
+{   uint32_t totalSamples = (uint32_t)(sampleRate * durationSeconds); // Calculate how many total samples are needed for this duration    
+    
+    int halfWavelength = sampleRate / (2 * freq);                     // Reset or calculate wavelength parameters locally
+    uint32_t localCount = 0;
+    int16_t localSample = amp; // Use the passed amplitude here
+    
+    for (uint32_t i = 0; i < totalSamples; i++)  { if (localCount % halfWavelength == 0) { localSample = -1 * localSample; }  // Generate and stream the samples      
+                                                   i2s.write(localSample); // Left channel
+                                                   i2s.write(localSample); // Right channel
+                                                   localCount++; }                                                   
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const int frequency = 440; // frequency of square wave in Hz
-const int amplitude = 500; // amplitude of square wave
-const int halfWavelength = sampleRate / (2 * frequency); // half wavelength of square wave
-int16_t sample = amplitude; // current sample value
-int count = 0;
-
-void PlayTone3()
-{   static int frameCount = 0;
-    if (count % halfWavelength == 0) { sample = -1 * sample; }  // invert the sample every half wavelength count multiple to generate square wave  
-    i2s.write(sample); i2s.write(sample);                       // ES8311 is mono not stereo
-    if (++frameCount % 1000 == 0) Serial.println("I2S frames sent");
-    count++;                                                    // increment the counter for the next sample  
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////
 // Setup
 ///////////////////////////////////////
@@ -4655,12 +4562,14 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner
        { status("Running I2C Diagnostic Scan"); runI2CScanner(); StarOk = true; break; } 
          case 96: ////////////////////// KeyBrdByte[1]=='a'&&KeyBrdByte[2]=='c' *ac*u,d,m,t Audio codec Volume up,down,mute t-Tone0-9 100-1000Hz
-       { char actionChar = (char)KeyBrdByte[4];  pinMode(17, OUTPUT); digitalWrite(17, HIGH); delay(50);      // Enable Power Amp 
+       { char actionChar = (char)KeyBrdByte[4];  pinMode(17, OUTPUT); digitalWrite(17, HIGH); delay(50);               // Enable Power Amp 
          if (actionChar == 'i' || actionChar == 'I') { SerPr2; Serial.print("ChipID: "); Serial.print(es8311_ReadReg(0xFD), HEX); Serial.print(es8311_ReadReg(0xFE), HEX); SerPr2;
                                                        if (i2sNOK) Serial.print("i2s Failed Setup "); if (!SysClkOK) Serial.print("SCLK Failed Setup "); SerPr2; ES8311Show(); }       
-         else if (actionChar == 'v' || actionChar == 'V') { setAudioVolume(d99); }                            // *ac*v00-99   
-         else if (actionChar == 'm' || actionChar == 'M') { setAudioMute(k5-48); }                            // *ac*m0,1     
-         else if (actionChar == 't' || actionChar == 'T') { for (i=0; i<1000; i++) PlayTone3();  }            // Working;
+         else if (actionChar == 'v' || actionChar == 'V') { setAudioVolume(d99); }                                     // *ac*v00-99   
+         else if (actionChar == 'm' || actionChar == 'M') { setAudioMute(k5-48); }                                     // *ac*m0,1     
+         else if (actionChar == 't' || actionChar == 'T') { if (actionChar == 't') duration = 0.8; else duration = 2.4; int calculatedAmplitude = (32767 * currentVolume) / 100;
+                                                            if (knum==5 || knum==6) frequency = 440; else if (knum==7) frequency = d99 * 100; else frequency = d999; 
+                                                            PlayTone(frequency, duration, calculatedAmplitude);  }           // *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz
          else if (actionChar == 'r' || actionChar == 'R') { status("Re-initialising ES8311"); initES8311(); ES8311Show(); }  // *ac*r Re-init + confirm      
          else if (actionChar == 's' || actionChar == 'S') { if (knum==5) playWav("chimes.wav"); // *ac*mchimes.wav = *ac*m   // Playing ok any length
                                                             else { for (n=0; n<knum-5; n++) NameStr3[n] = KeyBrdByte[n+5]; NameStr3[n] = 0x00; playWav(NameStr3);} } 
@@ -4706,12 +4615,22 @@ byte hex2byte(const byte* p)
   l = (l <= '9') ? (l - '0') : (toupper((char)l) - 'A' + 10);
   return (h << 4) | l;
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void setAudioVolume(uint8_t volumePercent) // 0x00 default 0xFF +32dB use range 0x00-0x1F only
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-{ if (volumePercent > 30) volumePercent = 30;
+///////////////////////////////////////////////////
+void setAudioVolume(uint8_t volumePercent)
+///////////////////////////////////////////////////
+{ if (volumePercent > 100) volumePercent = 100;
+  currentVolume = volumePercent;              // keep PlayTone() amplitude in sync
+
   int reg32;
-  if (volumePercent == 0) reg32 = 0;  else  reg32 = ((volumePercent * 256) / 100) - 1;
+  if (volumePercent == 0) {
+    reg32 = 0;                                 // true mute
+  } else {
+    // Map 0-100% onto an audible register window instead of the full dB range.
+    // 0x96 (~-24dB) as the quietest "still audible" point, 0xFF (+32dB) as max.
+    const int minReg = 0x96;
+    const int maxReg = 0xFF;
+    reg32 = minReg + ((maxReg - minReg) * volumePercent) / 100;
+  }
   es8311_WriteReg(0x32, reg32);
 }
 
@@ -6017,6 +5936,105 @@ void DoAdminPowershell()
    usb_hid.keyboardRelease(HIDKbrd);                 delay(dt25);  
 }
 
+///////////////////////////////////////////////////////////////////////////// 
+void initFT6336Touch()       // FT6336 TOUCH ENGINE CONTROLLER Google Gemini
+/////////////////////////////////////////////////////////////////////////////
+{ delay(150);               // Extra delay for cold power-up
+
+  pinMode(Touch_RST_PIN, OUTPUT);
+  pinMode(Touch_INT_PIN, INPUT_PULLUP);
+  digitalWrite(Touch_RST_PIN, LOW);
+  delay(60);
+  digitalWrite(Touch_RST_PIN, HIGH); 
+  delay(200);
+  
+  Wire1.beginTransmission(FT6X36_ADDR); // Configure operational modes and baseline sensitivity threshold layouts directly
+  Wire1.write(0x00); Wire1.write(0x00); // Normal Operational Mode
+  Wire1.endTransmission();
+
+  Wire1.beginTransmission(FT6X36_ADDR);
+  Wire1.write(0x80); Wire1.write(0x12); // Touch threshold sensitivity level register
+  Wire1.endTransmission();
+
+  Wire1.beginTransmission(FT6X36_ADDR);
+  Wire1.write(0x88); Wire1.write(0x0A); // Active scanner rate cycle delay pointer
+  Wire1.endTransmission();
+}
+//////////////////////////////////////////
+DirectTouchPoint readDirectTouch()      // Low-level FT6336 register scanning function 
+/////////////////////////////////////////
+{ 
+  DirectTouchPoint pt = {false, 0, 0}; 
+  
+  Wire1.beginTransmission(FT6X36_ADDR); 
+  Wire1.write(0x02); 
+  
+  if (Wire1.endTransmission() == 0) // If endTransmission returns 0, the device acknowledged the address
+  { touch_fail_count = 0;           // Reset counter on successful I2C ack
+    
+     Wire1.requestFrom((uint8_t)FT6X36_ADDR, (size_t)5);
+     if (Wire1.available() >= 5) {
+      uint8_t touchCount = Wire1.read() & 0x0F;
+      if (touchCount > 0 && touchCount <= 2) {
+        uint8_t xMsb = Wire1.read();
+        uint8_t xLsb = Wire1.read();
+        uint8_t yMsb = Wire1.read();
+        uint8_t yLsb = Wire1.read();
+        
+        pt.x = ((xMsb & 0x0F) << 8) | xLsb; 
+        pt.y = ((yMsb & 0x0F) << 8) | yLsb; 
+        pt.touched = true;
+      }
+    }
+  } else { touch_fail_count++; } // Increment failure counter if the chip doesn't respond
+  
+  return pt;
+} 
+
+/////////////////////////////////////////////////////////////////////////////////
+void initES8311() // Anthropic Claude
+/////////////////////////////////////////////////////////////////////////////////
+{ bool ok = true;
+  ok &= es8311_WriteReg(0x00, 0x1F); // Reset
+  delay(10);
+  ok &= es8311_WriteReg(0x00, 0x80); // Power-on
+
+  ok &= es8311_WriteReg(0x01, 0x3F); // Clock + system enable
+  ok &= es8311_WriteReg(0x02, 0x00);
+
+  ok &= es8311_WriteReg(0x03, 0x10); // Power + analog
+  ok &= es8311_WriteReg(0x04, 0x10);
+  ok &= es8311_WriteReg(0x05, 0x00);
+  ok &= es8311_WriteReg(0x06, 0x07);
+  ok &= es8311_WriteReg(0x07, 0x00);
+  ok &= es8311_WriteReg(0x08, 0xFF); // Critical: power up system core
+  delay(5);                          // let analog core settle before continuing
+
+  ok &= es8311_WriteReg(0x09, 0x0C); // I2S format
+  ok &= es8311_WriteReg(0x0A, 0x0C);
+  ok &= es8311_WriteReg(0x0B, 0x0C);
+
+  ok &= es8311_WriteReg(0x0C, 0x00);
+  ok &= es8311_WriteReg(0x0D, 0x02);
+  ok &= es8311_WriteReg(0x0E, 0x02);
+  ok &= es8311_WriteReg(0x0F, 0x44);
+  ok &= es8311_WriteReg(0x10, 0x2C);
+  ok &= es8311_WriteReg(0x11, 0x2C);
+
+  ok &= es8311_WriteReg(0x12, 0x00); // Unmute & gains
+  ok &= es8311_WriteReg(0x13, 0x10);
+  ok &= es8311_WriteReg(0x14, 0x1A);
+  delay(5);                          // settle before volume/eq registers
+
+  ok &= es8311_WriteReg(0x16, 0x03);
+  ok &= es8311_WriteReg(0x17, 0xFF);
+  ok &= es8311_WriteReg(0x1B, 0x0C);
+  ok &= es8311_WriteReg(0x1C, 0x6A);
+  ok &= es8311_WriteReg(0x32, 0xB9); // 0x00 default 0xFF +32dB
+
+  // Serial.print("ES8311 init "); Serial.println(ok ? "OK" : "had FAILURES - see above");
+}
+
 /*////////////////////////////
 void MakeKBMacro()
 ///////////////////////////
@@ -6209,4 +6227,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 6014 *****************/
+/************* EOF line 6210*188# *****************/

@@ -1006,8 +1006,8 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *ac*i Dump ES8311 registers 
      *ac*r Re-initialise then dump ES8311 registers 
      *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadata wav files
-     *ac*t Play tone will be extended to *ac*t1-9
-     *ac*v00-99 Adjust volume - still in development an testing check register 0x32
+     *ac*t Play tone *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz
+     *ac*v00-99 Adjust volume
      *ac*m Mute audio 
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
