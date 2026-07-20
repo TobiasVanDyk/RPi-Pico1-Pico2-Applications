@@ -1005,10 +1005,11 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (Ac) Control and config ES8311 mono codec *ac*function
      *ac*i Dump ES8311 registers 
      *ac*r Re-initialise then dump ES8311 registers 
-     *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadata wav files
-     *ac*t Play tone *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz
-     *ac*v00-99 Adjust volume
-     *ac*m Mute audio 
+     *ac*s + filename = name.wav or /folder/f
+     *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz T 3 seconds t 800 mS duration   
+(Ad) *ic* i2c bus scanner 
+     *ic*0,1aabb aa bb hex value change external (use 0) SDA SCL aa,bb = 00-7F - i2c1 not saved     
+     
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 

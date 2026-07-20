@@ -24,8 +24,8 @@ Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\D
 Using library Adafruit-MCP23017 at version 2.3.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit-MCP23017 
 Using library Adafruit_BusIO at version 1.17.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit_BusIO 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad370.ino.elf"
-Sketch uses 304244 bytes (3%) of program storage space. Maximum is 8380416 bytes.
-Global variables use 74008 bytes (14%) of dynamic memory, leaving 450280 bytes for local variables. Maximum is 524288 bytes.
+Sketch uses 304572 bytes (3%) of program storage space. Maximum is 8380416 bytes.
+Global variables use 74016 bytes (14%) of dynamic memory, leaving 450272 bytes for local variables. Maximum is 524288 bytes.
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -39,30 +39,30 @@ NB: Board Setting: Also see included BoardSettings.jpg
     16MB Flash option with 8MB Sketch 8MB FS (change according to own use)
     USB Stack Adafruit TinyUSB
 
-Wire  i2c0 External Devices on GP4/GP5
+Wire  i2c0 External Devices on GP32/GP33
 Wire1 i2c1 Internal Devices on GP34/35
 
 
 New changes: (All changes from 7 below were in the last GT911 capacive touch version)
-1. Fixed ES8311 volume and tone *ac*t,Tnnn and *acVnn - t T short long duration
-2. Updated to Arduino-Pico 3.7.0 and Pico SDK 2.3.0
-3. Fixed ES8311 audio codec - use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
+1. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F
+2. Fixed ES8311 volume and tone *ac*t,Tnnn and *acVnn - t T short long duration
+3. Updated to Arduino-Pico 3.7.0 and Pico SDK 2.3.0
+4. Fixed ES8311 audio codec - use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
    Arduino-Pico i2s library used. Waveshare (modified) libraries also functional as alternative - refer to wiki.
-4. Added *ic* i2c bus scanner 
-5. Added Twists connected to PC App
-6. Slight tweaking of FT6336 init routines
-7. Fixed 2nd and 3rd Twist not changing colour when turned
-8. Fixed Key Repeat and KeyHeld Vol Mute change - reverted to previous code.
-9. Fixed missed Twist device 0 and limited scanning for Twists devices to actaul connected devices
-10. Changed option x to repeat the last key pressed when Twist is turned - it is a very useful option. Whether the [S1] is pressed that types a text string, 
+5. Added *ic* i2c bus scanner 
+6. Added Twists connected to PC App
+7. Slight tweaking of FT6336 init routines
+8. Fixed 2nd and 3rd Twist not changing colour when turned
+9. Fixed Key Repeat and KeyHeld Vol Mute change - reverted to previous code.
+10. Fixed missed Twist device 0 and limited scanning for Twists devices to actaul connected devices
+11. Changed option x to repeat the last key pressed when Twist is turned - it is a very useful option. Whether the [S1] is pressed that types a text string, 
     or the [Del]ete key, or the nKeys page-up [+] key, or the [*Cm] key that runs through all the star options - all four repeat when turning the Twist knob. 
     Option capital X can now be assigned two characters - enter *tc*abcd and and b will replace the / and * typed when the Twist is turned.
-11. Added up to 7 Sparkfun Twist Encoder i2c devices - default is 2 but change #define twX 2 to the required number 0-7 of twistDevices.
+12. Added up to 7 Sparkfun Twist Encoder i2c devices - default is 2 but change #define twX 2 to the required number 0-7 of twistDevices.
    If more than one Twist device choose which Twist device to configure and control with the star commands through *tc**n with n = 0-7 
    where 0 is when one Twist device connected. For example four Twist devices connected but control the second device through starcodes 
    and the PC App, then use *tc**1.
-12. Added MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked seequence of macros or single macro, and set outputs
-    using star codes. Can toggle inputs and outputs on the PC App. See manual section (Ab) for details.
+
 
 
 
