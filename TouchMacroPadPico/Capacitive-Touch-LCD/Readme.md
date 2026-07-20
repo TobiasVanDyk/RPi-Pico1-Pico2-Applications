@@ -1,9 +1,10 @@
 # Raspberry Pi Pico 1 and 2 Capacitive Touch Macropads
 
 <p align="left">
-<img src="images/Pico2A42.png" height="200" />    
-<img src="images/Pico2A4LCD09.jpg" height="200" />        
-<img src="images/DFR0669_Back.png" height="200" />      
+<img src="LCDNew6.jpg" height="160" />         
+<img src="images/Pico2A42.png" height="160" />    
+<img src="images/Pico2A4LCD09.jpg" height="160" />        
+<img src="images/DFR0669_Back.png" height="160" />      
 </p>
 
 <img src="images/A4b.jpg" width="40" height="30"/> <img src="images/es8311a.jpg" width="40" height="30"/> <img src="images/Pico2A4LCD10.png" width="40" height="30"/> <img src="images/Pico2A4LCD12.jpg" width="40" height="30"/> The [**Waveshare RP2350B-A4 FT6336 Capacitive Touch ST7796 LCD 3.5 480x320 with RTC and SDCard module**](https://www.waveshare.com/RP2350-Touch-LCD-3.5.htm) is the device of choice for the Touch Macropad as it costs little more than the similar sized resistive touch version. Compared to the GT911 capacitive touch LCD tested it does not require any libraries or calibration before use and is also an IPS panel. It has an advanced function power switch for the LCD and expansion socket 3v3 power, and audio and sensor modules. The LCD's ES8311 audio codec can play wav files stored on the SDCard - this is managed as a starcode \*ac\*function and uses the Arduino-Pico i2s libraries, but it does not require any ES8311 libraries. A collection of suitable 24kHz 16bit mono PCM files are included here: Wav24kHz16bitMono.zip. It also handles the *key-held-then-key-repeat function* far better than the GT911. There is [**more information here**](https://docs.waveshare.com/RP2350-Touch-LCD-3.5?variant=RP2350-Touch-LCD-3.5). The build and source files are in the Pico2A4LCD folder, and the 3DCase files in the 3D-Case folder. 
