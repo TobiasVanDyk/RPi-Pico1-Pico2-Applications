@@ -49,8 +49,8 @@ Wire  i2c0 External Devices on GP32/GP33
 Wire1 i2c1 Internal Devices on GP34/35
 
 
-New changes: (All changes from 7 below were in the last GT911 capacive touch version)
-1. Updated to Arduino-Pico 6.0.0 and Pico SDK 2.3.0 - fix for warning in TFT_eSPI.h
+New changes: (All changes from 8 below were in the last GT911 capacive touch version)
+1. Updated to Arduino-Pico 6.0.0 and Pico SDK 2.3.0 - fix for warning in TFT_eSPI.h see https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/wiki
 2. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F
 3. Fixed ES8311 volume and tone *ac*t,Tnnn and *acVnn - t T short long duration
 4. Fixed ES8311 audio codec - use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
