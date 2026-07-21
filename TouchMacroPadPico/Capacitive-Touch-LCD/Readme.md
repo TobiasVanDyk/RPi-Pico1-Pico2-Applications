@@ -1,7 +1,7 @@
 # Raspberry Pi Pico 1 and 2 Capacitive Touch Macropads
 
 <p align="left">
-<img src="RP2350BPic3.jpg" height="160" />          
+<img src="images/RP2350BPic3.jpg" height="160" />          
 <img src="LCDNew6.jpg" height="160" />         
 <img src="images/Pico2A42.png" height="160" />    
 <img src="images/Pico2A4LCD09.jpg" height="160" /> 
