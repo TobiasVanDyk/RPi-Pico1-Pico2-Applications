@@ -1,4 +1,4 @@
-Compiled with Pico SDK 2.3.0, Arduino Pico 5.7.0 and included Adafruit_TinyUSB_Arduino 3.7.7, and TFTeSPI 2.5.43
+Compiled with Pico SDK 2.3.0, Arduino Pico 6.0.0 and included Adafruit_TinyUSB_Arduino 3.7.7, and TFTeSPI 2.5.43
 Waveshare RP2350B-A4 FT6336 Capacitive Touch ST7796 LCD 3.5 480x320 with Audio ES8311, RTC, and SDCard modules:
 https://www.waveshare.com/RP2350-Touch-LCD-3.5.htm
 https://docs.waveshare.com/RP2350-Touch-LCD-3.5?variant=RP2350-Touch-LCD-3.5
@@ -6,26 +6,32 @@ For the Twist and MCP23xxx i2c devices use GPIO 4 and 5 (SDA and SCL Wire0) with
 -------------------------------------------------------------------------------------------------------------------------------------------------
 RP2350-E9: Adding absolute block to UF2 targeting 0x10ffff00
 Multiple libraries were found for "SD.h"
- Used: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\SD
+ Used: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\SD
  Not used: C:\Program Files (x86)\Arduino\libraries\SD
  Not used: C:\Users\Tobias\Documents\Arduino\libraries\SD
-Using library Adafruit_TinyUSB_Arduino at version 3.7.7 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\Adafruit_TinyUSB_Arduino 
-Using library SPI at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\SPI 
+Using library Adafruit_TinyUSB_Arduino at version 3.7.7 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\Adafruit_TinyUSB_Arduino 
+Using library SPI at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\SPI 
 Using library TFT_eSPI at version 2.5.43 in folder: C:\Users\Tobias\Documents\Arduino\libraries\TFT_eSPI 
-Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\LittleFS 
-Using library SD at version 2.0.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\SD 
-Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\SDFS 
-Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\SdFat 
-Using library I2S at version 2.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\I2S 
-Using library AudioBufferManager at version 1.0.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\AudioBufferManager 
+Using library LittleFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\LittleFS 
+Using library SD at version 2.0.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\SD 
+Using library SDFS at version 0.1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\SDFS 
+Using library SdFat at version 2.3.1 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\SdFat 
+Using library I2S at version 2.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\I2S 
+Using library AudioBufferManager at version 1.0.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\AudioBufferManager 
 Using library Time at version 1.6.1 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Time 
-Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\5.7.0\libraries\Wire 
+Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0\libraries\Wire 
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 Using library Adafruit-MCP23017 at version 2.3.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit-MCP23017 
 Using library Adafruit_BusIO at version 1.17.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit_BusIO 
-"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\4.1.0-1aec55e/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad370.ino.elf"
-Sketch uses 304572 bytes (3%) of program storage space. Maximum is 8380416 bytes.
-Global variables use 74016 bytes (14%) of dynamic memory, leaving 450272 bytes for local variables. Maximum is 524288 bytes.
+"C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\5.0.0-9576866/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad370.ino.elf"
+Sketch uses 290128 bytes (3%) of program storage space. Maximum is 8380416 bytes.
+Global variables use 74388 bytes (14%) of dynamic memory, leaving 449900 bytes for local variables. Maximum is 524288 bytes.
+C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0/tools/uf2conv.py --serial COM20 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad370.ino.uf2 
+Resetting COM20
+Converting to uf2, output size: 664576, start address: 0x2000
+Scanning for RP2040 devices
+Flashing D: (RP2350)
+Wrote 664576 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -44,9 +50,9 @@ Wire1 i2c1 Internal Devices on GP34/35
 
 
 New changes: (All changes from 7 below were in the last GT911 capacive touch version)
-1. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F
-2. Fixed ES8311 volume and tone *ac*t,Tnnn and *acVnn - t T short long duration
-3. Updated to Arduino-Pico 3.7.0 and Pico SDK 2.3.0
+1. Updated to Arduino-Pico 6.0.0 and Pico SDK 2.3.0 - fix for warning in TFT_eSPI.h
+2. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F
+3. Fixed ES8311 volume and tone *ac*t,Tnnn and *acVnn - t T short long duration
 4. Fixed ES8311 audio codec - use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
    Arduino-Pico i2s library used. Waveshare (modified) libraries also functional as alternative - refer to wiki.
 5. Added *ic* i2c bus scanner 
