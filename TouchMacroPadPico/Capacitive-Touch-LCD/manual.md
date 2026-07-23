@@ -1,4 +1,4 @@
-# Waveshare RP2350B LCD with SDCard and Audio Codec
+# Pico 2 Touch Macropad with SDCard
 ```
 manual.h
 -----------------------------------------------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ the status line at the LCD bottom. Then press the [345] key twice (4 shows), pre
 normal use LCD Brightness is then set to 40 percent. Do the same for the LCD blank setting - press [*Cm] until *db* 
 shows, then press the [012] key twice (1 shows), then press [ADD] and [EXE] - this sets the blank LCD to 10 percent 
 brightness when in sleep mode. You can also add two numbers to set the brightness to 01 to 99 percent, i.e [*Cm] 
-*bb*4[ADD]0[ADD][EXE] set to 40% and [*Cm] *db*0[ADD]1[ADD][EXE] set to 1%.
+*bb*6[ADD]0[ADD][EXE] set to 60% and [*Cm] *db*0[ADD]3[ADD][EXE] set to 3%.
 
 You can also increase the elapsed time period before the display dims - change it from the default 30 seconds to 3
 minutes by selecting *tb* using the [*Cm] key, then press the [345] key once (3), and then press [ADD] and [EXE].
@@ -1004,10 +1004,11 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
 (Ac) Control and config ES8311 mono codec *ac*function
      *ac*i Dump ES8311 registers 
      *ac*r Re-initialise then dump ES8311 registers 
-     *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadata wav files
-     *ac*t Play tone will be extended to *ac*t1-9
-     *ac*v00-99 Adjust volume - still in development an testing check register 0x32
-     *ac*m Mute audio 
+     *ac*s + filename = name.wav or /folder/f
+     *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz T 3 seconds t 800 mS duration   
+(Ad) *ic* i2c bus scanner 
+     *ic*0,1aabb aa bb hex value change external (use 0) SDA SCL aa,bb = 00-7F - i2c1 not saved     
+     *ic*1,2 Test RTC Use 2 then use 1 to test.
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
