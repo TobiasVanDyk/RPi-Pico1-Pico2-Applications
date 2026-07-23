@@ -23,15 +23,17 @@ Using library Wire at version 1.0 in folder: C:\Users\Tobias\AppData\Local\Ardui
 Using library SparkFun_Qwiic_Twist at version 1.0.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\SparkFun_Qwiic_Twist 
 Using library Adafruit-MCP23017 at version 2.3.2 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit-MCP23017 
 Using library Adafruit_BusIO at version 1.17.4 in folder: C:\Users\Tobias\Documents\Arduino\libraries\Adafruit_BusIO 
+Using library RTC_NXP_Arduino at version 1.1.3 in folder: C:\Users\Tobias\Documents\Arduino\libraries\RTC_NXP_Arduino 
+Using library I2C_device_Arduino at version 1.2.0 in folder: C:\Users\Tobias\Documents\Arduino\libraries\I2C_device_Arduino 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\5.0.0-9576866/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad370.ino.elf"
-Sketch uses 290128 bytes (3%) of program storage space. Maximum is 8380416 bytes.
-Global variables use 74388 bytes (14%) of dynamic memory, leaving 449900 bytes for local variables. Maximum is 524288 bytes.
-C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0/tools/uf2conv.py --serial COM20 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad370.ino.uf2 
-Resetting COM20
-Converting to uf2, output size: 664576, start address: 0x2000
+Sketch uses 292248 bytes (3%) of program storage space. Maximum is 8380416 bytes.
+Global variables use 74416 bytes (14%) of dynamic memory, leaving 449872 bytes for local variables. Maximum is 524288 bytes.
+C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0/tools/uf2conv.py --serial COM14 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad370.ino.uf2 
+Resetting COM14
+Converting to uf2, output size: 668672, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 664576 bytes to D:/NEW.UF2
+Wrote 668672 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -50,24 +52,22 @@ Wire1 i2c1 Internal Devices on GP34/35
 
 
 New changes: (All changes from 8 below were in the last GT911 capacive touch version)
-1. Updated to Arduino-Pico 6.0.0 and Pico SDK 2.3.0 - fix for warning in TFT_eSPI.h see https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/wiki
-2. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F
-3. Fixed ES8311 volume and tone *ac*t,Tnnn and *acVnn - t T short long duration
-4. Fixed ES8311 audio codec - use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
+1. Added PCF85063A RTC functions - sync auto with PC App time-set function. Test with *ic*1,2 Use 2 then use 1 to test.
+2. Updated to Arduino-Pico 6.0.0 and Pico SDK 2.3.0 - fix for warning in TFT_eSPI.h see https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/wiki
+3. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F 
+4. Fixed ES8311 volume and tone *ac*t,Tnnn and *acVnn - t T short long duration
+5. Fixed ES8311 audio codec - use with *ac*options such as *ac*s + filename = name.wav or /folder/filename.wav. Use 24kHz 16bit mono no metadats wav files
    Arduino-Pico i2s library used. Waveshare (modified) libraries also functional as alternative - refer to wiki.
-5. Added *ic* i2c bus scanner 
-6. Added Twists connected to PC App
-7. Slight tweaking of FT6336 init routines
-8. Fixed 2nd and 3rd Twist not changing colour when turned
-9. Fixed Key Repeat and KeyHeld Vol Mute change - reverted to previous code.
-10. Fixed missed Twist device 0 and limited scanning for Twists devices to actaul connected devices
-11. Changed option x to repeat the last key pressed when Twist is turned - it is a very useful option. Whether the [S1] is pressed that types a text string, 
+6. Added *ic* i2c bus scanner 
+7. Added Twists connected to PC App
+8. Slight tweaking of FT6336 init routines
+9. Fixed 2nd and 3rd Twist not changing colour when turned
+10. Fixed Key Repeat and KeyHeld Vol Mute change - reverted to previous code.
+11. Fixed missed Twist device 0 and limited scanning for Twists devices to actaul connected devices
+12. Changed option x to repeat the last key pressed when Twist is turned - it is a very useful option. Whether the [S1] is pressed that types a text string, 
     or the [Del]ete key, or the nKeys page-up [+] key, or the [*Cm] key that runs through all the star options - all four repeat when turning the Twist knob. 
     Option capital X can now be assigned two characters - enter *tc*abcd and and b will replace the / and * typed when the Twist is turned.
-12. Added up to 7 Sparkfun Twist Encoder i2c devices - default is 2 but change #define twX 2 to the required number 0-7 of twistDevices.
-   If more than one Twist device choose which Twist device to configure and control with the star commands through *tc**n with n = 0-7 
-   where 0 is when one Twist device connected. For example four Twist devices connected but control the second device through starcodes 
-   and the PC App, then use *tc**1.
+
 
 
 

@@ -41,6 +41,10 @@
 #include "SparkFun_Qwiic_Twist_Arduino_Library.h" // RGB Rotary Encoder i2c
 #include <Adafruit_MCP23X17.h>                    // Adafruit 16 port i2c GPIO I/O expander 14 In 16 Out
 #include <Adafruit_MCP23X08.h>                    // Adafruit  8 port i2c GPIO I/O expander 8 In + Out
+#include <PCF85063A.h>                            // NXP RTC lib
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PCF85063A rtc(Wire1);
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Adafruit_MCP23X17 mcp0;   // Address 0x20 Use this if MCP23018 used AddrPin GND
 Adafruit_MCP23X17 mcp1;   // Address 0x21 Use a fixed 4 x MCP23017 mcp0-mcp3 + 4 x MCP23008 mcp4-mcp7 
@@ -904,10 +908,7 @@ void setup()
 
   while ( !SD.begin(pinSdCs, SPI1))  delay(100); // if SD.h used can use SD.begin(CS, SPI1) or SD.begin(CS) for SPI0 but not for SDFS.h
     
-  InitCfg(1);                                    // Must read rotate180 early 
-
-  // setTime(01,02,03,20,04,2025);                                    // setTime(hr,min,sec,day,mnth,yr);
-  if(timeStatus()==timeNotSet) TimeSet = false; else TimeSet = true;  // true if timeNeedsSync or timeSet 
+  InitCfg(1);                                    // Must read rotate180 early
   
   // Initialise the TFT screen TFT_eSPI/TFT_eSPI.h
   tft.init();
@@ -936,7 +937,11 @@ void setup()
   Wire1.begin(); 
   Wire1.setClock(100000);           // Set clean stable standard bus communication speed  
   initFT6336Touch();                // Fire up hardware reset and operational default states
-
+  
+  rtc.begin();
+  TimeSet = !rtc.oscillator_stop();
+  if (TimeSet) setTime(rtc.time(NULL));
+  
   // initES8311(); 
   // Certain boards are hardwired with the WCLK before the BCLK, instead of the normal way around. This call swaps the WCLK and BCLK pins. 
   // Note that you still call setBCLK(x) with x being the lowest pin ID (i.e. in swapClocks mode the setBCLK call actually sets LRCLK).
@@ -1172,18 +1177,22 @@ void GetTimeData(tmElements_t *a, char *tArr, bool hm, int h, int m)
 {
   bool SetT = false;
   SaveTime4Data = true; 
+  struct tm tm = {0};
   
   if (hm) { a->Hour = h; a->Minute = m; a->Second = 0; }
      else { if (RecBytes[0]=='t' || RecBytes[0]=='T') SetT = true;  // Enters with once with tArr[0] = char then after that yymmddwhhmm
             if (RecBytes[1]!=0x2d)  a->Year   = (2000 + (RecBytes[1]-48)*10 + (RecBytes[2]-48)) - 1970;
             if (RecBytes[3]!=0x2d)  a->Month  = (RecBytes[3]-48)*10 + (RecBytes[4]-48);
-            if (RecBytes[5]!=0x2d)  a->Day    = (RecBytes[5]-48)*10 + (RecBytes[6]-48);
+            if (RecBytes[5]!=0x2d)  a->Day    = tm.tm_mday = (RecBytes[5]-48)*10 + (RecBytes[6]-48);
             if (RecBytes[7]!=0x2d)  a->Wday   = (RecBytes[7]-48);
-            if (RecBytes[8]!=0x2d)  a->Hour   = (RecBytes[8]-48)*10 + (RecBytes[9]-48);
-            if (RecBytes[10]!=0x2d) a->Minute = (RecBytes[10]-48)*10 + (RecBytes[11]-48);
-            a->Second = 0;
-            if (SetT) { setTime(a->Hour, a->Minute, 0, a->Day, a->Month, a->Year + 1970);
-                        TimeSet = (timeStatus() != timeNotSet);
+            if (RecBytes[8]!=0x2d)  a->Hour   = tm.tm_hour = (RecBytes[8]-48)*10 + (RecBytes[9]-48);
+            if (RecBytes[10]!=0x2d) a->Minute = tm.tm_min  = (RecBytes[10]-48)*10 + (RecBytes[11]-48);
+            tm.tm_sec  = a->Second = 0;
+            tm.tm_mon  = a->Month - 1; 
+            tm.tm_year = a->Year + 1970 - 1900;
+            if (SetT) { rtc.set(&tm);
+                        setTime(a->Hour, a->Minute, 0, a->Day, a->Month, a->Year + 1970);
+                        TimeSet = true;
                         optionsindicators(0); }  }
 
   if (RecBytes[0]=='a' || RecBytes[0]=='A') { alarmEnable = true; setAlarm = 2 - hm; optionsindicators(0); }
@@ -4180,7 +4189,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          if (k2 == 0x74) { GetTimeData(&t,     tTimeDateArr, 0,        0, 0); TimeSet = StarOk = true; break; }  // *tt* Main TimeClock Set 
          if (k2 == 0x61) { GetTimeData(&alarm, aTimeDateArr, knum==9,  e, m); StarOk = true; break; }            // *ta* [R-C][O-C]
          if (k2 == 0x77) { GetTimeData(&timer, wTimeDateArr, knum==9,  e, m); StarOk = true; break; }            // *tw* [RcT][OcT]
-         if (k2 == 0x70) { GetTimeData(&power, pTimeDateArr, knum==9,  e, m); StarOk = true; break; }  }         // *tp* [O-C][R-C]       
+         if (k2 == 0x70) { GetTimeData(&power, pTimeDateArr, knum==9,  e, m); StarOk = true; break; }    }       // *tp* [O-C][R-C]            
          case 32: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x6c *ul* = unlink current Source Key Num
        { UnLink = UnlinkKeyMST(0); if (UnLink) status("Macro MSTLink removed"); else status("No MSTLink found"); StarOk = true; break; }
          case 33: ////////////////////// KeyBrdByte[1]==0x75&&KeyBrdByte[2]==0x61 *ua* = unlink all macros
@@ -4549,11 +4558,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
           if (knum>5)  { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                                                         // Set new config I/O  
                          for (n=0; n<loopLen; n++) mcpPins[b][n] = KeyBrdByte[5+n]-48; InitMCP23xx(0); SaveMCP = StarOk = true; break; } 
           break; } 
-         case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F
+         case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner *ic*1,2 test RTC *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F
        { if (knum==4) { status("Running I2C Diagnostic Scan"); runI2CScanner(); } 
+         if (knum==5) { status("RTC: Use 2 then 1 for 23 July 2026 14h30"); TestRTC(b); }
          if (knum==9) { const byte* p = KeyBrdByte + 4;  // *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F 
                         if (k4=='0') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 0 SDA/SCL changed"); WriteConfig1Change = true; } // *ic*0aabb SDA,SCL 00-7F Wire  i2c0 saved 
-                        if (k4=='1') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 0 SDA/SCL changed"); }  }                         // *ic*1aabb SDA.SCL 00-7F Wire1 i2c1 not saved
+                        if (k4=='1') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 1 SDA/SCL changed"); }  }                         // *ic*1aabb SDA.SCL 00-7F Wire1 i2c1 not saved
          StarOk = true; break; } 
          case 96: ////////////////////// KeyBrdByte[1]=='a'&&KeyBrdByte[2]=='c' *ac*u,d,m,t Audio codec Volume up,down,mute t-Tone0-9 100-1000Hz
        { char actionChar = (char)KeyBrdByte[4];  pinMode(17, OUTPUT); digitalWrite(17, HIGH); delay(50);               // Enable Power Amp 
@@ -6038,6 +6048,16 @@ void MakeKBMacro()
 { int n;
   for (n=0; n<100; n++) { KBMacro[n][0] = 'a';  KBMacro[n][1] = ((n+1)/10) + 48; KBMacro[n][2] = n + 49;  KBMacro[n][3] = 0x00; b++;}  
 }*/
+/////////////////////////
+void TestRTC(int Option)
+/////////////////////////
+{ if (Option==1) { SerPr2; Serial.print("PCF85063A RTC: ");
+                   if (rtc.oscillator_stop()) Serial.print("Oscillator Stopped"); else Serial.print("Oscillator Running"); SerPr1;       
+                   time_t t = rtc.time(NULL); Serial.print("Time: "); Serial.println(ctime(&t)); SerPr2; }
+  if (Option==2) { struct tm tm;
+                   tm.tm_year = 2026 - 1900; tm.tm_mon = 6; tm.tm_mday = 23; tm.tm_hour = 14; tm.tm_min  = 30; tm.tm_sec  = 0;
+                   rtc.set(&tm); Serial.println("RTC Set"); }
+}
 
 ///////////////////
 void ES8311Show()
@@ -6227,4 +6247,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 6210*188# *****************/
+/************* EOF line 6250 *****************/

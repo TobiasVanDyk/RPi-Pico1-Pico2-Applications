@@ -1009,7 +1009,7 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz T 3 seconds t 800 mS duration   
 (Ad) *ic* i2c bus scanner 
      *ic*0,1aabb aa bb hex value change external (use 0) SDA SCL aa,bb = 00-7F - i2c1 not saved     
-     
+     *ic*1,2 Test RTC Use 2 then use 1 to test.
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
 
