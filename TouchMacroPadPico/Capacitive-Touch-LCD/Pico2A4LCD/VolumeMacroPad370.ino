@@ -43,8 +43,8 @@
 #include <Adafruit_MCP23X08.h>                    // Adafruit  8 port i2c GPIO I/O expander 8 In + Out
 #include <PCF85063A.h>                            // NXP RTC lib
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-PCF85063A rtc(Wire1);
-
+PCF85063A rtc(Wire1);          // Use i2c1 for LCD integrated devices Touch, Audio, RTC, Sensors
+bool RTCVBatChargeOn = false;  // RTC needs APX2101 Vbackup init for ML2020
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Adafruit_MCP23X17 mcp0;   // Address 0x20 Use this if MCP23018 used AddrPin GND
 Adafruit_MCP23X17 mcp1;   // Address 0x21 Use a fixed 4 x MCP23017 mcp0-mcp3 + 4 x MCP23008 mcp4-mcp7 
@@ -887,7 +887,8 @@ void setup()
   // SPI1.setCS(pinSdCs);  
   // SPI1.begin();                  // SPI1 on RP2350B
   
-  SysClkOK = i2s.setSysClk(sampleRate); // Align system clock with sample rate - CPU MHz RP2350B: 135600000 with 44100 samplerate
+  SysClkOK = i2s.setSysClk(sampleRate);    // Align system clock with sample rate - CPU MHz RP2350B: 135600000 with 44100 samplerate
+  RTCVBatChargeOn = enableBackupCharge();  // APX2101 RTC ML2020 backup battery trickle charge at 0.1mA 2.9v
     
   Serial.begin(9600);               // serial rate is ignored for usb-serial
   // Serial.ignoreFlowControl(1);   // https://arduino-pico.readthedocs.io/en/latest/serial.html  
@@ -940,9 +941,8 @@ void setup()
   
   rtc.begin();
   TimeSet = !rtc.oscillator_stop();
-  if (TimeSet) setTime(rtc.time(NULL));
+  if (TimeSet) setTime(rtc.time(NULL));  
   
-  // initES8311(); 
   // Certain boards are hardwired with the WCLK before the BCLK, instead of the normal way around. This call swaps the WCLK and BCLK pins. 
   // Note that you still call setBCLK(x) with x being the lowest pin ID (i.e. in swapClocks mode the setBCLK call actually sets LRCLK).
   i2s.setDATA(I2S_DSDIN);       // GP12
@@ -4560,7 +4560,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
           break; } 
          case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner *ic*1,2 test RTC *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F
        { if (knum==4) { status("Running I2C Diagnostic Scan"); runI2CScanner(); } 
-         if (knum==5) { status("RTC: Use 2 then 1 for 23 July 2026 14h30"); TestRTC(b); }
+         if (knum==5) { status("RTC: Use 2 then 1 for 23 July 2026 14h30"); 
+                        if (b<3) TestRTC(b); else if (b==3) enableBackupCharge(); else if (b==4) checkBackupChargeVoltage(); else if (b==5) GetAXP2101Telemetry(); }
          if (knum==9) { const byte* p = KeyBrdByte + 4;  // *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F 
                         if (k4=='0') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 0 SDA/SCL changed"); WriteConfig1Change = true; } // *ic*0aabb SDA,SCL 00-7F Wire  i2c0 saved 
                         if (k4=='1') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 1 SDA/SCL changed"); }  }                         // *ic*1aabb SDA.SCL 00-7F Wire1 i2c1 not saved
@@ -4579,6 +4580,90 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                                                             else { for (n=0; n<knum-5; n++) NameStr3[n] = KeyBrdByte[n+5]; NameStr3[n] = 0x00; playWav(NameStr3);} } 
          else { status("Use *ac*v,m,t,s+file.wav t+1-9 v0-99 m0,1"); break; } StarOk = true; break; }
       } return StarOk;                
+}
+
+/////////////////////////////////////////////////////////////////////////// APX2101
+#define AXP2101_ADDR 0x34
+#define REG_CHG_ENABLE 0x18   // bit2 = button/backup battery charge enable
+#define REG_BACKUP_VOLT 0x6A  // bits[2:0] = backup battery charge target voltage
+
+//////////////////////////
+bool enableBackupCharge() 
+//////////////////////////
+{ byte reg = readRegisterWire1(REG_CHG_ENABLE);   // read current value first
+  // Serial.print("REG18h before: 0x"); Serial.println(reg, HEX);
+  byte newReg = reg | (1 << 2);   // set only bit 2, leave every other bit untouched
+  writeRegisterWire1(REG_CHG_ENABLE, newReg);
+  delay(10);
+  byte verify = readRegisterWire1(REG_CHG_ENABLE);
+  if (verify & (1<<2)) return true;
+  // Serial.print("REG18h after:  0x"); Serial.println(verify, HEX);
+  // Serial.println((verify & (1<<2)) ? "Backup charge: ENABLED" : "Backup charge: still OFF - check I2C write");
+  return false;
+}
+
+/////////////////////////////////
+void checkBackupChargeVoltage() 
+/////////////////////////////////
+{ byte reg = readRegisterWire1(REG_BACKUP_VOLT);
+  byte code = reg & 0x07;   // isolate bits [2:0]
+  float voltages[8] = {2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3};
+  Serial.print("REG6Ah raw: 0x"); Serial.println(reg, HEX);
+  Serial.print("Backup charge target voltage: ");
+  Serial.print(voltages[code], 1);
+  Serial.println("V");
+}
+///////////////////////
+void checkAXP2101() 
+///////////////////////
+{ byte chg = readRegisterWire1(0x18);
+  Serial.println(chg & (1<<2) ? "Backup charge already ON" : "Backup charge OFF by default");
+  if (chg & (1<<2)) return; // Assume 2.9v ?  
+}
+
+//////////////////////////////
+void GetAXP2101Telemetry() 
+/////////////////////////////
+{ byte powerStatus = readRegisterWire1(0x00);      // PMU status1
+  byte chgReg  =     readRegisterWire1(0x18);
+  byte voltReg =     readRegisterWire1(0x6A) & 0x07;
+  float voltages[8] = {2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3};
+
+  Serial.println("AXP2101 Backup Charger Status:");
+  Serial.print("Backup charge enabled: ");
+  Serial.println((chgReg & (1<<2)) ? "YES" : "NO");
+  Serial.print("Backup charge target voltage: ");
+  Serial.print(voltages[voltReg], 1); Serial.println("V");
+  Serial.print("PMU status1 (0x00): 0x"); Serial.println(powerStatus, HEX);
+ 
+}
+
+/////////////////////////////////////////////
+void writeRegisterWire1(byte reg, byte val) 
+/////////////////////////////////////////////
+{ Wire1.beginTransmission(AXP2101_ADDR); 
+  Wire1.write(reg);
+  Wire1.write(val);
+  if (Wire1.endTransmission() != 0) {
+    Serial.println("Wire1 Write Error!");
+  }
+}
+//////////////////////////////////
+byte readRegisterWire1(byte reg) 
+//////////////////////////////////
+{
+  Wire1.beginTransmission(AXP2101_ADDR);  
+  Wire1.write(reg);
+  if (Wire1.endTransmission(false) != 0) {
+    Serial.println("Wire1 Communication Error!");
+    return 0x00;
+  }
+  
+  Wire1.requestFrom(AXP2101_ADDR, 1);     
+  if (Wire1.available()) {
+    return Wire1.read();
+  }
+  return 0x00;
 }
 
 //////////////////////////////////////////////////////////////
@@ -6048,6 +6133,7 @@ void MakeKBMacro()
 { int n;
   for (n=0; n<100; n++) { KBMacro[n][0] = 'a';  KBMacro[n][1] = ((n+1)/10) + 48; KBMacro[n][2] = n + 49;  KBMacro[n][3] = 0x00; b++;}  
 }*/
+
 /////////////////////////
 void TestRTC(int Option)
 /////////////////////////
@@ -6247,4 +6333,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 6250 *****************/
+/************* EOF line 6336 *****************/
