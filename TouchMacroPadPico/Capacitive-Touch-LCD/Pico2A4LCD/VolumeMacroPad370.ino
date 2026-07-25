@@ -952,7 +952,7 @@ void setup()
   initFT6336Touch();                // Fire up hardware reset and operational default states
 
   RTCVBatChargeOn = enableBackupCharge();            // APX2101 RTC ML2020 backup battery trickle charge at 0.1mA 2.9v
-  // checkBackupChargeVoltage(BackupChargeVoltage);  // Set RTC charge voltage to 3.1v suitable for ML2020
+  checkBackupChargeVoltage(BackupChargeVoltage);     // Set RTC charge voltage to 3.1v suitable for ML2020 or use *ic*45 then *ic*4 to check
   
   rtc.begin();
   TimeSet = !rtc.oscillator_stop();
@@ -6111,15 +6111,15 @@ bool readVSys()
 ///////////////////////////////////////////
 void checkBackupChargeVoltage(int Change) 
 ///////////////////////////////////////////
-{ byte reg = readRegisterWire1(REG_RTC_VOLT);
-  byte code = reg & 0x07;   // isolate bits [2:0]
-  float voltages[8] = {2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3};
+{ float voltages[8] = {2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3}; // Change = 0 to 7
 
+  byte reg = readRegisterWire1(REG_RTC_VOLT); delay(10);
+  
   if (Change<8) { writeRegisterWire1(REG_RTC_VOLT, Change); // Change>7 disable change else 2.6-3.3v 0-7
                   delay(10);
-                  reg = readRegisterWire1(REG_RTC_VOLT); }  // <*ic*45> will set backup voltage to 3.1v  
-                  
-  // Serial.print("REG6Ah raw: 0x"); Serial.println(reg, HEX);
+                  reg = readRegisterWire1(REG_RTC_VOLT); }   // <*ic*45> will set backup voltage to 3.1v                    
+                                   
+  byte code = reg & 0x07;   // isolate bits [2:0]
   Serial.print("RTC Backup charge target voltage: "); Serial.print(voltages[code], 1); Serial.println("V");                  
 }
 
@@ -6379,4 +6379,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 6386 *****************/
+/************* EOF line 6382 *****************/
