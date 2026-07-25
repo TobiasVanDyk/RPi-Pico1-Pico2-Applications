@@ -887,8 +887,7 @@ void setup()
   // SPI1.setCS(pinSdCs);  
   // SPI1.begin();                  // SPI1 on RP2350B
   
-  SysClkOK = i2s.setSysClk(sampleRate);    // Align system clock with sample rate - CPU MHz RP2350B: 135600000 with 44100 samplerate
-  RTCVBatChargeOn = enableBackupCharge();  // APX2101 RTC ML2020 backup battery trickle charge at 0.1mA 2.9v
+  SysClkOK = i2s.setSysClk(sampleRate);    // Align system clock with sample rate - CPU MHz RP2350B: 135600000 with 44100 samplerate  
     
   Serial.begin(9600);               // serial rate is ignored for usb-serial
   // Serial.ignoreFlowControl(1);   // https://arduino-pico.readthedocs.io/en/latest/serial.html  
@@ -937,7 +936,10 @@ void setup()
   Wire1.setSCL(TOUCH_SCL);
   Wire1.begin(); 
   Wire1.setClock(100000);           // Set clean stable standard bus communication speed  
+  
   initFT6336Touch();                // Fire up hardware reset and operational default states
+
+  RTCVBatChargeOn = enableBackupCharge();  // APX2101 RTC ML2020 backup battery trickle charge at 0.1mA 2.9v
   
   rtc.begin();
   TimeSet = !rtc.oscillator_stop();
@@ -4561,7 +4563,8 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner *ic*1,2 test RTC *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F
        { if (knum==4) { status("Running I2C Diagnostic Scan"); runI2CScanner(); } 
          if (knum==5) { status("RTC: Use 2 then 1 for 23 July 2026 14h30"); 
-                        if (b<3) TestRTC(b); else if (b==3) enableBackupCharge(); else if (b==4) checkBackupChargeVoltage(); else if (b==5) GetAXP2101Telemetry(); }
+                        if (b<3) TestRTC(b); else if (b==3) enableBackupCharge(); else if (b==4) checkBackupChargeVoltage(); else if (b==5) GetAXP2101Telemetry(); 
+                                             else if (b==6) readVBus(); else if (b==7) readVSys();}
          if (knum==9) { const byte* p = KeyBrdByte + 4;  // *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F 
                         if (k4=='0') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 0 SDA/SCL changed"); WriteConfig1Change = true; } // *ic*0aabb SDA,SCL 00-7F Wire  i2c0 saved 
                         if (k4=='1') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 1 SDA/SCL changed"); }  }                         // *ic*1aabb SDA.SCL 00-7F Wire1 i2c1 not saved
@@ -4586,6 +4589,11 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
 #define AXP2101_ADDR 0x34
 #define REG_CHG_ENABLE 0x18   // bit2 = button/backup battery charge enable
 #define REG_BACKUP_VOLT 0x6A  // bits[2:0] = backup battery charge target voltage
+#define REG_ADC        0x30   // ADC Channel enable control bit 3 system voltage bit 2 VBUS voltage
+#define REG_VBUS1      0x38   // VBus hi 6 bits
+#define REG_VBUS2      0x39   // VBus lo 8 bits
+#define REG_VSYS1      0x3A   // VSys hi 6 bits
+#define REG_VSYS2      0x3B   // VBus lo 8 bits
 
 //////////////////////////
 bool enableBackupCharge() 
@@ -4602,6 +4610,42 @@ bool enableBackupCharge()
   return false;
 }
 
+//////////////////////////
+bool readVBus() 
+//////////////////////////
+{ byte reg = readRegisterWire1(REG_ADC);   // read current value first
+  // Serial.print("REG30h before: 0x"); Serial.println(reg, HEX);
+  byte newReg = reg |= bit(6);             // set only bit 6 VBus reg |= BIT6 on reg &= ~BIT6 off
+  writeRegisterWire1(REG_ADC, newReg);
+  delay(50);
+  reg = readRegisterWire1(REG_ADC); 
+  // Serial.print("REG30h after: 0x"); Serial.println(reg, HEX);
+  
+  byte reg1 = readRegisterWire1(REG_VBUS1);   // read current hi 6 bits
+  byte reg2 = readRegisterWire1(REG_VBUS2);   // read current hi 8 bits
+  uint16_t adc = ((reg1 & 0x3F) << 8) | reg2;
+  Serial.print("VBus Voltage = "); Serial.print(adc / 1000.0, 3); Serial.println(" V");  
+  return true;
+}
+
+//////////////////////////
+bool readVSys() 
+//////////////////////////
+{ byte reg = readRegisterWire1(REG_ADC);   // read current value first
+  // Serial.print("REG30h before: 0x"); Serial.println(reg, HEX);
+  byte newReg = reg |= bit(4);             // set only bit 2 VSys reg |= BIT4 on reg &= ~BIT4 off
+  writeRegisterWire1(REG_ADC, newReg);
+  delay(50);
+  reg = readRegisterWire1(REG_ADC); 
+  // Serial.print("REG30h after: 0x"); Serial.println(reg, HEX);
+  
+  byte reg1 = readRegisterWire1(REG_VSYS1);   // read current hi 6 bits
+  byte reg2 = readRegisterWire1(REG_VSYS2);   // read current lo 8 bits
+  uint16_t adc = ((reg1 & 0x3F) << 8) | reg2;
+  Serial.print("VSys Voltage = "); Serial.print(adc / 1000.0, 3); Serial.println(" V");  
+  return true;
+}
+
 /////////////////////////////////
 void checkBackupChargeVoltage() 
 /////////////////////////////////
@@ -4612,13 +4656,6 @@ void checkBackupChargeVoltage()
   Serial.print("Backup charge target voltage: ");
   Serial.print(voltages[code], 1);
   Serial.println("V");
-}
-///////////////////////
-void checkAXP2101() 
-///////////////////////
-{ byte chg = readRegisterWire1(0x18);
-  Serial.println(chg & (1<<2) ? "Backup charge already ON" : "Backup charge OFF by default");
-  if (chg & (1<<2)) return; // Assume 2.9v ?  
 }
 
 //////////////////////////////
@@ -4634,8 +4671,7 @@ void GetAXP2101Telemetry()
   Serial.println((chgReg & (1<<2)) ? "YES" : "NO");
   Serial.print("Backup charge target voltage: ");
   Serial.print(voltages[voltReg], 1); Serial.println("V");
-  Serial.print("PMU status1 (0x00): 0x"); Serial.println(powerStatus, HEX);
- 
+  Serial.print("PMU status1 (0x00): 0x"); Serial.println(powerStatus, HEX); 
 }
 
 /////////////////////////////////////////////
@@ -6262,6 +6298,11 @@ void showKeyData(byte Option)
 
    runI2CScanner();
    Serial.print("Twist SDA/SCL: "); Serial.print(TwistSDA); SerPr1; Serial.print(TwistSCL); SerPr2;
+   
+   SerPr2;
+   readVBus();
+   readVSys();
+   GetAXP2101Telemetry(); 
 
    SerPr2;
    Serial.print("Twist Connected (0-3): "); Serial.print(twC); SerPr2;
@@ -6333,4 +6374,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 6336 *****************/
+/************* EOF line 6377 *****************/
