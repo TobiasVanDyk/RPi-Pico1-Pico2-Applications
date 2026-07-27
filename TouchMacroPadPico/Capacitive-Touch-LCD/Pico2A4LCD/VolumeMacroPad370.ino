@@ -826,7 +826,7 @@ byte RecBytes[MaxRec];       // Raw bytes received must start < and end with > -
 int  NumBytes = 0;
 bool NewData = false;
 char AltNum[] = "1D6D1";
-bool CheckSerial = false;    // Switch off serial check unless *se* toggles CheckSerial - default is off
+bool CheckSerial = true;     // Switch on serial check *se* toggles CheckSerial - default is on
 bool FileSend = false;       // Files sent from PCApp with drag and drop
 int  fnum = 1;               // Counts file1-file9999
 char fname[40] = "file";     // Drag and Drop files in PC App use this as basis filename 
@@ -951,7 +951,8 @@ void setup()
   
   initFT6336Touch();                // Fire up hardware reset and operational default states
 
-  RTCVBatChargeOn = enableBackupCharge();            // APX2101 RTC ML2020 backup battery trickle charge at 0.1mA 2.9v
+  RTCVBatChargeOn = enableBackupCharge(true);        // APX2101 RTC ML2020 backup battery trickle charge at 0.1mA 2.9v
+  readVSys(1); readVBus(1);                          // 1 = only set ADC
   checkBackupChargeVoltage(BackupChargeVoltage);     // Set RTC charge voltage to 3.1v suitable for ML2020 or use *ic*45 then *ic*4 to check
   
   rtc.begin();
@@ -4576,8 +4577,10 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
          case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner *ic*1,2 test RTC *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F
        { if (knum==4) { status("Running I2C Diagnostic Scan"); runI2CScanner(); } 
          if (knum==5) { if (b<3) { TestRTC(b); status("RTC: Use 2 then 1 for 23 July 2026 14h30"); }
-                        else if (b==3) enableBackupCharge(); else if (b==4) checkBackupChargeVoltage(8); else if (b==5) GetAXP2101Telemetry(); else if (b==6) readVBus(); else if (b==7) readVSys(); }
-         if (knum==6) { if (b==4) if ((k5-48)<8) checkBackupChargeVoltage(k5-48); }  // <*ic*45> will set backup voltage to 3.1v        
+                        else if (b==3) enableBackupCharge(true); else if (b==4) checkBackupChargeVoltage(8); else if (b==5) GetAXP2101Telemetry(); 
+                        else if (b==6) readVBus(0); else if (b==7) readVSys(0); else if (b==8) enableBackupCharge(false); }
+         if (knum==6) { if (b==4) { if ((k5-48)<8) checkBackupChargeVoltage(k5-48); }                            // <*ic*45> will set backup voltage to 3.1v  
+                        if (b==3) { if ((k5-48)<1) enableBackupCharge(false); else enableBackupCharge(true); } } // <*ic*30,1> will disablee/enable charge RTCbattery      
          if (knum==9) { const byte* p = KeyBrdByte + 4;  // *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F 
                         if (k4=='0') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 0 SDA/SCL changed"); WriteConfig1Change = true; } // *ic*0aabb SDA,SCL 00-7F Wire  i2c0 saved 
                         if (k4=='1') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 1 SDA/SCL changed"); }  }                         // *ic*1aabb SDA.SCL 00-7F Wire1 i2c1 not saved
@@ -6061,50 +6064,50 @@ void initES8311() // Anthropic Claude
 
 /////////////////////////////////////////////////////////////////////////// APX2101
 
-//////////////////////////
-bool enableBackupCharge() 
-//////////////////////////
+//////////////////////////////////////////////////////////////
+bool enableBackupCharge(bool enable) // enable = true, false
+//////////////////////////////////////////////////////////////
 { byte reg = readRegisterWire1(REG_CHG_ENABLE);   // read current value first
   // Serial.print("REG18h before: 0x"); Serial.println(reg, HEX);
-  byte newReg = reg | (1 << 2);   // set only bit 2, leave every other bit untouched
+  byte newReg = (reg & ~(1 << 2)) | (enable << 2); // set/clear only bit 2, leave every other bit untouched
   writeRegisterWire1(REG_CHG_ENABLE, newReg);
   delay(10);
   byte verify = readRegisterWire1(REG_CHG_ENABLE);
-  if (verify & (1<<2)) return true;
+  if (verify == newReg) return true;
   // Serial.print("REG18h after:  0x"); Serial.println(verify, HEX);
   // Serial.println((verify & (1<<2)) ? "Backup charge: ENABLED" : "Backup charge: still OFF - check I2C write");
   return false;
 }
 
-//////////////////////////
-bool readVBus() 
-//////////////////////////
-{ byte reg = readRegisterWire1(REG_ADC);   // read current value first
-  byte newReg = reg |= 0x5F;               // this works VBus reg |= BIT6 on reg &= ~BIT6 off  
-  writeRegisterWire1(REG_ADC, newReg);
-  delay(10);
-  reg = readRegisterWire1(REG_ADC);
-  delay(10);
-  byte reg1 = readRegisterWire1(REG_VBUS1);   // read current hi 6 bits
-  byte reg2 = readRegisterWire1(REG_VBUS2);   // read current hi 8 bits
-  uint16_t adc = ((reg1 & 0x3F) << 8) | reg2;
-  Serial.print("VBus Voltage = "); Serial.print(adc / 1000.0, 3); Serial.println(" V");  
+////////////////////////////////////////////////////////////
+bool readVBus(byte Option) // 0 both 1 set ADC 2 read VBus
+////////////////////////////////////////////////////////////
+{ if (Option<2)  { byte reg = readRegisterWire1(REG_ADC);   // read current value first
+                   byte newReg = reg |= 0x5F;               // this works VBus reg |= BIT6 on reg &= ~BIT6 off 
+                   writeRegisterWire1(REG_ADC, newReg); delay(10);
+                   reg = readRegisterWire1(REG_ADC);    delay(10);                   
+                   if (reg != newReg) { Serial.print("ADC not set"); return false; }  }
+  if (Option!=1) { byte reg1 = readRegisterWire1(REG_VBUS1);  delay(10); // read current hi 6 bits
+                   byte reg2 = readRegisterWire1(REG_VBUS2);             // read current hi 8 bits
+                   uint16_t adc = ((reg1 & 0x3F) << 8) | reg2;
+                   if (adc==0) return false; 
+                   Serial.print("VBus Voltage = "); Serial.print(adc / 1000.0, 3); Serial.println(" V"); }
   return true;
 }
 
-//////////////////////////
-bool readVSys() 
-//////////////////////////
-{ byte reg = readRegisterWire1(REG_ADC);   // read current value first
-  byte newReg = reg |= 0x5F;               // VSys reg |= BIT4 on reg &= ~BIT4 off  
-  writeRegisterWire1(REG_ADC, newReg);
-  delay(10);
-  reg = readRegisterWire1(REG_ADC); 
-  delay(10);
-  byte reg1 = readRegisterWire1(REG_VSYS1);   // read current hi 6 bits
-  byte reg2 = readRegisterWire1(REG_VSYS2);   // read current lo 8 bits
-  uint16_t adc = ((reg1 & 0x3F) << 8) | reg2;
-  Serial.print("VSys Voltage = "); Serial.print(adc / 1000.0, 3); Serial.println(" V");  
+////////////////////////////////////////////////////////////
+bool readVSys(byte Option) // 0 both 1 set ADC 2 read VSys
+////////////////////////////////////////////////////////////
+{ if (Option>2)  { byte reg = readRegisterWire1(REG_ADC);   // read current value first
+                   byte newReg = reg |= 0x5F;               // VSys reg |= BIT4 on reg &= ~BIT4 off  
+                   writeRegisterWire1(REG_ADC, newReg); delay(10);
+                   reg = readRegisterWire1(REG_ADC);    delay(10);                   
+                   if (reg != newReg) { Serial.print("ADC not set"); return false;  }  }
+  if (Option!=1) { byte reg1 = readRegisterWire1(REG_VSYS1);   // read current hi 6 bits
+                   byte reg2 = readRegisterWire1(REG_VSYS2);   // read current lo 8 bits
+                   uint16_t adc = ((reg1 & 0x3F) << 8) | reg2;
+                   if (adc==0) return false;
+                   Serial.print("VSys Voltage = "); Serial.print(adc / 1000.0, 3); Serial.println(" V"); }
   return true;
 }
 
@@ -6304,8 +6307,8 @@ void showKeyData(byte Option)
    Serial.print("Twist SDA/SCL: "); Serial.print(TwistSDA); SerPr1; Serial.print(TwistSCL); SerPr2;
    
    SerPr2;
-   readVBus();
-   readVSys();
+   if (!readVBus(2)) readVBus(0);
+   if (!readVSys(2)) readVSys(0);
    // checkBackupChargeVoltage(8);
    GetAXP2101Telemetry(); 
 

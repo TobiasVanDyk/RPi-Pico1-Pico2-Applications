@@ -26,14 +26,14 @@ Using library Adafruit_BusIO at version 1.17.4 in folder: C:\Users\Tobias\Docume
 Using library RTC_NXP_Arduino at version 1.1.3 in folder: C:\Users\Tobias\Documents\Arduino\libraries\RTC_NXP_Arduino 
 Using library I2C_device_Arduino at version 1.2.0 in folder: C:\Users\Tobias\Documents\Arduino\libraries\I2C_device_Arduino 
 "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\rp2040\\tools\\pqt-gcc\\5.0.0-9576866/bin/arm-none-eabi-size" -A "I:\\Data\\Win10\\Arduino/VolumeMacroPad370.ino.elf"
-Sketch uses 293728 bytes (3%) of program storage space. Maximum is 8380416 bytes.
+Sketch uses 293920 bytes (3%) of program storage space. Maximum is 8380416 bytes.
 Global variables use 74416 bytes (14%) of dynamic memory, leaving 449872 bytes for local variables. Maximum is 524288 bytes.
 C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\tools\pqt-python3\1.0.1-base-3a57aed-1/python3 -I C:\Users\Tobias\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\6.0.0/tools/uf2conv.py --serial COM12 --family RP2040 --deploy I:\Data\Win10\Arduino/VolumeMacroPad370.ino.uf2 
 Resetting COM12
-Converting to uf2, output size: 671744, start address: 0x2000
+Converting to uf2, output size: 672256, start address: 0x2000
 Scanning for RP2040 devices
 Flashing D: (RP2350)
-Wrote 671744 bytes to D:/NEW.UF2
+Wrote 672256 bytes to D:/NEW.UF2
 ----------------------------------------------------------------------------------------------------------------
 
 To install new version of Arduino Pico first delete it from boards manager, then delete the folder 
@@ -53,7 +53,7 @@ Wire1 i2c1 Internal Devices on GP34/35
 
 New changes: (All changes from 8 below were in the last GT911 capacive touch version)
 1. Added APX2101 Vbackup charging enable at 0.1mA 2.9v for RTC. Read VBus and VSys with *ic*6,7 Use *ic*5 for APX2101 summary 
-   Use *ic*45 to set backup 3.1v *ic*4 to check backup voltage. Once set to 3.1v it is persistant
+   Use *ic*45 to set backup 3.1v *ic*4 to check backup voltage. Use *ic*30,1 to disable/enable charging RTC battery - disable if normal PC CMOs battery used
 2. Added PCF85063A RTC functions - sync auto with PC App time-set function. Test with *ic*1,2 Use 2 then use 1 to test.
 3. Updated to Arduino-Pico 6.0.0 and Pico SDK 2.3.0 - fix for warning in TFT_eSPI.h see https://github.com/TobiasVanDyk/RPi-Pico1-Pico2-Applications/wiki
 4. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F 
