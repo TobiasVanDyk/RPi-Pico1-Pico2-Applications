@@ -186,10 +186,9 @@ bool SysClkOK = false;
 #define ES8311_SDA 34        // https://github.com/waveshareteam/RP2350-Touch-LCD-3.5/blob/main/examples/C/03_ES8311/lib/config/DEV_Config.h 
 #define ES8311_SCL 35        // DEV_Config.cpp has: void DEV_GPIO_Init(void) { gpio_init(PA_CTRL); gpio_set_dir(PA_CTRL, GPIO_OUT);  gpio_put(PA_CTRL, 1); }
 #define PA_CTRL    17        // Power Amp pin 1 Control (HIGH to enable) schematic has it pulled LOW via 10k resistor
-int frequency = 440;         // frequency of square wave in Hz
-int amplitude = 500;         // amplitude of square wave as 500/32k 00-FF -96dB - +32dB
-float duration = 0.8;        // Tone length = 800 mS
-int16_t sample = amplitude;  // current sample value
+int frequency = 440;         // frequency of square wave in Hz set as tnn nn=95=9.5kHz or tnnn nnn=800=800Hz default 440Hz
+byte tonelen = 5;            // *tc*d = 5/10 = 0.5 seconds *tc*D = 5 seconds then used with *ac*t or *ac*tnnn or *ac*tnn
+int16_t sample = 500;        // current sample value when amplitude of square wave as 500/32k 00-FF -96dB - +32dB
 int count = 0;
 
 
@@ -260,25 +259,26 @@ uint8_t static const conv_table1[128][2] =  { HID_ASCII_TO_KEYCODE };
 // uint8_t static const conv_table2[128][2] =  { HID_KEYCODE_TO_ASCII }; 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 0   KeySkip 1  CheckSerial 1  KeyHeldEnable  1           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
-// 7     nKeys 1       nChar  n      nKeysPage  8  nKeysCharSet[10] c         CRLF 0                    crlf1 0x0D             crlf2 0x0A
-// 23    iList 0       MuteOn 0           VolOn 1          LayerAxD 0        Media 0                   XFiles 0           Brightness 0           
-// 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
-// 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
-// 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
-// 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0            nKeysL134  1         KeyRepeat2 20 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 0     KeySkip 1      CheckSerial 1      KeyHeldEnable  0             BLOnOff 1     Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
+// 7       nKeys 1           nChar  n          nKeysPage  8    nKeysCharSet[10] c          CRLF 0                    crlf1 0x0D             crlf2 0x0A
+// 23      iList 0           MuteOn 0               VolOn 1            LayerAxD 0         Media 0                   XFiles 0           Brightness 0           
+// 30     BsDNum 0           RetNum 8             LayerAD 0       KeyFontColour 0    SaveLayout 2                 OptionOS 0            KeyRepeat 6 
+// 37    NormVal 0           DimVal 3             nKeys34 1            nDir[20] c         nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
+// 72     MLabel 0           SLabel 0              TLabel 0        DelayTimeVal 0       VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
+// 80    MathSet 0           MouseZ 0      MediaConfig[0] 0        StartMarker  0x02  EndMarker 0x03               MacroUL 0            nKeysL134 0          KeyRepeat2 20 
+// 90    tonelen 80 RTCVBatChargeOn 1 BackupChargeVoltage 5      currentVolume 30        unused 0                   unused 0
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Last 3 entries KeyRepeat2 TwistSDA TwistSCL Config1[87,88,89] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access char string array nDirZ=0=EOS 
 // Note only nDir only saved if 20 bytes max in size excluding last 0x00 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
-byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
-                                      0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 32, 33  };
+cSt byte Config1Size = 96;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19  20   21   22   23  24 25  26 27 28  29 30  31 
+byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k', 0,   0x0D,0x0A,0,  1,  0, 0, 0, 0,   0,  0,  8, 
+                                      0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,  0,  0, 0, 0, 0,  'n','o','p',
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   0,   65, 32, 33,80,1, 5,   30, 0,  0  };
 cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
-                                      0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 32, 33  };                                    
+                                      0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,0,   0,   0, 0, 0, 0, 0, 0, 'n','o','p',
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0, 0, 65, 32, 33,  80, 1, 5, 30, 0, 0 };                                    
 bool WriteConfig1Change = false; // Do save if true
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -350,7 +350,7 @@ byte MouseConfig[2] = { 1, 5 };        // Mouse Config
 bool MediaCfg = false;                 // Set later = to MediaConfig[0]
 byte MediaConfig[1] = { 0 };           // Values are 0 - 4 for Media+Volume+Mute+Tone combinations 
 byte KeyHeld = 0;                      // Key held in number 0 - 17
-bool KeyHeldEnable = true;             // Enable/Disable Volume Mute Processing if [Vo][L1-L4 key is pressed long
+bool KeyHeldEnable = false;            // Enable/Disable Volume Mute Processing if [Vo][L1-L4 key is pressed long
 byte KeyRepeat = 6;                    // Duration before Key Repeat is active in KeyRepeatx100 milliseconds
 int  KeyRepeat2 = 650;                 // KeyRepeat2 = 650 = threshold see touch.h
 byte KeyHeldLayout = 0;                // Save Layout temporarily while checking KeyHeld
@@ -502,7 +502,7 @@ char nKeysLnkChar[10] = {'n','o','p','q','u','v','w','x','y','z'};  // DoLinkStr
 int  nCharNum = 0;                   // Current position into nKeysCharSet[nCharNum] when pressing Option (o) Pad
 int  nCharAll = 0;                   // Current position into nKeysAllChar[nCharAll] when [s] active and pressing Pads (+)(-)
 char nKeysCurr[] = {"x is current nKeys char"}; 
-bool nKeysL134 = true;               // nChar replaces L in L1, L3, L4
+bool nKeysL134 = false;              // nChar replaces L in L1, L3, L4
 byte CRLF = 0;                       // Filter CR 0D \n and LF 0A \r in large text files. 1=Filter CR=0x0D 2=Filter LF=0x0A 3=Filter both CR and LF
 byte crlf1 = 0x0D, crlf2 = 0x0A;     // Two Nkeys text filter chars default = 0x0D 0x0A 
 
@@ -1682,7 +1682,7 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
   char AppStr[40]  = { "" };
   byte c, e, *BPtr, nkey = 0;  
   uint32_t a, b, d;
-  int i, k, m, n, j = 0;  
+  int s, i, k, m, n, j = 0;  
   bool AxD, DoneM = false;
   int LinkDelay = 0, LinkRepeat = 0; 
   const int nr =     100;        // repeat 100x
@@ -1716,14 +1716,16 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
             
          j += 3; 
          if (LinkDelay==0)
-            {NameStr[j+1] = 0x00; 
+            {NameStr[3] = 0x00; 
              BPtr = MacroBuff;              
-             if (AppState==2 && Layout==AppL134) { AxD = LayerAxD; strcat(AppStr, NameStr); LayerAxD = 1; } else strcpy (AppStr, NameStr);
+             if (AppState==2 && Layout==AppL134) { AxD = LayerAxD; strcpy(AppStr, AppDir); strcat(AppStr, NameStr); LayerAxD = 1; } else strcpy (AppStr, NameStr);
              MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD); 
              if (MacroBuffSize==0) { status("Macro not found"); return; }
              LinkOk = true;
 
-             DoneM = ExecuteCode(0);
+             if (MacroBuff[0]==0x2A&&MacroBuff[1]!=0x2A) { s = 0; while (MacroBuff[s]!=0) { KeyBrdByte[s] = MacroBuff[s]; s++; } KeyBrdByte[s] = 0x00; KeyBrdByteNum = s; DoneM = SendBytesStarCodes(); }   
+             else if ((MacroBuff[0]==0x2A)&&(MacroBuff[1]==0x2A)) { for (s = 0; s < MacroBuffSize; n++) MacroBuff[s] = MacroBuff[s+1]; MacroBuffSize--; } 
+             else DoneM = ExecuteCode(0);
              
              if (AppState==2 && Layout==AppL134) LayerAxD = AxD;                          
              if (LinkRepeat>0) j -= 3;
@@ -1758,7 +1760,9 @@ void DoKey16(byte Num)
                                       
   if (Num<20) { strcpy(NameStr1, mcpDir); strcat(NameStr1, mcpStr); }  // mcpXn-mcpXnn files in folder /mcp    
   
-  do { if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+  do { if (NameStr1[0] == 0x00) break;
+       if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+       if (!f) break;
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
        NameStr1[0] = 0x00; n++; // Only do DoLinkStr() once unless L0nXnn loads new NameStr1 
        DoLinkStr(NameStrLen);            
@@ -1795,7 +1799,9 @@ void DoKeyMST(byte Num, bool Timers)
   if (AppState==2 && Layout==AppL134) { strcpy(NameStr1, AppDir); strcat(NameStr1, MSTLinkName); } else strcpy(NameStr1, MSTLinkName);  // MxxLink + 0x00 length = 8               
   // SerPr2; Serial.print("DoKeyMST"); SerPr1; Serial.print(NameStr1); SerPr1; Serial.print(MSTLinkName); SerPr1; Serial.print(AppDir); SerPr1; Serial.print(nDir); SerPr2;   
   
-  do { if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+  do { if (NameStr1[0] == 0x00) break;
+       if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+       if (!f) break;
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
        NameStr1[0] = 0x00; n++; // Only do DoLinkStr() once unless L0nXnn loads new NameStr1 
        DoLinkStr(NameStrLen);            
@@ -2112,18 +2118,20 @@ void DoNKeys(int Button)
       if (SendBytesStarCodes()) return; else status("*Code incorrect"); return; }   
   if ((nFile[0]==0x2A)&&(nFile[1]==0x2A)) { return; } // Cannot handle an nFile filename that starts with *
   
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////// File is a linkefile  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////// File is a linkfile  
   
   if ((nFile[3]=='L'&&nFile[6]=='k')||(nFile[nStrLen-4]=='L'&&nFile[nStrLen-1]=='k'))  // First or Last part of filename is Lxxk or Link
-     { n = 0;                                                                                                   
+     { n = 0;                                                                                                                   
        LayerAxDSave = LayerAxD;
        strcpy(NameStr1, nFile); 
          
-       do { if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+       do { if (NameStr1[0] == 0x00) break;  // Exit immediately if no new link target loaded
+            if (LayerAxD) f = SD.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+            if (!f) break;                   // Guard against invalid file handle
             NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
             NameStr1[0] = 0x00; n++;  // Only do DoLinkStr() once unless L0nXnn loads new NameStr1 
             DoLinkStr(NameStrLen);            
-          } while (NameStrLen>0) ;    // Can also stop with 3-char entry such as *** in Link file or n>1000?     
+          } while (NameStrLen>0 && n<100) ;  // Safety cap   
   
        LayerAxD = LayerAxDSave; optionsindicators(0); // Restore or new value
        return;
@@ -3378,7 +3386,11 @@ void ReadConfig1()
   KeyRepeat2 =     Config1[87]*10; if (KeyRepeat2==0) KeyRepeat2=650;  // Unusable Macropad if 0
   TwistSDA =       Config1[88];                                        // i2c 0,1 SDA depends on LCD used  
   TwistSCL =       Config1[89];                                        // i2c 0,1 SCL depends on LCD used 
-  if (TwistSDA==TwistSCL) { status("i2c SDA/SCL invalid"); TwistSDA = 32; TwistSCL = 33; }   // Or 4 and 5 - default value depends on LCD used  
+  if (TwistSDA==TwistSCL) { status("i2c SDA/SCL invalid"); TwistSDA = 32; TwistSCL = 33; }   // Or 4 and 5 - default value depends on LCD used 
+  tonelen  =            Config1[90];                                   // Use tonelen or tonelen/10 for tone duration                             
+  RTCVBatChargeOn =     Config1[91];                                   // 0 or 1                              
+  BackupChargeVoltage = Config1[92];                                   // 3,4,5 = 2.9 3.0 3.2 volt                               
+  currentVolume   =     Config1[93];                                   // 0-99 percent                             
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3432,7 +3444,12 @@ void WriteConfig1(bool Option)
                   Config1[86] = nKeysL134;                                    // nChar replaces L in L1, L3, L4 
                   Config1[87] = (byte)(KeyRepeat2/10);                        // x 10 = threshold see touch.h  
                   Config1[88] = TwistSDA;                                     // i2c 0,1 SDA depends on LCD used  
-                  Config1[89] = TwistSCL;                                     // i2c 0,1 SCL depends on LCD used                                      
+                  Config1[89] = TwistSCL;                                     // i2c 0,1 SCL depends on LCD used  
+                  Config1[90] = tonelen;                                      // Use tonelen or tonelen/10 for tone duration                             
+                  Config1[91] = RTCVBatChargeOn;                              // 0 or 1                              
+                  Config1[92] = BackupChargeVoltage;                          // 3,4,5 = 2.9 3.0 3.2 volt                               
+                  Config1[93] = currentVolume;                                // 0-99 percent  
+                  if (BackupChargeVoltage>5) BackupChargeVoltage=4;           // Default 3.0v                                                  
                 }
   
   if (AppState>0) return;
@@ -4586,14 +4603,15 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
                         if (k4=='1') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 1 SDA/SCL changed"); }  }                         // *ic*1aabb SDA.SCL 00-7F Wire1 i2c1 not saved
          StarOk = true; break; } 
          case 96: ////////////////////// KeyBrdByte[1]=='a'&&KeyBrdByte[2]=='c' *ac*u,d,m,t Audio codec Volume up,down,mute t-Tone0-9 100-1000Hz
-       { char actionChar = (char)KeyBrdByte[4];  pinMode(17, OUTPUT); digitalWrite(17, HIGH); delay(50);               // Enable Power Amp 
+       { char actionChar = (char)KeyBrdByte[4];  int x = 1; pinMode(17, OUTPUT); digitalWrite(17, HIGH); // delay(50);    // Enable Power Amp x=duration /1 /10
          if (actionChar == 'i' || actionChar == 'I') { SerPr2; Serial.print("ChipID: "); Serial.print(es8311_ReadReg(0xFD), HEX); Serial.print(es8311_ReadReg(0xFE), HEX); SerPr2;
                                                        if (i2sNOK) Serial.print("i2s Failed Setup "); if (!SysClkOK) Serial.print("SCLK Failed Setup "); SerPr2; ES8311Show(); }       
-         else if (actionChar == 'v' || actionChar == 'V') { setAudioVolume(d99); }                                     // *ac*v00-99   
-         else if (actionChar == 'm' || actionChar == 'M') { setAudioMute(k5-48); }                                     // *ac*m0,1     
-         else if (actionChar == 't' || actionChar == 'T') { if (actionChar == 't') duration = 0.8; else duration = 2.4; int calculatedAmplitude = (32767 * currentVolume) / 100;
-                                                            if (knum==5 || knum==6) frequency = 440; else if (knum==7) frequency = d99 * 100; else frequency = d999; 
-                                                            PlayTone(frequency, duration, calculatedAmplitude);  }           // *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz
+         else if (actionChar == 'v' || actionChar == 'V') { setAudioVolume(d99); WriteConfig1Change = true; }          // *ac*v00-99   
+         else if (actionChar == 'm' || actionChar == 'M') { setAudioMute(k5-48); }                                     // *ac*m0,1 
+         else if (actionChar == 'd' || actionChar == 'D') { if (knum==8) if (d999<256 & d999>0) tonelen = d999; status("Tone duration changed"); WriteConfig1Change = true; }   // *ac*d,Dnnn nnn = 001-255   
+         else if (actionChar == 't' || actionChar == 'T') { if (actionChar == 't') x = 10; int calculatedAmplitude = (32767 * currentVolume) / 100;
+                                                            if (knum==5 || knum==6) frequency = 440; else if (knum==7) frequency = d99 * 100; else if (knum==8) frequency = d999; 
+                                                            PlayTone(frequency, (float)tonelen/x, calculatedAmplitude);  }          // *ac*tnnn nnn = frequency Hz nn = frequency = n.nkHz *ac*t frequency = 440Hz
          else if (actionChar == 'r' || actionChar == 'R') { status("Re-initialising ES8311"); initES8311(); ES8311Show(); }  // *ac*r Re-init + confirm      
          else if (actionChar == 's' || actionChar == 'S') { if (knum==5) playWav("chimes.wav"); // *ac*mchimes.wav = *ac*m   // Playing ok any length
                                                             else { for (n=0; n<knum-5; n++) NameStr3[n] = KeyBrdByte[n+5]; NameStr3[n] = 0x00; playWav(NameStr3);} } 
@@ -4613,7 +4631,9 @@ void PlayTone(int freq, float durationSeconds, int amp)
     for (uint32_t i = 0; i < totalSamples; i++)  { if (localCount % halfWavelength == 0) { localSample = -1 * localSample; }  // Generate and stream the samples      
                                                    i2s.write(localSample); // Left channel
                                                    i2s.write(localSample); // Right channel
-                                                   localCount++; }                                                   
+                                                   localCount++; }    
+                                                    
+    for (int k = 0; k < 64; k++) { i2s.write((int16_t)0); i2s.write((int16_t)0); }                                                                                             
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -6191,7 +6211,8 @@ void TestRTC(int Option)
 ///////////////////
 void ES8311Show()
 ///////////////////
-{ Serial.println("ES8311 Register + Value:"); 
+{ Serial.print("ES8311 Volume and Tone Duration:"); Serial.print(currentVolume); SerPr1; Serial.println(tonelen), 
+  Serial.println("ES8311 Register + Value:"); 
   int count = 0; for (byte r=0x00; r<=0x32; r++) { if (r<0x10) Serial.print("0"); Serial.print(r, HEX); SerPr1;   
                                                    byte val = es8311_ReadReg(r);
                                                    if (val<0x10) Serial.print("0"); Serial.print(val, HEX); SerPr1; SerPr1;
@@ -6248,7 +6269,7 @@ void showKeyData(byte Option)
    
    SerPr2;
    Serial.println("Config1: " );
-   for ( m = 0; m<90; m++ ) { Serial.print(Config1[m], HEX); SerPr1; if (m==20||m==40||m==60||m==80) SerPr2; }
+   for ( m = 0; m<Config1Size; m++ ) { Serial.print(Config1[m], HEX); SerPr1; if (m==20||m==40||m==60||m==80) SerPr2; }
    SerPr2;
 
    SerPr2;
@@ -6303,8 +6324,7 @@ void showKeyData(byte Option)
    SerPr2;
    Serial.print("Macro Delay Time: "); Serial.print(DelayStr[DelayTimeVal]); SerPr2;
 
-   runI2CScanner();
-   Serial.print("Twist SDA/SCL: "); Serial.print(TwistSDA); SerPr1; Serial.print(TwistSCL); SerPr2;
+   runI2CScanner();   
    
    SerPr2;
    if (!readVBus(2)) readVBus(0);
@@ -6319,6 +6339,7 @@ void showKeyData(byte Option)
    Serial.print("Twist Dim Value (0=Off /3 /5): "); Serial.print(twistDim); SerPr2; 
    Serial.print("Twist Limit (0-24): "); Serial.print(twistLimit); SerPr2; 
    Serial.print("Twist Options: "); Serial.print(twistcurrOption[twistStar]); SerPr1; if (twistMacro[twistStar]!=0x00) Serial.print(twistMacro[twistStar]); else Serial.print("0x00"); SerPr1; Serial.print(twistOption); SerPr2;
+   Serial.print("Twist SDA/SCL: "); Serial.print(TwistSDA); SerPr1; Serial.print(TwistSCL); SerPr2;
    SerPr2;
    
    ES8311Show();
@@ -6382,4 +6403,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 6382 *****************/
+/************* EOF line 6406 *****************/
