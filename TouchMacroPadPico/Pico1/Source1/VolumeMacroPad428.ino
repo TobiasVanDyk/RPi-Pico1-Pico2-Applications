@@ -12,7 +12,7 @@
 // shares a similar layout approach to what is used here - their design dates back to early 2021. 
 // https://learn.adafruit.com/touch-deck-diy-tft-customized-control-pad?view=all
 //
-// Adapted by Tobias van Dyk August 2022 - July 2026 for Pico 1 RP2040 and ILI9488 480x320 LCD
+// Adapted by Tobias van Dyk August 2022 - August 2026 for Pico 1 RP2040 and ILI9488 480x320 LCD
 // This use the Waveshare 3.5inch Touch Display Module for Raspberry Pi Pico 1 and 2 with included SDCard module:
 // https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 //
@@ -100,10 +100,10 @@ bool mcp23018 = false;              // If true slots mcp2 and mcp3 (address 0x20
 // NB: For more than one Twist make sure that Wire1.setClock(400000) is positioned after all twist.begin() code
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define twX 3                                       // Number of twistDevices - three at 0x3D, 0x3E and 0x3F
-#define TWIST_SDA 26                                // 4 5 SDA SCL Port 0 Wire
-#define TWIST_SCL 27                                // 26 27 SDA SCL Port 1 Wire1
 #define twistLo 100                                 // Colour RGB levels 100 or 200 
 #define twistHi 200                                 //
+int TwistSDA = 26;                                  // 26 27 SDA SCL Port 1 Wire1
+int TwistSCL = 27;                                  // 4 5 SDA SCL Port 0 Wire
 TWIST twist[twX];                                   // Create instances of this object
 int twC = 1;                                        // Determine number of twists actually connected with *tc**n=0-(twX-1) then *tc* if version = 0.0 not connected 
 bool Twist[twX] = { false, false, false };          // True if Encoders plugged into i2c 1 or 2
@@ -223,24 +223,24 @@ byte EndMarker2   = 0x03;         // Or use backtick/grave ` Change with *2e*cha
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 0   KeySkip 1  CheckSerial 1  KeyHeldEnable  1           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
+// 0   KeySkip 1  CheckSerial 1  KeyHeldEnable  0           BLOnOff 1    Rotate180 0              KeyFontBold 0      ResetOnceEnable 0
 // 7     nKeys 1       nChar  n      nKeysPage  8  nKeysCharSet[10] c         CRLF 0                    crlf1 0x0D             crlf2 0x0A
 // 23    iList 0       MuteOn 0           VolOn 1          LayerAxD 0        Media 0                   XFiles 0           Brightness 0           
 // 30   BsDNum 0       RetNum 8         LayerAD 0     KeyFontColour 0   SaveLayout 2                 OptionOS 0            KeyRepeat 6 
 // 37  NormVal 0       DimVal 3         nKeys34 1          nDir[20] c        nDirZ always=0  nKeysLnkChar[10] 10               nDirX 0,1,2,3
 // 72   MLabel 0       SLabel 0          TLabel 0      DelayTimeVal 0      VolOn1  0                  VolOn2  1               VolOn3 1          ToneOn 0  
 // 80  MathSet 0       MouseZ 0  MediaConfig[0] 0      StartMarker  0x02 EndMarker 0x03               MacroUL 0            nKeysL134  1         KeyRepeat2 65 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Currently last used entry KeyRepeat2 = Config1[87] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access as char string array nDirZ=0=EOS 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Last 3 entries KeyRepeat2 TwistSDA TwistSCL Config1[87,88,89] Can use strcpy((char *)&Config1[40], nDir); and inverse, to access char string array nDirZ=0=EOS 
 // Note only nDir only saved if 20 bytes max in size excluding last 0x00 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 cSt byte Config1Size = 90;       //   0   1   2   3   4   5   6   7  8  9  10  11  12  13  14  15  16  17  18  19 20 21   22   23 24 25 26 27 28 29  30  31 
 byte Config1[Config1Size]          = {1,  1,  0,  1,  0,  0,  0,  1,'n',8,'n','o','p','q','r','s','t','m','a','k',0, 0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,  0,  2,  0,  6,  0,  3,  1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,   0,   0, 0, 0, 0, 0, 0,'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 0, 0  };
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 26, 27  };
 cSt byte Config1Reset[Config1Size] = {1,1,0,1,0,0,0,1,'n',8,'n','o','p','q','r','s','t','m','a','k',0,0x0D,0x0A,0, 1, 0, 0, 0, 0, 0,  0,  8, 
                                       0,0,2,0,6,0,3,1,'/',0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 'n','o','p',
-                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 0, 0  };                                    
+                                     'q','u','v','w','x','y','z', 0, 0, 0, 0,  0,  0,  1,  1,  0,  0,  0,  0, '<', '>', 0,   1,  65, 26, 27  };                                    
 bool WriteConfig1Change = false; // Do save if true
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 static const unsigned long int tHr  = 60*60*1000; // hour
@@ -321,7 +321,7 @@ byte MouseConfig[2] = { 1, 5 };        // Mouse Config
 bool MediaCfg = false;                 // Set later = to MediaConfig[0]
 byte MediaConfig[1] = { 0 };           // Values are 0 - 4 for Media+Volume+Mute+Tone combinations 
 byte KeyHeld = 0;                      // Key held in number 0 - 17
-bool KeyHeldEnable = true;             // Enable/Disable Volume Mute Processing if [Vo][L1-L4 key is pressed long
+bool KeyHeldEnable = false;            // Enable/Disable Volume Mute Processing if [Vo][L1-L4 key is pressed long
 byte KeyRepeat = 6;                    // Duration before Key Repeat is active in KeyRepeatx100 milliseconds
 int  KeyRepeat2 = 650;                 // KeyRepeat2 = 650 = threshold see touch.h
 byte KeyHeldLayout = 0;                // Save Layout temporarily while checking KeyHeld
@@ -807,7 +807,7 @@ byte RecBytes[MaxRec];       // Raw bytes received must start < and end with > -
 int  NumBytes = 0;
 bool NewData = false;
 char AltNum[] = "1D6D1";
-bool CheckSerial = false;    // Switch off serial check unless *se* toggles CheckSerial - default is off
+bool CheckSerial = true;     // Switch off serial check unless *se* toggles CheckSerial - default is off
 bool FileSend = false;       // Files sent from PCApp with drag and drop
 int  fnum = 1;               // Counts file1-file9999
 char fname[40] = "file";     // Drag and Drop files in PC App use this as basis filename 
@@ -893,14 +893,7 @@ void setup()
 
   pinMode(LCDBackLight, OUTPUT);    // Used for Backlight HIGH is ON
   //digitalWrite(LCDBackLight, HIGH); // Switch on here to prevent blank screen when Coordinates missing 
-  
-  // Wire1.setSDA(TWIST_SDA);                                 // TWIST GPIO 4 5 26 27 SDA SCL
-  // Wire1.setSCL(TWIST_SCL);                                 //
-  // Wire1.begin(); Wire1.setClock(400000);
-  Wire.setSDA(4);                                 // TWIST GPIO 4 5 26 27 SDA SCL
-  Wire.setSCL(5);                                 //
-  Wire.begin(); Wire.setClock(400000);
-  
+ 
   //if (!LittleFS.begin()) {LittleFS.format(); LittleFS.begin(); }   
   LittleFS.begin(); // LittleFs automatically format the filesystem if one is not detected
 
@@ -950,7 +943,7 @@ void setup()
 
   Wire.setSDA(4); Wire.setSCL(5); Wire.begin(); Wire.setClock(400000);        // i2c0 external bus at 400kHz communication speed  
   
-  Wire1.setSDA(TWIST_SDA); Wire1.setSCL(TWIST_SCL);                           // i2c1 external bus for Twist and MPC23xxx TWIST GPIO 26 27 SDA SCL 
+  Wire1.setSDA(TwistSDA); Wire1.setSCL(TwistSCL);                             // i2c1 external bus for Twist and MPC23xxx TWIST GPIO 26 27 SDA SCL 
   for (int i=0; i<twX; i++) { Twist[i] = twist[i].begin(Wire1, 0x3F-i); }     // Set many Twist devices address 0x3F (+ or -) 0-7
   for (int i=0; i<twX; i++) { if (Twist[i]) { UpdateTwist(4); break; }  }     // Only do UpdateTwist once
   Wire1.setClock(400000);                                                     // Twist devices > 1 only works if done this way
@@ -1695,10 +1688,10 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
 // For all 4 forms of delay  - dd n, d nn, D nn DD n if nn = 00 or n = 0 dd, d, D, DD is executed as if n = 1
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 { char NameStr[12] = { "Xnn" };
-  char AppStr[80]  = { "" };
+  char AppStr[40]  = { "" };
   byte c, e, *BPtr, nkey = 0;  
   uint32_t a, b, d;
-  int i, k, m, n, j = 0;  
+  int s, i, k, m, n, j = 0;  
   bool AxD, DoneM = false;
   int LinkDelay = 0, LinkRepeat = 0; 
   const int nr =     100;        // repeat 100x
@@ -1732,14 +1725,15 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
             
          j += 3; 
          if (LinkDelay==0)
-            {NameStr[j+1] = 0x00; 
+            {NameStr[3] = 0x00; 
              BPtr = MacroBuff;              
-             if (AppState==2 && Layout==AppL134) { AxD = LayerAxD; strcat(AppStr, NameStr); LayerAxD = 1; } else strcpy (AppStr, NameStr);
+             if (AppState==2 && Layout==AppL134) { AxD = LayerAxD; strcpy(AppStr, AppDir); strcat(AppStr, NameStr); LayerAxD = 1; } else strcpy (AppStr, NameStr);
              MacroBuffSize = DoFileBytes(0, AppStr, BPtr, ByteSize, LayerAxD); 
              if (MacroBuffSize==0) { status("Macro not found"); return; }
              LinkOk = true;
 
-             DoneM = ExecuteCode(0);
+             if (MacroBuff[0]==0x2A&&MacroBuff[1]!=0x2A) { s = 0; while (MacroBuff[s]!=0) { KeyBrdByte[s] = MacroBuff[s]; s++; } KeyBrdByte[s] = 0x00; KeyBrdByteNum = s; DoneM = SendBytesStarCodes(); }   
+             else { if ((MacroBuff[0]==0x2A)&&(MacroBuff[1]==0x2A)) { for (s = 0; s < MacroBuffSize; n++) MacroBuff[s] = MacroBuff[s+1]; MacroBuffSize--; } DoneM = ExecuteCode(0); } 
              
              if (AppState==2 && Layout==AppL134) LayerAxD = AxD;                          
              if (LinkRepeat>0) j -= 3;
@@ -1773,11 +1767,13 @@ void DoKey16(byte Num)        // Currently the same as DoKeyMST() but will chang
                                       
   if (Num<20) { strcpy(NameStr1, mcpDir); strcat(NameStr1, mcpStr); }  // mcpXn-mcpXnn files in folder /mcp                        
  
-  do { if (LayerAxD) f = SDFS.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+  do { if (NameStr1[0] == 0x00) break;
+       if (LayerAxD) f = SDFS.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+       if (!f) break;
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
        NameStr1[0] = 0x00; n++; // Only do DoLinkStr() once unless L0nXnn loads new NameStr1 
        DoLinkStr(NameStrLen);            
-     } while (NameStrLen>0) ;    // Can also stop with 3-char entry such as *** in Link file or n>1000?     
+     } while (NameStrLen>0) ;    // Can also stop with 3-char entry such as *** in Link file or n>1000? 
   
   LayerAxD = LayerAxDSave; optionsindicators(0); // Restore or new value
   nChar = xChar; 
@@ -1809,11 +1805,13 @@ void DoKeyMST(byte Num, bool Timers)
   if (!Timers) DoMSTLinkName(Num, Layout);      // Layout -> M S T filename such as M01Link
   if (AppState==2 && Layout==AppL134) { strcpy(NameStr1, AppDir); strcat(NameStr1, MSTLinkName); } else strcpy(NameStr1, MSTLinkName);  // MxxLink + 0x00 length = 8               
   
-  do { if (LayerAxD) f = SDFS.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+  do { if (NameStr1[0] == 0x00) break;
+       if (LayerAxD) f = SDFS.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+       if (!f) break;
        NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
        NameStr1[0] = 0x00; n++; // Only do DoLinkStr() once unless L0nXnn loads new NameStr1 
        DoLinkStr(NameStrLen);            
-     } while (NameStrLen>0) ;    // Can also stop with 3-char entry such as *** in Link file or n>1000?     
+     } while (NameStrLen>0) ;    // Can also stop with 3-char entry such as *** in Link file or n>1000?    
   
   LayerAxD = LayerAxDSave; optionsindicators(0); // Restore or new value
   nChar = xChar; 
@@ -2134,11 +2132,13 @@ void DoNKeys(int Button)
        LayerAxDSave = LayerAxD;
        strcpy(NameStr1, nFile); 
          
-       do { if (LayerAxD) f = SDFS.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+       do { if (NameStr1[0] == 0x00) break;  // Exit immediately if no new link target loaded
+            if (LayerAxD) f = SDFS.open(NameStr1, "r"); else f = LittleFS.open(NameStr1, "r"); 
+            if (!f) break;                   // Guard against invalid file handle
             NameStrLen = f.size(); f.readBytes(inputString, NameStrLen); f.close();        
             NameStr1[0] = 0x00; n++;  // Only do DoLinkStr() once unless L0nXnn loads new NameStr1 
             DoLinkStr(NameStrLen);            
-          } while (NameStrLen>0) ;    // Can also stop with 3-char entry such as *** in Link file or n>1000?     
+          } while (NameStrLen>0 && n<100) ;  // Safety cap   
   
        LayerAxD = LayerAxDSave; optionsindicators(0); // Restore or new value
        return;
@@ -3382,6 +3382,9 @@ void ReadConfig1()
   MacroUL =        Config1[85];                                        // Upper or lower case filenames for macros on Flash only
   nKeysL134 =      Config1[86];                                        // nChar replaces L in L1, L3, L4  
   KeyRepeat2 =     Config1[87]*10; if (KeyRepeat2==0) KeyRepeat2=650;  // Unusable Macropad if 0
+  TwistSDA =       Config1[88];                                        // i2c 0,1 SDA depends on LCD used  
+  TwistSCL =       Config1[89];                                        // i2c 0,1 SCL depends on LCD used 
+  if (TwistSDA==TwistSCL) { status("i2c SDA/SCL invalid"); TwistSDA = 26; TwistSCL = 27; }   // Or 4 and 5 - default value depends on LCD used 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3433,7 +3436,9 @@ void WriteConfig1(bool Option)
                   Config1[84] = EndMarker;                                    // Serial Comms end was > now 0x03   
                   Config1[85] = MacroUL;                                      // Upper or lower case filenames for macros on Flash only  
                   Config1[86] = nKeysL134;                                    // nChar replaces L in L1, L3, L4 
-                  Config1[87] = (byte)(KeyRepeat2/10);                        // x 10 = threshold see touch.h                                                                                         
+                  Config1[87] = (byte)(KeyRepeat2/10);                        // x 10 = threshold see touch.h 
+                  Config1[88] = TwistSDA;                                     // i2c 0,1 SDA depends on LCD used  
+                  Config1[89] = TwistSCL;                                     // i2c 0,1 SCL depends on LCD used                                                                                                             
                 }
   
   if (AppState>0) return;
@@ -4555,8 +4560,12 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
           if (knum>5)  { if (b>7) break; maxPins=(b>=4)?8:16; loopLen=(knum-5>maxPins)?maxPins:(knum-5);                                                         // Set new config I/O  
                          for (n=0; n<loopLen; n++) mcpPins[b][n] = KeyBrdByte[5+n]-48; InitMCP23xx(0); SaveMCP = StarOk = true; break; } 
           break; } 
-          case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner
-        { status("I2C Bus Scan"); runI2CScanner(); StarOk = true; break; }           
+         case 95: ////////////////////// KeyBrdByte[1]=='i'&&KeyBrdByte[2]=='c' *ic* i2c bus scanner *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F
+       { if (knum==4) { status("Running I2C Diagnostic Scan"); runI2CScanner(); } 
+         if (knum==9) { const byte* p = KeyBrdByte + 4;  // *ic*0,1aabb aa bb hex value SDA SCL aa,bb = 00-7F 
+                        if (k4=='0') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 0 SDA/SCL changed"); } // *ic*0aabb SDA,SCL 00-7F Wire  
+                        if (k4=='1') { TwistSDA = hex2int8(p); p += 2; TwistSCL = hex2int8(p); status("I2C 1 SDA/SCL changed"); WriteConfig1Change = true;}  }  // i2c1 saved                        // *ic*1aabb SDA.SCL 00-7F Wire1 i2c1 not saved
+         StarOk = true; break; }           
       } return StarOk;                
 }
                        
@@ -5919,7 +5928,7 @@ void showKeyData(byte Option)
    
    SerPr2;
    Serial.println("Config1: " );
-   for ( m = 0; m<90; m++ ) { Serial.print(Config1[m], HEX); SerPr1; if (m==20||m==40||m==60||m==80) SerPr2; }
+   for ( m = 0; m<Config1Size; m++ ) { Serial.print(Config1[m], HEX); SerPr1; if (m==20||m==40||m==60||m==80) SerPr2; }
    SerPr2;
 
    SerPr2;
@@ -5977,6 +5986,7 @@ void showKeyData(byte Option)
    Serial.print("Calibration Data: "); for (int i = 0; i < 5; i++) { Serial.print(calData[i]); if (i < 4) Serial.print(", "); } SerPr2;
    
    runI2CScanner();
+   Serial.print("Twist SDA/SCL: "); Serial.print(TwistSDA); SerPr1; Serial.print(TwistSCL); SerPr2;
    
    SerPr2;
    Serial.print("Twist Connected (0-3): "); Serial.print(twC); SerPr2;  
