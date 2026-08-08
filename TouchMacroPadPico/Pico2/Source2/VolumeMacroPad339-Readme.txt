@@ -46,7 +46,7 @@ NB: Use 4MB Flash option with 2MB Sketch 2MB FS
         Sparkfun Twist RGB Rotary Encoder and MPC23xxx GPIO Expanders on Wire1 i2c1
 
 New changes:
-1. Google Gemini fixes for functions DoLinkStr() DoNKeys() DoKeyMST() DoKey16()
+1. Fixes and Google Gemini fixes for functions DoLinkStr() DoNKeys() DoKeyMST() DoKey16()
 2. Arduino Pico 6.0.0 and Pico SDK 2.3.0 and nKeysL134 = false CheckSerial = true KeyHeldEnable = false as defaults
 3. *ic* i2c bus scanner *ic*0,1aabb aa bb hex value external i2c0 devices use 0 SDA SCL aa,bb = 00-7F
 4. Added *ic* i2c bus scanner

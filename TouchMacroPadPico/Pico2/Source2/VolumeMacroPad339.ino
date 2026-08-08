@@ -1661,8 +1661,7 @@ void DoLinkStr(int NameStrLen) // Read Flash or SDCard filenames and execute in 
              LinkOk = true;
 
              if (MacroBuff[0]==0x2A&&MacroBuff[1]!=0x2A) { s = 0; while (MacroBuff[s]!=0) { KeyBrdByte[s] = MacroBuff[s]; s++; } KeyBrdByte[s] = 0x00; KeyBrdByteNum = s; DoneM = SendBytesStarCodes(); }   
-             else if ((MacroBuff[0]==0x2A)&&(MacroBuff[1]==0x2A)) { for (s = 0; s < MacroBuffSize; n++) MacroBuff[s] = MacroBuff[s+1]; MacroBuffSize--; } 
-             else DoneM = ExecuteCode(0);
+             else { if ((MacroBuff[0]==0x2A)&&(MacroBuff[1]==0x2A)) { for (s = 0; s < MacroBuffSize; n++) MacroBuff[s] = MacroBuff[s+1]; MacroBuffSize--; } DoneM = ExecuteCode(0); } 
              
              if (AppState==2 && Layout==AppL134) LayerAxD = AxD;                          
              if (LinkRepeat>0) j -= 3;
@@ -6030,4 +6029,4 @@ void showKeyData(byte Option)
          SerPr2;  }                  
  }
 
-/************* EOF line 6033 *****************/
+/************* EOF line 6032 *****************/
