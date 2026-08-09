@@ -946,11 +946,13 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
     Long-press Twist again to exit the encoder options mode. If the star * option is chosen the Twist mode will change 
     from the coded options Volume, Scroll, Zoom etc to Twist File macros. To change back from file macros choose any of 
     coded macros such as S V Z etc. If more than one Twist device choose which Twist device to configure and control
-    with the star commands through *tc**n with n = 0-9 where 0 is when one Twist device connected. For example four 
-    Twist devices connected but control the second device through starcodes and the PC App, then use *tc**1.
-    *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127
-    *tc* = version *tc*d,D = dimmed value *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
+    with the star command *tc**n with n = 0-9 where 0 is when one Twist device connected. For example four Twist devices
+    connected but to control the second device through starcodes and the PC App, use *tc**1.
+    *tc* set Twist colours and connect *tc*RRGGBBCrCgCb RGB on rgb dimmed Cx Connect -128 to +127 (16 bytes length)
+    *tc* = version *tc*d,D = dimmed value d=x/2 D=x/5 *tc*d0-9,D0-9 set dim value -9 with 0 = dim off  
+    *tc*X = r,R g,G b,B y,Y w,W p,P 0-9 various colour and connect options
     *tc* = version *tc*l,L = limit value l=0 no limits (version 1.0) L=24 steps limit such as -12 0 +12
+    *tc*abcd twist option X chars changed with *tc*abcd abcd = 4 chars default * / = - 
     *tf* = delete file twist *tf*nameR=nameL=nameP default is twist1=twist2=twist3
     *tf*s,r = Save or Read twist config file twistCfg 
     *tm*char = vuzsxdwbVUZSXDWB code definitions or use *tm* twistMacro=0x00 Use symbolic file twist not coded macros.
@@ -961,15 +963,11 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *cp* CircuitPython filelist *cp*cnn c=command a,d,r,c nn=filelist index=00-99 *cp*cnnfilename a Activate, 
      d Delete, r Rename, c Copy
      *cp*cnn a-z, nn=00-99 Commands to control CircuitPy device a-z excludes a,c,d,r. Commands sent to CPy device as 
-     <Ccnn> or <CcnnFileName>
+     <Ccnn> or <CcnnFileName> Can go direct to CircuitPy device via serial or Macropad->PCApp->CircuitPyDevice.
      Pico macropad receives CircuitPy device filelist as <CX:File1.py,File2.py;File3.py> with File2.py the active 
      function and X: the driveletter.
-(Ab) *i1*parameters Controls i/O of MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked 
-     seequence of macros or single macro. Can sett outputs and simulate inputs using star codes. 8 devices hard-coded to use 
-     mcp0 to mcp3 as MCP23017 (or MCP23018), and mcp4 to mcp7 as MCP23008. 8 adresses can be changed to be in ay order, default
-     is 0x20 to 0x27 for mcp9=0 to mcp7.
-     *i1*x0,1 Enable/Disable MPC23018 inverted output for relays, LED etc. 
-     Disabled=0: MCP23018/MCP23008 LED=ON = GPIO=HIGH = MCP23017  Enabled=1: MCP23018 LED=ON = GPIO=LOW = MCP23018 
+(Ab) *i1*parameters MCP23008,MCP23017,MCP23018 0-8 devices on i2c bus. Can read inputs then run either linked seequence of macros or 
+     single macro, and set outputs using star codes. 
      *i1*a Change i2c addresses from list *i1*01234567 in any order such as 674013 and any length up to 8
      *i1*A Default i2c addresses = 0x20 - 0x27
      *i1*d Change mcp delay in mS - blocking delays used in set outputs on/off
@@ -978,16 +976,15 @@ pressed. *Codes are incremented to the next starcode if no [EXE} pressed. The ma
      *i1*R Change mcp repeat*1000 0,1-99000 - repeat outputs in sequence not parallel in set outputs on/off
      *i1*L mcp button do link sequence of macro actions
      *i1*l mcp button do single macro actions        
-     *i1*o pinlist Switch pins on/off - after *i1*o list 0 or 1 for on or off up to eight values such as *i1*o001101
-     *i1*O pinlist Switch pins on/off with delay (blocking) and repeat using values in mcpDelay and mcpRepeat
-     *i1*i Execute macro actions as if input(s) low pressed
-     *i1*I Execute macro actions as if input(s) low pressed with delay (blocking) and repeat using values in mcpDelay 
-     and mcpRepeat
-     *i1*0j 037 Press button on device mcp0 pin 7       
+     *i1*opinlist Switch pins on/off - after *i1*o list 0 or 1 for on or off up to eight values such as *i1*o001101
+     *i1*Opinlist Switch pins on/off with delay and repeat using values in mcpDelay and mcpRepeat
+     *i1*I Execute macro actions if input(s) low latched
      *i1* MCP230xx re-initialised - discover current devices connected or disconnected
      *i1*Xm Set new config all I/O to same m = 0,1,2 for device X=0-7
      *i1*Xpinsmodelist Set new config I/O according to list up to 8 modes 0,1,2 for 8 devices X=0-7    
-     Use the list data *ld* option for a list of active GPIO expnader devices attached on the 12c bus 
+     Use the list data *ld* option for a list of active GPIO expnader devices attached on the 12c bus
+(Ac) *ic* i2c bus scanner 
+     *ic*0,1aabb aa bb hex value change external (use 0) SDA SCL aa,bb = 00-7F - i2c0 not saved
               
 ------------------------------------------------------------------------------------------------------------------------
 Symbols-SpecialChar-Math-Greek-Algebra Keyboard: 
