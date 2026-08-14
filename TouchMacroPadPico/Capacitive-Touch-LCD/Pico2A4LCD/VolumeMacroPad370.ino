@@ -8,7 +8,7 @@
 //                (4) Many examples and documentation from Arduino-Pico
 //                    https://github.com/earlephilhower/arduino-pico/ 
 //
-// Adapted by Tobias van Dyk August 2022 - July 2026 for the Pico 2 RP2350 
+// Adapted by Tobias van Dyk August 2022 - August 2026 for the Pico 2 RP2350 
 // Waveshare RP2350B-A4 FT6336 Capacitive Touch ST7796 LCD 3.5 480x320 with RTC and SDCard module:
 // https://www.waveshare.com/RP2350-Touch-LCD-3.5.htm
 // https://docs.waveshare.com/RP2350-Touch-LCD-3.5?variant=RP2350-Touch-LCD-3.5
@@ -973,7 +973,7 @@ void setup()
   digitalWrite(PA_CTRL, HIGH);     // HIGH to un-mute the physical amplifier circuit. 
   initES8311();  
 
-  Wire.setSDA(TwistSDA); Wire.setSCL(TwistSCL);                            // TWIST GPIO 4 5 i2c0 Wire0 
+  Wire.setSDA(TwistSDA); Wire.setSCL(TwistSCL);                              // TWIST GPIO 32 33 i2c0 Wire0 
   for (int i=0; i<twX; i++) { Twist[i] = twist[i].begin(Wire, 0x3F-i); }     // Set many Twist devices address 0x3F (+ or -) 0-7
   for (int i=0; i<twX; i++) { if (Twist[i]) { UpdateTwist(4); break; }  }    // Only do UpdateTwist once  
   Wire.setClock(400000); 
@@ -3697,6 +3697,25 @@ void DisplayClocks(byte DisplayOption)
   SerPr2;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void VersionInfo()
+{ Serial.println("Version: VolumeMacro370 Tobias van Dyk August 2022 - August 2026");
+  Serial.println("Hardware: Waveshare RP2350B-A4 LCD 3.5inch 480x320"); 
+  Serial.println("ST7796 IPS LCD FT6336 Capacitive Touch PMIC RTC Sensors Audio SDCard");
+  Serial.println("License GPL3 or contact via Github");  
+}
+void CPUInfo()
+{ int fHeap = rp2040.getFreeHeap();
+  int uHeap = rp2040.getUsedHeap();
+  int tHeap = rp2040.getTotalHeap();
+  int fCPU  = rp2040.f_cpu();
+  
+  Serial.printf("CPU MHz RP2350B: %d", fCPU); SerPr2;
+  Serial.printf("FreeHeap: %d", fHeap); SerPr2;
+  Serial.printf("UsedHeap: %d", uHeap); SerPr2;
+  Serial.printf("TotalHeap: %d", tHeap); SerPr2;
+  Serial.printf("Core temperature: %2.1fC", analogReadTemp()); SerPr2; 
+}
 /////////////////////////////////////////////////////////////////////
 void GetSysInfo(int Action) 
 /////////////////////////////////////////////////////////////////////
@@ -3706,10 +3725,6 @@ void GetSysInfo(int Action)
   byte *BPtr;
   uint32_t  Bt;
   int StrLen, i, n = 0, m = 0, b = 0;
-  int fHeap = rp2040.getFreeHeap();
-  int uHeap = rp2040.getUsedHeap();
-  int tHeap = rp2040.getTotalHeap();
-  int fCPU  = rp2040.f_cpu();
   
   if (Action>0) { if (Action==4) { Savex1x6(); SaveX1X6 = false; Config1[28] = XFiles; WriteConfig1(1); WriteConfig1Change = false; }
                   if (SaveLayout>0) SaveLayoutConfig(); return; }  // SaveLayoutConfig sets WriteConfig1Change = true;
@@ -3726,14 +3741,8 @@ void GetSysInfo(int Action)
   if (SaveMCP) { saveMCP(); SaveMCP = false; } 
   
   SerPr2;
-  Serial.println("Version: VolumeMacro361 Tobias van Dyk August 2022 - July 2026 License GPL3");
-  Serial.println("Hardware: Waveshare RP2350B-A4 LCD 3.5 480x320"); 
-  Serial.println("ST7796 LCD FT6336 Capacitive Touch + RTC Sensors Audio SDCard"); 
-  Serial.printf("CPU MHz RP2350B: %d", fCPU); SerPr2;
-  Serial.printf("FreeHeap: %d", fHeap); SerPr2;
-  Serial.printf("UsedHeap: %d", uHeap); SerPr2;
-  Serial.printf("TotalHeap: %d", tHeap); SerPr2;
-  Serial.printf("Core temperature: %2.1fC", analogReadTemp()); SerPr2; 
+  VersionInfo();
+  CPUInfo();
   SerPr2;
   
   Serial.println("Flash Files (Number Name Size):");
@@ -4419,7 +4428,7 @@ bool SendBytesStarCodes()    // KeyBrdByte[0] is = '*', KeyBrdByte[3] should be 
         for (n=0; n<8; n++)                  Serial.print(mcpAddr[n]-32);          Serial.println();   
         for (n=0; n<8; n++) { for (i=0; i<16; i++)                                 Serial.print(mcpPins[n][i]);                                              Serial.println(); }
         Serial.println(mcpDir);              Serial.println(mcpStr);               Serial.println(mcp23018);           Serial.println(twistStar);            Serial.println(twC);   
-        Serial.println("EOC");       
+        Serial.println("LCD");       
         status("Text Data sent to PC"); StarOk = true; break; } }  
         case 73: ///////////////////// KeyBrdByte[1]==n3&&KeyBrdByte[2]==f *nf*xmmm x = nChar mmm = nKeyNumber Send content of nkeyfile to PC App
       { if (nKeys34 && d999<100) { NameStr3[0] = k4; NameStr3[1] = k6; NameStr3[2] = k7; NameStr3[3] = 0x00; }         
@@ -4725,7 +4734,7 @@ void runI2CScanner() // Google Gemini
 {
   Serial.println(F("\n Dual-Bus I2C Scan"));  
   
-  Serial.println(F("Wire i2c0 External Devices on GP4/GP5:")); // Scan External Wire (i2c0 on Breakout Pins GP4/GP5)
+  Serial.println(F("Wire i2c0 External Devices on GP32/GP33:")); // Scan External Wire (i2c0 on Breakout Pins GP4/GP5)
   int countWire = 0;
   for (uint8_t address = 1; address < 127; address++) { Wire.beginTransmission(address); if (Wire.endTransmission() == 0) { Serial.printf("  Found device address: 0x%02X\n", address); countWire++; }  }
   if (countWire == 0) Serial.println(F("  No devices detected on Wire i2c0."));
@@ -6248,7 +6257,11 @@ void showKeyData(byte Option)
 {  byte p, n, m, b;
    char c; 
    File f1, f2, f3;
-   
+
+   SerPr2;
+   VersionInfo();
+   CPUInfo();
+     
    SerPr2;
    Serial.print("Labels M: " );
    if (MLabel) Serial.print("On  Target: "); else Serial.print("Off Target: ");
@@ -6402,4 +6415,4 @@ void showKeyData(byte Option)
  }
 
 
-/************* EOF line 6406 *****************/
+/************* EOF line 6419 *****************/
