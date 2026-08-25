@@ -8,7 +8,7 @@ The [**RPi Pico**](https://www.raspberrypi.org/products/raspberry-pi-pico/) is p
 
 1. [**STM32F103-Midi-USB-Interface**](https://github.com/TobiasVanDyk/STM32F103-Midi-USB-Interface)
 2. [**USBMidi PC Interface**](https://github.com/TobiasVanDyk/Microdexed-Synth-Variations/tree/main/PicoUSBMidi-PCInterface)
-3. [**Touch LCD Macropad**](https://github.com/TobiasVanDyk/Pico-MCU-from-Raspberry-Pi/tree/main/TouchMacroPadPico)
+3. [**Touch LCD Macropad**](https://github.com/TobiasVanDyk/PicoTouchMacroPad)
 4. [**VS1053 SDCard SPI MP3 music player**](https://github.com/TobiasVanDyk/Pico-MCU-from-Raspberry-Pi/tree/main/Vs1053Pico)
 5. [**i2s Audio-USB DAC**](https://github.com/TobiasVanDyk/Pico-MCU-from-Raspberry-Pi/tree/main/DacPico) Pimoroni (PCM5100A) and Waveshare (PCM5101A)
 6. [**LCD ST7789 240x135 SPI Pico connector display driver**](https://github.com/TobiasVanDyk/Pico-MCU-from-Raspberry-Pi/tree/main/LCDst7789Pico)
