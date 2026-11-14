@@ -4,9 +4,9 @@
 
 The Audio DAC development files and code used here are from [**sctanf**](https://github.com/sctanf/picoamp-2), [**BambooMaster 1**](https://github.com/BambooMaster/pico_usb_i2s_speaker), and [**BambooMaster 2**](https://github.com/BambooMaster/usb_sound_card_hires), and their license conditions apply here. The fourth and second Bamboomaster DAC (BambooDac4 and BambooDac2 or his i2s-speaker and hires soundcard), sounds as good as the [**STM32F411 Audio Dac described here**](https://github.com/TobiasVanDyk/STM32F411-PCM5102A-24bit-USB-Audio-DAC). *Note that their current firmware development are still in progress.*
 
-**14 November 2026:** A compiled version of the [**BambooMaster 1**](https://github.com/BambooMaster/pico_usb_i2s_speaker) with a green and red LED added to indicate 48kHz, 96kHz or 44.1 kHz (both LEDs on), was built on Windows 10 and VSCode, using the Pico SDK version 3.2.1. The low-jitter version is used, which means SCLK is connected to GPIO 22 (not GND), and the other three i2s lines are as described below. The folder BambooDAC4 contains all the build files and the UF2 firmware. A [**Waveshare Pico 2 Plus with 4MB Flash**](https://www.waveshare.com/RP2350-Plus.htm), was used with a PCM5102A DAC. Using this DAC means that the interpolation code and firmware will not work, but the low-jitter version sounds great. *Google Gemini helped to update the Pico SDK from that of a year ago, and added the two LED function.* The modified main.c is also included in the BambooDAC4 folder.
+**14 November 2026:** A compiled version of the [**BambooMaster 1**](https://github.com/BambooMaster/pico_usb_i2s_speaker) with a green and red LED added to indicate 48kHz, 96kHz or 44.1 kHz (both LEDs on), was built on Windows 10 and VSCode, using the Pico SDK version 3.2.1. The low-jitter version is used, which means SCLK is connected to GPIO 22 (not GND), and the other three i2s lines are as described below. The folder BambooDAC4 contains all the build files and the UF2 firmware. A [**Waveshare Pico 2 Plus with 4MB Flash**](https://www.waveshare.com/RP2350-Plus.htm), was used with a PCM5102A DAC. Using this DAC means that the interpolation code and firmware will not work, but the low-jitter version sounds great. *Google Gemini helped to update the Pico SDK from that of a year ago, and added the two LED function.* The modified main.c is also included in the BambooDAC4 folder. Note that a plain Pico 2 should be selected as the target board and not the Waveshare Pico 2 Plus to avoid compile errors.
 ```
-Data 	  GPIO18            
+DIN 	  GPIO18            
 LCRCK 	  GPIO20            
 BCLK 	  GPIO21            
 MCLK 	  GPIO22
@@ -82,7 +82,7 @@ BambooDAC3 has a [**fix for the windows mute control not working**](https://gith
 4. In Git Bash: cd c:\Pico
 		        git clone https://github.com/sctanf/picoamp-2.git
 		        cd picoamp-2
-		        git submodule update --init
+		        git submodule update --init (or better: git submodule update --init --recursive)
 5. Download the modified tinyusb-rp2040-fixes library from https://github.com/sctanf/tinyusb/tree/rp2040-fixes.
 6. Open VSCode and select import C++ project - select the folder C:\Pico\picoamp-2 and press import - it will download the older Pico SDK 2.1.1
 7. Close VScode and then in C:\Users\User\.pico-sdk\sdk\2.1.1\lib\tinyusb replace tinyusb with the tinyusb-rp2040-fixes lib - rename it to tinyusb.
@@ -114,9 +114,9 @@ MCLK = SCLK Gnd and Mute +3v3
 Follow the same steps 1 to 3 as for the PicoAmp2 but use for step 4:
 ```
 4. In Git Bash: cd c:\Pico
-		        git clone git clone https://github.com/BambooMaster/pico_usb_i2s_speaker.git
+		        git clone https://github.com/BambooMaster/pico_usb_i2s_speaker.git
 		        cd pico_usb_i2s_speaker
-		        git submodule update --init
+		        git submodule update --init (or better: git submodule update --init --recursive)
 5. Open VSCode and select import C++ project - select the folder C:\Pico\pico_usb_i2s_speaker and press import.
 6. Press compile in the VSCode bottom right corner.
 7. The uf2 firmware file (pico_usb_i2s_speaker.uf2) will be in the build folder in C:\Pico\pico_usb_i2s_speaker, upload it by putting the Pico in uf2 mode.
