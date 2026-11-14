@@ -1,8 +1,24 @@
 # Pico MCU Audio USB DAC
 
-### 32 bit USB Audio DAC using a Pico 1 RP2040 and a PCM5102A DAC module
+### 24 and 32 bit USB Audio DACs using a Pico 1 RP2040, Pico 2 RP2350, or Waveshare Pico 2 Plus, and a PCM5102A DAC module
 
-The Audio DAC development files and code used here are from [**sctanf**](https://github.com/sctanf/picoamp-2), [**BambooMaster 1**](https://github.com/BambooMaster/pico_usb_i2s_speaker), and [**BambooMaster 2**](https://github.com/BambooMaster/usb_sound_card_hires), and their license conditions apply here. The second Bamboomaster DAC (BambooDac2 or his Hires soundcard), sounds as good as the [**STM32F411 Audio Dac described here**](https://github.com/TobiasVanDyk/STM32F411-PCM5102A-24bit-USB-Audio-DAC). *Note that their current firmware development are still in progress.*
+The Audio DAC development files and code used here are from [**sctanf**](https://github.com/sctanf/picoamp-2), [**BambooMaster 1**](https://github.com/BambooMaster/pico_usb_i2s_speaker), and [**BambooMaster 2**](https://github.com/BambooMaster/usb_sound_card_hires), and their license conditions apply here. The fourth and second Bamboomaster DAC (BambooDac4 and BambooDac2 or his i2s-speaker and hires soundcard), sounds as good as the [**STM32F411 Audio Dac described here**](https://github.com/TobiasVanDyk/STM32F411-PCM5102A-24bit-USB-Audio-DAC). *Note that their current firmware development are still in progress.*
+
+**14 November 2026:** A compiled version of the [**BambooMaster 1**](https://github.com/BambooMaster/pico_usb_i2s_speaker) with a green and red LED added to indicate 48kHz, 96kHz or 44.1 kHz (both lEDs), was built on Windows 10 and VSCode using the Pico 3.2.1 SDK. The low-jitter version is used, which means SCLK is connected to GPIO 22 (not GND), and the other three i2s lines are as described below. The folder BambooDAC4 contains all the build files and the UF2 firmware. A [**Waveshare Pico 2 Plus with 4MB Flash**](https://www.waveshare.com/RP2350-Plus.htm), was used with a PCM5102A DAC. Using this DAC means that the interpolation code and firmware will not work, but the low-jitter version sounds great. *Google Gemini helped to update the Pico SDK from that of a year ago, and added the two LED function.* The modified main.c is also included in the BambooDAC4 folder.
+```
+Data 	  GPIO18            
+LCRCK 	  GPIO20            
+BCLK 	  GPIO21            
+MCLK 	  GPIO22
+LED6 6    GPIO6    Green 48kHz 44.1kHz   
+LED7 7    GPIO7    Red   96kHz 44.1kHz    
+PICOLED            i2s data active   
+```
+
+<p align="left">
+<img src="BambooDAC4/bamboodac4.jpg" height="220" />
+<img src="BambooDAC4/vscode.jpg.jpg" height="220" />
+</p>
 
 Read [**Set-i2s-pins-values.txt**](https://github.com/TobiasVanDyk/Pico-MCU-from-Raspberry-Pi/blob/main/DacPico/PicoAmp2/Set-i2s-pins-values.txt), which explains how to change the Bamboo pico_usb_i2s_speaker and his/her usb_sound_card_hires firmware for use with the the Waveshare Pico-Audio Hat and Waveshare Pico Evaluation LCD, and the Pimoroni Audio Dac Hat (as discussed below). Similarly the sctanf Pico Amp 2 firmware can be used by these Hats very easily by changing the code GPIO i2s pin assignments in main.c line 123. 
 
