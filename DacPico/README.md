@@ -16,8 +16,10 @@ PICOLED            i2s data active
 ```
 
 <p align="left">
-<img src="BambooDAC4/bamboodac4.jpg" height="220" />
-<img src="BambooDAC4/vscode.jpg" height="220" />
+<img src="BambooDAC4/bamboodac4.jpg" height="120" />
+<img src="BambooDAC4/vscode.jpg" height="120" />
+<img src="BambooDAC4/BambooDAC4c.jpg" height="120" />
+<img src="BambooDAC4/BambooDAC4d.jpg" height="120" />
 </p>
 
 Read [**Set-i2s-pins-values.txt**](https://github.com/TobiasVanDyk/Pico-MCU-from-Raspberry-Pi/blob/main/DacPico/PicoAmp2/Set-i2s-pins-values.txt), which explains how to change the Bamboo pico_usb_i2s_speaker and his/her usb_sound_card_hires firmware for use with the the Waveshare Pico-Audio Hat and Waveshare Pico Evaluation LCD, and the Pimoroni Audio Dac Hat (as discussed below). Similarly the sctanf Pico Amp 2 firmware can be used by these Hats very easily by changing the code GPIO i2s pin assignments in main.c line 123. 
