@@ -12,14 +12,16 @@ BCLK 	  GPIO21
 MCLK 	  GPIO22
 LED6 6    GPIO6    Green 48kHz 44.1kHz  use 10k resistor
 LED7 7    GPIO7    Red   96kHz 44.1kHz  use 4k7 resistor   
-PICOLED            i2s data active   
+PICOLED   GPIO25   i2s data active - User LED  
 ```
 
 <p align="left">
-<img src="BambooDAC4/bamboodac4.jpg" height="120" />
-<img src="BambooDAC4/vscode.jpg" height="120" />
-<img src="BambooDAC4/BambooDAC4c.jpg" height="120" />
-<img src="BambooDAC4/BambooDAC4d.jpg" height="120" />
+<img src="BambooDAC4/bamboodac4.jpg" height="100" />
+<img src="BambooDAC4/vscode.jpg" height="100" />
+<img src="BambooDAC4/BambooDAC4c.jpg" height="100" />
+<img src="BambooDAC4/BambooDAC4d.jpg" height="100" />
+<img src="BambooDAC4/BambooDAC1d.jpg" height="100" />
+<img src="BambooDAC4/BambooDAC2d.jpg" height="100" />
 </p>
 
 Read [**Set-i2s-pins-values.txt**](https://github.com/TobiasVanDyk/Pico-MCU-from-Raspberry-Pi/blob/main/DacPico/PicoAmp2/Set-i2s-pins-values.txt), which explains how to change the Bamboo pico_usb_i2s_speaker and his/her usb_sound_card_hires firmware for use with the the Waveshare Pico-Audio Hat and Waveshare Pico Evaluation LCD, and the Pimoroni Audio Dac Hat (as discussed below). Similarly the sctanf Pico Amp 2 firmware can be used by these Hats very easily by changing the code GPIO i2s pin assignments in main.c line 123. 
